@@ -5,6 +5,7 @@
 - Also ruby code that generates each is there for further experiments
 - One example has a calendar but any other PDF can be turned into one
 
+Pages of PDF are connected by invisible links into a tree.
 The idea is that one can experiment with own processes right inside Remarkable
 by drawing whatever stuff around those links and then using links as buttons in the UI.
 
