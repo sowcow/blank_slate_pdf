@@ -20,6 +20,10 @@ The way to use a link is first to circle it and then tap the circle.
 
 Info on specific PDFs is present either in their properties when opened or can be read in corresponding files in `configs/` directory.
 
+Filename `1c` means there is one column of links in that PDF - basically a list of one level depth to go down.
+`1c-1c` in the name means that this will be a list with possibility to go two levels deep.
+`1c-1c-0` just means that there is a layer of plain pages as leaf nodes.
+
 ## Also
 
 Feedback/PR regarding other devices is appreciated.
