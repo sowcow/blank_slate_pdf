@@ -3,7 +3,7 @@
 - Very flexible and simplistic pdfs for nested lists or other own processes for devices like Remarkable.
 - In some regards inspired by org-mode
 - Also ruby code that generates each is there for further experiments
-- One example has a calendar to show-off flexibility
+- One example has a calendar but any other PDF can be turned into one
 
 The idea is that one can experiment with own processes right inside Remarkable
 by drawing whatever stuff around those links and then using links as buttons in the UI.
