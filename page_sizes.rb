@@ -1,0 +1,20 @@
+require 'prawn/measurement_extensions'
+
+# assuming portrait layout (3x4 perfectly)
+REMARKABLE2_SCREEN_WIDTH_PX = 1404
+REMARKABLE2_SCREEN_HEIGHT_PX = 1872
+
+# actual remarkable2 size to use would be something around: ~157.2.mm or ~152.4.mm
+# but I like fitting it into the clear size of A5 (~5% downscale)
+A5_WIDTH_IN_PT = 148.5.mm
+
+# ratio should convert used pixels width into A5-fitting size
+SCALE_RATIO = A5_WIDTH_IN_PT / REMARKABLE2_SCREEN_WIDTH_PX.to_f
+
+# rescale pixels for distances (not for line widths)
+def R number
+  number * SCALE_RATIO
+end
+
+PAGE_WIDTH = R REMARKABLE2_SCREEN_WIDTH_PX
+PAGE_HEIGHT = R REMARKABLE2_SCREEN_HEIGHT_PX
