@@ -32,7 +32,7 @@ Feedback/PR regarding other devices is appreciated.
 Also I keep PDFs small to not see loader at all.
 But 10k pages pdf is easy with this code, even though it looks impractical to me now.
 
-# Other
+## Other
 
 - I think round checkboxes go better with this
 - it hits somewhere between apps and paper organizers but there is no point to just copy paper organizer the whole way with this
