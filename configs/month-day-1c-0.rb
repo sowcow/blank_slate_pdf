@@ -1,12 +1,13 @@
 require 'date'
 
+N = 4
 
 $config_loaded = BlankSlatePDF.new('month-day-1c-0') do
   configure $setup
 
   description <<-END
     Months -> Days -> list at the left -> plain pages.
-    List pages here are smaller, only having five items/additional pages
+    List pages here are smaller, only having #{N} items/additional pages
     that are positioned at the top five cells at the left side.
     Topmost cell is ignored due to RM not having it accessible anyway.
     ---
@@ -87,7 +88,6 @@ $config_loaded = BlankSlatePDF.new('month-day-1c-0') do
       month_name = date.strftime '%B'
 
       link [x*cell_size, y*cell_size, (x+1)*cell_size, (y+1)*cell_size], page {
-        #draw_dots except: [{ x: 0 }, { x: 12 }, { y: 0 }, { y: 16 }]
         link_back
 
         color ?8*6 do
@@ -149,9 +149,9 @@ $config_loaded = BlankSlatePDF.new('month-day-1c-0') do
               end
             end
 
-            # only five items or additional pages per day
-            5.times.each { |dy|
-              y = grid_y - dy - 2 # minus resered cell
+            # only N items of additional pages per day to limit the file size to completely avoid loading indicator
+            N.times.each { |dy|
+              y = grid_y - dy - 2 # minus resered cell too
               x = 0
               next if reserved? x, y
 

@@ -2,8 +2,8 @@
 
 - Very flexible and simplistic pdfs for nested lists or other own processes for devices like Remarkable.
 - In some regards inspired by org-mode
-- Also ruby code that generates each is there for further experiments
-- One example has a calendar but any other PDF can be turned into one
+- Also readable ruby code that generates each is there for further experiments. Actual generation files are under 50 LOC in most cases
+- One version of pdfs is a calendar, I think the best way is to use it in parallel with more blank versions
 
 Pages of PDF are connected by invisible links into a tree.
 The idea is that one can experiment with own processes right inside Remarkable
@@ -12,6 +12,8 @@ by drawing whatever stuff around those links and then using links as buttons in 
 The next level is to alter the code to tune things when needed.
 
 Note that left hand and right hand versions are not compatible with RM in another mode.
+
+[Downloads](https://github.com/sowcow/blank_slate_pdf/releases)
 
 ## How
 
@@ -27,7 +29,7 @@ Filename `1c` means there is one column of links in that PDF - basically a list 
 
 ## Also
 
-Feedback/PR regarding other devices is appreciated.
+Feedback/PR regarding other devices is welcomed.
 
 Also I keep PDFs small to not see loader at all.
 But 10k pages pdf is easy with this code, even though it looks impractical to me now.
@@ -50,4 +52,4 @@ Code-wise `run.rb` should be reabable starting point.
 - pages ordering can be another way actually, there are tradeoffs to both ways
 - screenshot that I wanted
 
-## WTFP License
+## WTFPL License
