@@ -13,6 +13,9 @@ $config_loaded = BlankSlatePDF.new('1c-0') do
   page do
     draw_dots except: [{ x: 0 }, { x: 12 }, { y: 0 }, { y: 16 }] # except at page boundaries
 
+    # Some things are configured in `run.rb`
+    # grid_y = 16  # 16 rows in portrait mode
+
     # reverse_each for page ordering since y=0 means bottom row in prawn/pdf
     grid_y.times.reverse_each { |y|
       x = 0 # leftmost column
