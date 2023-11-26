@@ -1,6 +1,7 @@
 $noto = File.expand_path './fonts/Noto_Sans_Symbols/static/NotoSansSymbols-Medium.ttf'
 $noto_semibold = $noto.sub('Medium', 'SemiBold')
 
+# used for calendar:
 $roboto = File.expand_path './fonts/Roboto/Roboto-Regular.ttf'
 #$roboto_bold = File.expand_path './fonts/Roboto/Roboto-Bold.ttf'
 
