@@ -11,7 +11,18 @@ by drawing whatever stuff around those links and then using links as buttons in 
 
 The next level is to alter the code to tune things when needed.
 
-Note that left hand and right hand versions are not compatible with RM in another mode.
+Info on specific PDFs is present either in their properties when opened or can be read in corresponding files in `configs/` directory.
+
+Here is example info for `1c0-0.pdf`
+
+```
+Root page has one column of square "invisible" links at the left side.
+Every link leads to just a plain page with no further links.
+---
+Necessary when using with Remarkable: #{hand} hand mode and closed toolbar.
+Otherwise links/navigation controls in the pdf overlap controls in RM.
+There are breadcrumbs left at the place of links in part to visualize page ordering.
+```
 
 [Downloads](https://github.com/sowcow/blank_slate_pdf/releases)
 
@@ -20,8 +31,6 @@ Note that left hand and right hand versions are not compatible with RM in anothe
 There are empty square links on pages that are not shown.
 On a single column pages links use cells in the leftmost column.
 The way to use a link is first to circle it and then tap the circle.
-
-Info on specific PDFs is present either in their properties when opened or can be read in corresponding files in `configs/` directory.
 
 [Example code](configs/1c-0.rb)
 
