@@ -54,4 +54,4 @@ Code-wise `run.rb` should be reabable starting point.
 - pages ordering can be another way actually, there are tradeoffs to both ways
 - screenshot that I wanted
 
-## WTFPL License
+## [DAFUQPL](https://github.com/dafuqpl/dafuqpl) License
