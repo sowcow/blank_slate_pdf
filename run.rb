@@ -5,15 +5,19 @@ require 'pathname'
 
 #$debug = true # shows links
 
-# only variability supported here is the hand configuration (it moves back button to be accessible in RM)
 $setup = {
-  orientation: PORTRAIT,
+  # only variability supported in this block is the hand configuration (it moves back button to be accessible in RM)
   hand: RIGHT,
   device: RM,
-  grid_x: 12,
-  grid_y: 16,
+  orientation: PORTRAIT,
   # page sizes are fixed in constants now (may need mapping to device types)
   # also scaling method of distances in raw pixels `R` when used uses those constants
+
+  # grid is used alot, some places may have numbers hardcoded though
+  grid_x: 12,
+  grid_y: 16,
+
+  # To not have otherwise useless credits and entry info pages
   Title: 'Blank Slate PDF (%{name})',
   Author: 'Alexander K (https://github.com/sowcow)',
   Producer: 'https://github.com/sowcow/blank_slate_pdf',

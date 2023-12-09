@@ -3,7 +3,9 @@ $noto_semibold = $noto.sub('Medium', 'SemiBold')
 
 # used for calendar:
 $roboto = File.expand_path './fonts/Roboto/Roboto-Regular.ttf'
-#$roboto_bold = File.expand_path './fonts/Roboto/Roboto-Bold.ttf'
+$roboto_light = File.expand_path './fonts/Roboto/Roboto-Light.ttf'
+#$roboto_thin = File.expand_path './fonts/Roboto/Roboto-Thin.ttf'
+$roboto_bold = File.expand_path './fonts/Roboto/Roboto-Bold.ttf'
 
 
 # square link annotations in grids so that it is inside of borders in case there are any
@@ -76,7 +78,53 @@ module DetailsRendering
     pdf.font_size prev if prev
   end
 
-  def draw_dots except: []
+  def draw_grid *a
+    if respond_to? :grid
+      public_send "draw_#{grid.name}", *a
+    else
+      draw_dots *a
+    end
+  end
+
+  def draw_stars except: :borders
+    if except == :borders
+      except = []
+    end
+
+    dot_size = 1
+    dot_color = ?0*6
+
+    sum = -> v1, v2 {
+      [v1[0] + v2[0], v1[1] + v2[1]]
+    }
+
+    half_size = dot_size / 2.0
+
+    color dot_color do
+      (0..grid.x).each { |x|
+        (0..grid.y).each { |y|
+          given = { x: x, y: y }
+          next if except.any? { |rule|
+            rule.all? { |k, v|
+              v === given[k]
+            }
+          }
+          case
+          when x % 3 == grid.dx && y % 3 == grid.dy
+            cross [x, y]
+          else
+            pdf.fill_rectangle sum.(grid.at(x, y), [-half_size,half_size]), dot_size, dot_size
+          end
+        }
+      }
+    end
+  end
+
+  def draw_dots except: :borders
+    if except == :borders
+      except = []
+    end
+
     dot_size = 1
     dot_color = ?0*6
 
@@ -95,25 +143,44 @@ module DetailsRendering
               v === given[k]
             }
           }
-          pdf.fill_rectangle sum.([x * step_x, y * step_y], [-half_size,half_size]), dot_size, dot_size
+          pdf.fill_rectangle sum.(grid.at(x, y), [-half_size,half_size]), dot_size, dot_size
         }
       }
     end
   end
 
-  def link given, child
-    at = [given[0] * step_x, given[1] * step_y]
+  # when you use for already existing pages... probably I need to turn link -> link_page do
+  def link! given, another_page
+    square = to_rect given
 
-    square = if given.count == 2
-        [at[0], at[1] + step_y, at[0] + step_x, at[1]]
-      else
-        at2 = [given[2] * step_x, given[3] * step_y]
-        [at[0], at[1], at2[0], at2[1]]
-      end
+    pdf.link_annotation(
+      square.to_a,
+      #square.margin,
+      :Dest => another_page.id,
+      :Border => [0,0,$debug ? 1 : 0],
+    )
+  end
+
+  def link_page given, &block
+    child = page &block
+    link given, child
+    child
+  end
+
+  def to_rect given
+    if given.count == 2
+      grid.rect *(given.take(2) + given.take(2))
+    else
+      grid.rect *given.take(4)
+    end
+  end
+
+  def link given, child
+    square = to_rect given
 
     revisit_page child.parent do
       pdf.link_annotation(
-        square.margin,
+        square.to_a, #margin,
         :Dest => child.id,
         :Border => [0,0,$debug ? 1 : 0],
       )
@@ -139,18 +206,48 @@ module DetailsRendering
       end
     end
 
-    rect = [at[0], at[1], at[0] + step_x, at[1] - step_y].margin
+    omg_step_y = step_x
+    rect = [at[0], at[1], at[0] + step_x, at[1] - omg_step_y] #.margin
 
     pdf.link_annotation(
-      rect,
+      rect.to_a,
       :Dest => page.id,
       :Border => [0,0,$debug ? 1 : 0],
     )
   end
 
-  def diamond at
-    x = at[0] * step_x + step_x / 2.0
-    y = at[1] * step_y + step_y / 2.0
+  # link back, specifically positioned to mirror (18 grid cell position but at the corner)
+  def link_back_page_corner_18 target=page_stack.last&.parent
+    return unless target
+    text = ?↑
+    dx = grid.by_x.step
+    dy = grid.by_y.step
+
+    link_cell_side = Grid.new.apply(pdf_width, pdf_height).by_x.step
+    link_cell = hand == RIGHT ? [pdf_width - link_cell_side, pdf_height] : [0, pdf_height]
+    text_cell = hand == RIGHT ? [pdf_width - dx, pdf_height] : [0, pdf_height]
+
+    text_at = text_cell.clone
+    text_at[1] += R(15) # manual centering
+    color ?8*6 do
+      font $noto_semibold do
+        font_size step_y - R(60) do # ...
+          pdf.text_box text, at: text_at, width: dx, height: dy, align: :center, valign: :center
+        end
+      end
+    end
+
+    at = link_cell
+    rect = [at[0], at[1], at[0] + link_cell_side, at[1] - link_cell_side] #.margin
+    pdf.link_annotation(
+      rect.to_a,
+      :Dest => target.id,
+      :Border => [0,0,$debug ? 1 : 0],
+    )
+  end
+
+  def diamond at, corner: 0
+    (x, y) = grid.at(*at, corner: corner)
     r = step_x * 0.1
 
     color ?8*6 do
@@ -158,13 +255,23 @@ module DetailsRendering
     end
   end
 
-  def cross at
-    x = at[0] * step_x + step_x / 2.0
-    y = at[1] * step_y + step_y / 2.0
+  def cross at, corner: 0
+    (x, y) = grid.at(*at, corner: corner)
     r = step_x * 0.1
 
     color ?8*6 do
       pdf.line [x - r, y], [x + r, y]
+      pdf.line [x, y - r], [x, y + r]
+      pdf.stroke
+    end
+  end
+
+  # second order
+  def mark2 at, corner: 0
+    (x, y) = grid.at(*at, corner: corner)
+    r = step_x * 0.1
+
+    color ?8*6 do
       pdf.line [x, y - r], [x, y + r]
       pdf.stroke
     end
@@ -181,10 +288,8 @@ module DetailsRendering
   end
 
   def draw_line x1, y1, x2, y2
-    x1 *= step_x
-    x2 *= step_x
-    y1 *= step_y
-    y2 *= step_y
+    (x1, y1) = grid.at(x1, y1)
+    (x2, y2) = grid.at(x2, y2)
 
     # no default color - may print white?
     pdf.line [x1, y1], [x2, y2]
@@ -192,11 +297,8 @@ module DetailsRendering
   end
 
   def draw_text text, x, y, width: nil, height: step_y, **other
-    x *= step_x
-    y *= step_y
+    (x, y) = grid.at(x, y + 1) # no idea about this +1
     at = [x, y]
-
-    at[1] += 1 * step_y # right above that corner point
 
     # no default color - may print white?
     #pdf.font_size (size - R(10)) * 0.5

@@ -17,6 +17,8 @@ class BlankSlatePDF
     page_stack.last
   end
 
+  attr_accessor :name
+
   def initialize name, &block
     @name = name
     @config = {}
@@ -27,11 +29,24 @@ class BlankSlatePDF
     @current_page_number = 0
   end
 
-  def configure hash
+  def configure hash, deep: true
     @config = @config.merge hash
     @config.each { |k,v|
       define_singleton_method k do @config.fetch k end
+      thing = @config.fetch k
+      thing.configure self if deep && thing.respond_to?(:configure)
     }
+  end
+
+  def with_parent page, &block
+    prev = @given_parent
+    @given_parent = page
+    instance_eval &block
+    @given_parent = prev
+  end
+
+  def get_parent
+    @given_parent || page_stack.last
   end
 
   def page &block
@@ -106,14 +121,14 @@ class Page
   attr_reader :page_number
 
   extend Forwardable
-  delegate [:pdf, :grid_x, :grid_y, :page, :page_stack, :page_queue, :current_page, :hand, :device] => :@context
+  delegate [:pdf, :grid_x, :get_parent, :grid_y, :grid, :page, :page_stack, :page_queue, :current_page, :hand, :device] => :@context
 
   def initialize context, &block
     @id = 'page-' + $Page_next_page_id.to_s # to_s is mandatory
     $Page_next_page_id += 1
 
     @context = context
-    @parent = page_stack.last
+    @parent = get_parent
     @block = block
     @breadcrumbs = []
   end

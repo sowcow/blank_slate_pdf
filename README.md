@@ -1,3 +1,53 @@
+# BSv2
+
+# What
+
+Abstract and very flexible inter-connected PDF for different workflows and experiments.
+Tested on Remarkable only.
+It is optimized for the right-hand left-to-right writing experience because links are positioned to not appear under the hand.
+
+# Constraints
+
+Important notes for RM:
+- you'll need to hide the toolbar to have left-most "buttons" accessible
+- you'll need the version of PDF that fits the "hand" setting to have back button accessible in the upper corner
+- this given version assumes: #{hand} hand setting in RM
+
+# Contents
+
+This PDF has three levels of pages:
+- top-most root page
+- item pages
+- sub-pages
+
+Root page has 18 "invisible" square links at the left of the grid (outside the grid itself).
+One workflow is to mark any link with a circle, then to write some name nearby, then to tap the circle and maybe repeat the name as the header on the newly opened page.
+
+The opened page is that item page.
+By turning pages you have 9 pages there and kind-of pagination above.
+Also there are links to sub pages: 6 of them in the upper-right corner outside the grid.
+
+Sub pages are single pages per item so there is no pagination for them.
+Instead they have different page-turning dynamics: by turning pages you change the item at the left instead.
+This should make better place for more general notes or item summary/review.
+The dynamics can be seen as more optimized for reading/scanning through multiple items.
+And for that reason it makes sense to use those the same way consistently through different items.
+
+# Other
+
+Navigation back/up is by the arrow at the upper corner.
+Also there are breadcrumbs left at the place of links.
+They should be helpful to actually see page-turning dynamics.
+
+---
+
+# V1 stuff below
+
+That code is not removed but most likely needs a switch into older commit/branch to be working.
+
+---
+
+
 # What
 
 - Very flexible and simplistic pdfs for nested lists or other own processes for devices like Remarkable.
