@@ -1,5 +1,7 @@
 # BSv2
 
+[Downloads](https://github.com/sowcow/blank_slate_pdf/releases)
+
 # What
 
 Abstract and very flexible inter-connected PDF for different workflows and experiments.
