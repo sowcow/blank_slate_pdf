@@ -2,6 +2,11 @@ require_relative 'blank_slate_pdf'
 require_relative 'lib/grid'
 require 'pathname'
 
+# - imagemagick for backgrounds for smaller file size?
+#   (does this allow for bigger pdf's for say calendar?
+#    or faster loading with no spinner for general pdfs still)
+
+# - [x] creative names for backgrounds
 # - [x] order of pages differences
 # - [x] stars layout
 # - [x] always clickable navigation bars
@@ -34,8 +39,12 @@ here = Pathname __dir__
 output = here + 'output'
 output.mkpath unless output.exist?
 Pathname.glob(here + 'v2_configs/*.rb') do |x|
-  #next unless x.to_s =~ /\bspaced-2d/ # XXX
-
   load x
-  $configs_loaded.each { |x| x.generate output }
+  $configs_loaded.each { |x|
+    #next unless x.name.to_s =~ /BAMBOO/ # XXX
+    print x.name
+    print '...'
+    x.generate output
+    puts 'DONE'
+  }
 end

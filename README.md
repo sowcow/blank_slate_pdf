@@ -45,7 +45,7 @@ They should be helpful to actually see page-turning dynamics.
 
 # V1 stuff below
 
-That code is not removed but most likely needs a switch into older commit/branch to be working.
+That code is not removed and is not being refactored to be fit v2 changes. So most likely it needs a switch into older commit/branch to be working.
 
 ---
 

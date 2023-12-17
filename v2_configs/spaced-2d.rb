@@ -1,10 +1,8 @@
 this_name = File.basename(__FILE__).sub /\..*/, ''
 
-# generate:
-# - stars and dots versions
-# - left and right versions
-#
-# - actual RTL version???
+# - readme images
+
+# ? actual RTL version???
 # hand-configuration versions of this PDF do not affect position if things except
 # the back button to not collide with RM navigation controls
 # so left-to-write writing is assumed
@@ -221,20 +219,44 @@ have_hand_versions = -> given_bs {
   bs.name = "LEFT_#{bs.name}"
   bs.configure({hand: LEFT}, deep: false)
   result << bs
+
+  result
 }
 
 have_grid_versions = -> given_bs {
   result = []
 
   bs = given_bs.dup
-  bs.name = "DOTS_#{bs.name}"
-  bs.configure({set_grid_name: :draw_dots}, deep: false)
+  bs.name = "SAND_#{bs.name}"
+  bs.configure({set_grid_name: :draw_sand}, deep: false)
   result << bs
 
   bs = given_bs.dup
   bs.name = "STARS_#{bs.name}"
   bs.configure({set_grid_name: :draw_stars}, deep: false)
   result << bs
+
+  bs = given_bs.dup
+  bs.name = "WAVES_#{bs.name}"
+  bs.configure({set_grid_name: :draw_waves}, deep: false)
+  result << bs
+
+  bs = given_bs.dup
+  bs.name = "BAMBOO_#{bs.name}"
+  bs.configure({set_grid_name: :draw_bamboo}, deep: false)
+  result << bs
+
+  #bs = given_bs.dup
+  #bs.name = "MORSE_#{bs.name}"
+  #bs.configure({set_grid_name: :draw_morse}, deep: false)
+  #result << bs
+
+  #bs = given_bs.dup
+  #bs.name = "ANTS_#{bs.name}"
+  #bs.configure({set_grid_name: :draw_ants}, deep: false)
+  #result << bs
+
+  result
 }
 
 result = [BS.dup]

@@ -86,6 +86,140 @@ module DetailsRendering
     end
   end
 
+  def draw_ants
+    dot_size = 1
+    dot_color = ?0*6
+
+    sum = -> v1, v2 {
+      [v1[0] + v2[0], v1[1] + v2[1]]
+    }
+
+    half_size = dot_size / 2.0
+
+    color dot_color do
+      (0..grid.x).each { |x|
+        (0..grid.y).each { |y|
+          (xx, yy) = grid.at(x, y, corner: 0)
+
+          #division = 3
+          #division = 5
+          division = 9
+
+          ratios = division.times.map { |i|
+            1 / (division + 1).to_f * (i + 1)
+          }
+
+          x2 = nil
+          y2 = nil
+          ratios.each { |ratio|
+            (x2, y2) = grid.at(x, y, corner: ratio)
+            pdf.fill_rectangle sum.([x2, yy], [-half_size,half_size]), dot_size, dot_size unless x == grid.x
+            pdf.fill_rectangle sum.([xx, y2], [-half_size,half_size]), dot_size, dot_size unless y == grid.y
+          }
+
+          #color ?8*6 do
+          #  pdf.line [x2 - r, yy], [x2 + r, yy] unless x == grid.x
+          #  pdf.line [xx, y2 - r], [xx, y2 + r] unless y == grid.y
+          #  pdf.stroke
+          #end
+
+          pdf.fill_rectangle sum.([xx, yy], [-half_size,half_size]), dot_size, dot_size
+        }
+      }
+    end
+  end
+
+  def draw_waves; draw_lines end
+  def draw_lines
+    dot_size = 1
+    dot_color = ?0*6
+
+    sum = -> v1, v2 {
+      [v1[0] + v2[0], v1[1] + v2[1]]
+    }
+
+    half_size = dot_size / 2.0
+
+    color dot_color do
+      (0..grid.y).each { |y|
+
+        x0 = grid.by_x.at 0
+        x1 = grid.by_x.at grid.x
+        y0 = grid.by_y.at y, corner: 0
+
+        pdf.line_width 0.5
+        color ?C*6 do
+          pdf.line [x0, y0], [x1, y0]
+          pdf.stroke
+        end
+      }
+    end
+  end
+
+  def draw_bamboo
+    dot_size = 1
+    dot_color = ?0*6
+
+    sum = -> v1, v2 {
+      [v1[0] + v2[0], v1[1] + v2[1]]
+    }
+
+    half_size = dot_size / 2.0
+
+    color dot_color do
+      (0..grid.y).each { |y|
+
+        x0 = grid.by_x.at 0
+        x1 = grid.by_x.at grid.x
+        y0 = grid.by_y.at y, corner: 0
+
+        pdf.line_width 0.5
+        color ?C*6 do
+          pdf.line [x0, y0], [x1, y0]
+          pdf.stroke
+        end
+
+        (0..grid.x).each { |x|
+          (xx, yy) = grid.at(x, y, corner: 0)
+          (x2, y2) = grid.at(x, y, corner: 0.5)
+
+          pdf.fill_rectangle sum.([xx, yy], [-half_size,half_size]), dot_size, dot_size
+        }
+      }
+    end
+  end
+
+  def draw_morse
+    dot_size = 1
+    dot_color = ?0*6
+
+    sum = -> v1, v2 {
+      [v1[0] + v2[0], v1[1] + v2[1]]
+    }
+
+    half_size = dot_size / 2.0
+
+    color dot_color do
+      (0..grid.x).each { |x|
+        (0..grid.y).each { |y|
+          (xx, yy) = grid.at(x, y, corner: 0)
+          (x2, y2) = grid.at(x, y, corner: 0.5)
+
+          #r = step_x * 0.1
+          #r = grid.by_y.step * 0.4
+          r = grid.by_y.step * 0.382 / 2
+
+          color ?8*6 do
+            pdf.line [x2 - r, yy], [x2 + r, yy] unless x == grid.x
+            #pdf.line [xx, y2 - r], [xx, y2 + r] unless y == grid.y
+            pdf.stroke
+          end
+          pdf.fill_rectangle sum.([xx, yy], [-half_size,half_size]), dot_size, dot_size
+        }
+      }
+    end
+  end
+
   def draw_stars except: :borders
     if except == :borders
       except = []
@@ -120,6 +254,7 @@ module DetailsRendering
     end
   end
 
+  def draw_sand; draw_dots end
   def draw_dots except: :borders
     if except == :borders
       except = []
