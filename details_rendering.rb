@@ -47,7 +47,23 @@ module DetailsRendering
     pdf_height / grid_y
   end
 
+  def line_width given=1, &block
+    prev = pdf.line_width
+    pdf.line_width given
+
+    instance_eval &block
+
+    pdf.line_width prev if prev
+  end
+
   def color given, given2=given, &block
+    process = -> x {
+      return x.to_s * 6 if [*(?0..?9), ?a, ?b, ?c, ?d, ?e, ?f].include? x.to_s
+      return x
+    }
+    given = process.call given
+    given2 = process.call given2
+
     prev1 = pdf.fill_color
     prev2 = pdf.stroke_color
 
@@ -147,10 +163,11 @@ module DetailsRendering
         x1 = grid.by_x.at grid.x
         y0 = grid.by_y.at y, corner: 0
 
-        pdf.line_width 0.5
+        line_width 0.5 do
         color ?C*6 do
           pdf.line [x0, y0], [x1, y0]
           pdf.stroke
+        end
         end
       }
     end
@@ -173,10 +190,11 @@ module DetailsRendering
         x1 = grid.by_x.at grid.x
         y0 = grid.by_y.at y, corner: 0
 
-        pdf.line_width 0.5
+        line_width 0.5 do
         color ?C*6 do
           pdf.line [x0, y0], [x1, y0]
           pdf.stroke
+        end
         end
 
         (0..grid.x).each { |x|
@@ -351,6 +369,11 @@ module DetailsRendering
     )
   end
 
+  # so that RM controls do leave one arrow visible/usable in any mode left or right (given about hidden toolbar only)
+  def double_back_arrow target=page_stack.last&.parent
+    link_back_page_corner_18 target
+  end
+
   # link back, specifically positioned to mirror (18 grid cell position but at the corner)
   def link_back_page_corner_18 target=page_stack.last&.parent
     return unless target
@@ -358,27 +381,35 @@ module DetailsRendering
     dx = grid.by_x.step
     dy = grid.by_y.step
 
-    link_cell_side = Grid.new.apply(pdf_width, pdf_height).by_x.step
-    link_cell = hand == RIGHT ? [pdf_width - link_cell_side, pdf_height] : [0, pdf_height]
-    text_cell = hand == RIGHT ? [pdf_width - dx, pdf_height] : [0, pdf_height]
+    cells = [
+      [pdf_width - dx, pdf_height],
+      [0, pdf_height]
+    ]
 
-    text_at = text_cell.clone
-    text_at[1] += R(15) # manual centering
-    color ?8*6 do
-      font $noto_semibold do
-        font_size step_y - R(60) do # ...
-          pdf.text_box text, at: text_at, width: dx, height: dy, align: :center, valign: :center
+    cells.each { |text_cell|
+      #link_cell_side = Grid.new.apply(pdf_width, pdf_height).by_x.step
+      #link_cell = hand == RIGHT ? [pdf_width - link_cell_side, pdf_height] : [0, pdf_height]
+      link_cell = text_cell
+      link_cell_side = dx
+
+      text_at = text_cell.clone
+      text_at[1] += R(15) # manual centering
+      color ?8*6 do
+        font $noto_semibold do
+          font_size step_y - R(60) do # ...
+            pdf.text_box text, at: text_at, width: dx, height: dy, align: :center, valign: :center
+          end
         end
       end
-    end
 
-    at = link_cell
-    rect = [at[0], at[1], at[0] + link_cell_side, at[1] - link_cell_side] #.margin
-    pdf.link_annotation(
-      rect.to_a,
-      :Dest => target.id,
-      :Border => [0,0,$debug ? 1 : 0],
-    )
+      at = link_cell
+      rect = [at[0], at[1], at[0] + link_cell_side, at[1] - link_cell_side] #.margin
+      pdf.link_annotation(
+        rect.to_a,
+        :Dest => target.id,
+        :Border => [0,0,$debug ? 1 : 0],
+      )
+    }
   end
 
   def diamond at, corner: 0

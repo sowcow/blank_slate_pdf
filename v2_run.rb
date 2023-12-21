@@ -41,7 +41,7 @@ output.mkpath unless output.exist?
 Pathname.glob(here + 'v2_configs/*.rb') do |x|
   load x
   $configs_loaded.each { |x|
-    #next unless x.name.to_s =~ /BAMBOO/ # XXX
+    #next unless x.name.to_s =~ /habit/ # XXX
     print x.name
     print '...'
     x.generate output

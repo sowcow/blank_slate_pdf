@@ -1,6 +1,22 @@
-# BSv2
+# Blank Slate PDF
+
+Consists of spiritually close pdf projects for Remarkable:
+
+- Abstract BS - flexible multi-purpose and abstract pdf
+- BS Habits - one pdf per month to log all possible BS habits/activities/events
+
+They normally assume the Remarkable toolbar to be closed and space around the borders is used for navigation controls even if they are not drawn.
+
+If needed pdfs are not in the most recent release then they should be somewhere below as part of another one.
 
 [Downloads](https://github.com/sowcow/blank_slate_pdf/releases)
+
+# BS Habits
+
+Download the pdf that fits: number of days in the month, starting day of week, week type (MON/SUN).
+Also there are background variations to choose from.
+
+# Abstract BS
 
 # What
 
@@ -12,8 +28,6 @@ It is optimized for the right-hand left-to-right writing experience because link
 
 Important notes for RM:
 - you'll need to hide the toolbar to have left-most "buttons" accessible
-- you'll need the version of PDF that fits the "hand" setting to have back button accessible in the upper corner
-- this given version assumes: #{hand} hand setting in RM
 
 # Contents
 

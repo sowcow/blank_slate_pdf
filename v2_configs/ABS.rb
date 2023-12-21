@@ -25,9 +25,7 @@ BS = BlankSlatePDF.new(this_name) do
     # Constraints
 
     Important notes for RM:
-    - you'll need to hide the toolbar to have left-most "buttons" accessible
-    - you'll need the version of PDF that fits the "hand" setting to have back button accessible in the upper corner
-    - this given version assumes: #{hand} hand setting in RM
+    - you'll need to hide the toolbar to have navigation links accessible
 
     # Contents
 
@@ -207,21 +205,21 @@ BS = BlankSlatePDF.new(this_name) do
 end
 
 
-have_hand_versions = -> given_bs {
-  result = []
-
-  bs = given_bs.dup
-  bs.name = "RIGHT_#{bs.name}"
-  bs.configure({hand: RIGHT}, deep: false)
-  result << bs
-
-  bs = given_bs.dup
-  bs.name = "LEFT_#{bs.name}"
-  bs.configure({hand: LEFT}, deep: false)
-  result << bs
-
-  result
-}
+#have_hand_versions = -> given_bs {
+#  result = []
+#
+#  bs = given_bs.dup
+#  bs.name = "RIGHT_#{bs.name}"
+#  bs.configure({hand: RIGHT}, deep: false)
+#  result << bs
+#
+#  bs = given_bs.dup
+#  bs.name = "LEFT_#{bs.name}"
+#  bs.configure({hand: LEFT}, deep: false)
+#  result << bs
+#
+#  result
+#}
 
 have_grid_versions = -> given_bs {
   result = []
@@ -261,5 +259,5 @@ have_grid_versions = -> given_bs {
 
 result = [BS.dup]
 result = result.map(&have_grid_versions).flatten
-result = result.map(&have_hand_versions).flatten
+#result = result.map(&have_hand_versions).flatten
 $configs_loaded = result
