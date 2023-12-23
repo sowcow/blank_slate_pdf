@@ -96,13 +96,13 @@ BS_Habits = BlankSlatePDF.new(this_name) do
   }
 
   page do
-    pages << page_stack.last
+    pages << current_page
     instance_eval &draw_month_contour
     instance_eval &draw_grid
 
     item_cells.each { |item_cell|
       page do
-        pages << page_stack.last
+        pages << current_page
         item_cell_to_page[item_cell] = pages.last
 
         instance_eval &draw_days_squares

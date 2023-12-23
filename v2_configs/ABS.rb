@@ -38,8 +38,8 @@ BS = BlankSlatePDF.new(this_name) do
     One workflow is to mark any link with a circle, then to write some name nearby, then to tap the circle and maybe repeat the name as the header on the newly opened page.
 
     The opened page is that item page.
-    By turning pages you have 9 pages there and kind-of pagination above.
-    Also there are links to sub pages: 6 of them in the upper-right corner outside the grid.
+    By turning pages you have 12 pages there and kind-of pagination above.
+    Also there are links to sub pages: 3 of them are at the right near the upper-right corner outside the grid.
 
     Sub pages are single pages per item so there is no pagination for them.
     Instead they have different page-turning dynamics: by turning pages you change the item at the left instead.
@@ -67,9 +67,9 @@ BS = BlankSlatePDF.new(this_name) do
   }
 
   sub_items = [
-    { at: [grid_x - 3, grid_y] },
-    { at: [grid_x - 2, grid_y] },
-    { at: [grid_x - 1, grid_y] },
+    #{ at: [grid_x - 3, grid_y] },
+    #{ at: [grid_x - 2, grid_y] },
+    #{ at: [grid_x - 1, grid_y] },
     { at: [grid_x, grid_y - 1] },
     { at: [grid_x, grid_y - 2] },
     { at: [grid_x, grid_y - 3] },
@@ -224,25 +224,12 @@ end
 have_grid_versions = -> given_bs {
   result = []
 
-  bs = given_bs.dup
-  bs.name = "SAND_#{bs.name}"
-  bs.configure({set_grid_name: :draw_sand}, deep: false)
-  result << bs
-
-  bs = given_bs.dup
-  bs.name = "STARS_#{bs.name}"
-  bs.configure({set_grid_name: :draw_stars}, deep: false)
-  result << bs
-
-  bs = given_bs.dup
-  bs.name = "WAVES_#{bs.name}"
-  bs.configure({set_grid_name: :draw_waves}, deep: false)
-  result << bs
-
-  bs = given_bs.dup
-  bs.name = "BAMBOO_#{bs.name}"
-  bs.configure({set_grid_name: :draw_bamboo}, deep: false)
-  result << bs
+  %w[sand stars waves bamboo].each { |bg_name|
+    bs = given_bs.dup
+    bs.name = "#{bs.name}_#{bg_name.upcase}"
+    bs.configure({set_grid_name: "draw_#{bg_name}"}, deep: false) # deep thingy better be different method completely
+    result << bs
+  }
 
   #bs = given_bs.dup
   #bs.name = "MORSE_#{bs.name}"

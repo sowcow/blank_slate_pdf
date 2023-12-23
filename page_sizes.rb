@@ -1,5 +1,10 @@
 require 'prawn/measurement_extensions'
 
+# NOTE: I probably messed things around by dividing pt/px while thinking thath PAGE_WIDTH is in pt (thanks do misread docs)
+# while actually these are in px
+# anyway I like the default line-width I get with this so no point in scaling stuff around
+# (the only issue could be with images quality and I don't use them at all because RM seem to be slow with them)
+
 # assuming portrait layout (3x4 perfectly)
 REMARKABLE2_SCREEN_WIDTH_PX = 1404
 REMARKABLE2_SCREEN_HEIGHT_PX = 1872

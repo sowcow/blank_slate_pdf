@@ -1,18 +1,64 @@
-# Blank Slate PDF
+# Blank Slate
 
-Consists of spiritually close pdf projects for Remarkable:
+The project consists of spiritually close pdfs for Remarkable in the first place.
 
-- Abstract BS - flexible multi-purpose and abstract pdf
+Main files now are:
+- Abstract BS
+- BS Exec
+
+One is abstract and is more adding content optimized; another has a calendar of the current month and is more of a plan/review place.
+Abstract one goes in different background versions.
+
+Also there are pdfs generated on the way:
 - BS Habits - one pdf per month to log all possible BS habits/activities/events
+- different pdfs for nested lists and experiments
 
-They normally assume the Remarkable toolbar to be closed and space around the borders is used for navigation controls even if they are not drawn.
+Main pdfs evolve to support my use cases.
+Even though I see some potential for non-BS refactoring, I'm like the codebase as I use it.
 
-If needed pdfs are not in the most recent release then they should be somewhere below as part of another one.
+# General
+
+There is implicitness in UI is by design.
+On one hand early flexible experimental approach is not going anywhere.
+On another hand pdfs are optimized for long-time user and not for initial marketing impression.
+One tradeoff to flexibility is that page headers are not there unless you manually add them but going deeper they become impractical to add.
+
+Pdfs assume the Remarkable toolbar to be closed and space around the borders is used for often invisible navigation controls.
+
+If needed pdfs are not in the most recent release then they should be somewhere below as part of another release assets.
 
 [Downloads](https://github.com/sowcow/blank_slate_pdf/releases)
 
+# BS Exec
+
+- there is a new pdf for every next month
+- weeks starts from Monday
+- root page has many links to specific aspects/item pages around the border that can be named manually
+- aspect page has a calendar of the month in question and links to day and week pages
+- day and week pages have links to each-other
+
+Habits use case:
+- on the root page give a name to an aspect page link
+- enter the link
+- give the same name as a header of the page
+- mark stuff anyhow in day squares
+
+More detailed logging:
+- same as habits but enter the day for a page of stuff to write there
+
+Week planning:
+- week links are right below the last day of that week or on the day page right below the day square
+
+Review use case:
+- use page turning on different types of pages
+- also it should be possible to have one aspect/item to be for some activity and the next one for review of it
+- then switching between them then is a matter of tapping the link on the border
+
+Overall this pdf favors single page entries and some degree of decomposition.
+
 # BS Habits
 
+This is the preceeding to BS Exect pdf that is way simpler but stable and has versions for any month generated in Downolads.
 Download the pdf that fits: number of days in the month, starting day of week, week type (MON/SUN).
 Also there are background variations to choose from.
 

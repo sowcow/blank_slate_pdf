@@ -374,6 +374,7 @@ module DetailsRendering
     link_back_page_corner_18 target
   end
 
+  # messier method but it does not need to do more
   # link back, specifically positioned to mirror (18 grid cell position but at the corner)
   def link_back_page_corner_18 target=page_stack.last&.parent
     return unless target
@@ -386,11 +387,14 @@ module DetailsRendering
       [0, pdf_height]
     ]
 
-    cells.each { |text_cell|
-      #link_cell_side = Grid.new.apply(pdf_width, pdf_height).by_x.step
-      #link_cell = hand == RIGHT ? [pdf_width - link_cell_side, pdf_height] : [0, pdf_height]
+    cells.each_with_index { |text_cell, i|
       link_cell = text_cell
       link_cell_side = dx
+      if i == 0
+        # this link I actially use, another is a fallback for the left-hand setting that should not be taking space otherwise
+        link_cell_side = Grid.new.apply(pdf_width, pdf_height).by_x.step
+        link_cell = [pdf_width - link_cell_side, pdf_height]
+      end
 
       text_at = text_cell.clone
       text_at[1] += R(15) # manual centering

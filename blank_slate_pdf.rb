@@ -13,10 +13,6 @@ class BlankSlatePDF
   attr_reader :page_queue
   attr_reader :current_page_number
 
-  def current_page
-    page_stack.last
-  end
-
   attr_accessor :name
 
   def initialize name, &block
@@ -38,6 +34,7 @@ class BlankSlatePDF
     }
   end
 
+  # kind of revisit
   def with_parent page, &block
     prev = @given_parent
     @given_parent = page
@@ -48,6 +45,46 @@ class BlankSlatePDF
   def get_parent
     @given_parent || page_stack.last
   end
+
+  # wtf is with naming around
+  def current_page
+    page_stack.last
+  end
+
+  # useless, makes for slow or low quality page backgrounds, svg is not supported directly
+  #
+  #BG_SCALE = 4 # resizing
+  #BG_SCALE_2 = 1 # usage
+  #def make_background name, &block
+  #  raise 'done before everything' unless @current_page_number == 0
+  #  was_pdf = @pdf
+
+  #  @backgrounds ||= {}
+
+  #  file_name = File.join @path, "_temp_bg.pdf"
+  #  @pdf = configure_pdf
+
+  #  page = Page.new self, &block
+  #  @current_page_number += 1
+  #  page.render
+  #  @pdf.render_file file_name
+
+  #  Dir.chdir @path do
+  #    #system "convert -density #{72*BG_SCALE*BG_SCALE_2} _temp_bg.pdf -background white -alpha remove -alpha off -resize #{(100 / BG_SCALE.to_f).floor}% _temp_bg.png"
+  #    system "convert -density #{72*BG_SCALE*BG_SCALE_2} _temp_bg.pdf -resize #{(100 / BG_SCALE.to_f).floor}% _temp_bg.png"
+  #    system "rm _temp_bg.pdf"
+  #    system "mv _temp_bg.png #{name}.png"
+  #  end
+  #  @backgrounds[name] = File.join @path, "#{name}.png"
+
+  #  @current_page_number = 0
+  #  @pdf = was_pdf
+  #end
+
+  #def use_background name
+  #  file = @backgrounds[name] or raise 'bg not found'
+  #  pdf.image(file, scale: 1.0/BG_SCALE_2)
+  #end
 
   def page &block
     new_page = Page.new self, &block
@@ -74,8 +111,7 @@ class BlankSlatePDF
     instance_eval &@block if @block
   end
 
-  def pdf
-    return @pdf if @pdf
+  def configure_pdf
     params = {
       page_size: [PAGE_WIDTH, PAGE_HEIGHT],
       page_layout: orientation,
@@ -87,7 +123,12 @@ class BlankSlatePDF
         Subject: Subject() % { description: @description || '' },
       }
     }
-    @pdf = Prawn::Document.new params
+    Prawn::Document.new params
+  end
+
+  def pdf
+    return @pdf if @pdf
+    @pdf = configure_pdf
   end
 
   def render_queue
@@ -119,9 +160,10 @@ class Page
   attr_accessor :parent
   attr_reader :breadcrumbs
   attr_reader :page_number
+  attr_accessor :data
 
   extend Forwardable
-  delegate [:pdf, :grid_x, :get_parent, :grid_y, :grid, :page, :page_stack, :page_queue, :current_page, :hand, :device] => :@context
+  delegate [:pdf, :grid_x, :get_parent, :grid_y, :grid, :page, :page_stack, :page_queue, :current_page, :hand, :device, :use_background] => :@context
 
   def initialize context, &block
     @id = 'page-' + $Page_next_page_id.to_s # to_s is mandatory

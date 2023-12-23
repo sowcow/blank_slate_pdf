@@ -2,6 +2,8 @@ require_relative 'blank_slate_pdf'
 require_relative 'lib/grid'
 require 'pathname'
 
+# debugging errors is worse in the current setup in prawn
+
 # - imagemagick for backgrounds for smaller file size?
 #   (does this allow for bigger pdf's for say calendar?
 #    or faster loading with no spinner for general pdfs still)
@@ -41,7 +43,8 @@ output.mkpath unless output.exist?
 Pathname.glob(here + 'v2_configs/*.rb') do |x|
   load x
   $configs_loaded.each { |x|
-    #next unless x.name.to_s =~ /habit/ # XXX
+    next if x.name.to_s =~ /BS-Habits/i # Released on github and stable
+    #next unless x.name.to_s =~ /BSE/i # XXX
     print x.name
     print '...'
     x.generate output
