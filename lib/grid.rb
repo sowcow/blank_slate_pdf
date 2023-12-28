@@ -1,7 +1,11 @@
 require_relative 'dimension'
 
+# name is overreach here
+
 class Grid
   attr_reader :x, :y, :dx, :dy, :name, :frame
+  alias w x
+  alias h y
 
   def initialize x: 12, y: 16, dx: 0, dy: 0, name: 'dots', frame: nil
     @x = x
@@ -24,7 +28,7 @@ class Grid
     }
   end
 
-  attr_reader :by_x, :by_y
+  attr_reader :xs, :ys
 
   def apply width, height
     frame = @frame ? @frame[width, height] : nil
@@ -33,15 +37,23 @@ class Grid
     width = frame ? frame.width : width
     height = frame ? frame.height : height
 
-    @by_x = Dimension.new width, @x, delta: dx
-    @by_y = Dimension.new height, @y, delta: dy
+    @xs = Dimension.new width, @x, delta: dx
+    @ys = Dimension.new height, @y, delta: dy
     self
   end
 
-  def at x, y, corner: 0
+  def at pos_or_x, maybe_y=nil, corner: 0
+    x = nil
+    y = nil
+    if maybe_y
+      x = pos_or_x
+      y = maybe_y
+    else
+      (x, y) = pos_or_x.to_a
+    end
     [
-      @by_x.at(x, corner: corner),
-      @by_y.at(y, corner: corner),
+      @xs.at(x, corner: corner),
+      @ys.at(y, corner: corner),
     ]
   end
 
@@ -49,6 +61,24 @@ class Grid
   def rect x, y, x2, y2
     Rect[*at(x, y), *at(x2, y2, corner: 1)]
   end
+
+  # top-left
+  def tl
+    Pos[0, @y - 1]
+  end
+  def tr
+    Pos[@x - 1, @y - 1]
+  end
+  def bl
+    Pos[0, 0]
+  end
+  def br
+    Pos[@x - 1, 0]
+  end
+  alias lt tl
+  alias rt tr
+  alias lb bl
+  alias rb br
 end
 
 class Rect < Struct.new :x, :y, :x2, :y2

@@ -1,5 +1,11 @@
 this_name = File.basename(__FILE__).sub /\..*/, ''
 
+# some hourly printed-on ABS? 18 hours are items from 6 to 24, inside can have any details
+# yml for printing then
+# file names in yaml then?
+# bg config too then
+# => images from that into readme
+
 # - readme images
 
 # ? actual RTL version???
@@ -7,8 +13,12 @@ this_name = File.basename(__FILE__).sub /\..*/, ''
 # the back button to not collide with RM navigation controls
 # so left-to-write writing is assumed
 
-frame = -> w, h { Grid.new.apply(w,h).rect 1, 0, -2, -2 }
+require 'yaml'
+_ABS_config = File.join __dir__, 'ABS.yml'
+$ABS_config = nil
+$ABS_config = YAML.load_file _ABS_config if File.exist? _ABS_config
 
+frame = -> w, h { Grid.new.apply(w,h).rect 1, 0, -2, -2 }
 
 BS = BlankSlatePDF.new(this_name) do
   configure $setup
@@ -57,7 +67,7 @@ BS = BlankSlatePDF.new(this_name) do
   pages = []
   sub_pages = []
 
-  # it is 2D:
+  # it is 2D (in potential, not in use):
   list_item_coordinates = []
   group_items_coordinates = []
 
@@ -221,30 +231,50 @@ end
 #  result
 #}
 
-have_grid_versions = -> given_bs {
+#have_grid_versions = -> given_bs {
+#  result = []
+#
+#  %w[sand stars waves bamboo].each { |bg_name|
+#    bs = given_bs.dup
+#    bs.name = "#{bs.name}_#{bg_name.upcase}"
+#    bs.configure({set_grid_name: "draw_#{bg_name}"}, deep: false) # deep thingy better be different method completely
+#    result << bs
+#  }
+#
+#  #bs = given_bs.dup
+#  #bs.name = "MORSE_#{bs.name}"
+#  #bs.configure({set_grid_name: :draw_morse}, deep: false)
+#  #result << bs
+#
+#  #bs = given_bs.dup
+#  #bs.name = "ANTS_#{bs.name}"
+#  #bs.configure({set_grid_name: :draw_ants}, deep: false)
+#  #result << bs
+#
+#  result
+#}
+
+have_configured_versions = -> given_bs {
   result = []
 
-  %w[sand stars waves bamboo].each { |bg_name|
+  unless $ABS_config
+    return [given_bs]
+  end
+
+  $ABS_config.each { |name, hash|
     bs = given_bs.dup
-    bs.name = "#{bs.name}_#{bg_name.upcase}"
-    bs.configure({set_grid_name: "draw_#{bg_name}"}, deep: false) # deep thingy better be different method completely
+    bs.name = name
+    bg = hash['bg']
+    bs.configure({set_grid_name: "draw_#{bg}"}, deep: false) if bg
+    bs.configure({ items: hash['items'] }, deep: false) if hash['items']
     result << bs
   }
-
-  #bs = given_bs.dup
-  #bs.name = "MORSE_#{bs.name}"
-  #bs.configure({set_grid_name: :draw_morse}, deep: false)
-  #result << bs
-
-  #bs = given_bs.dup
-  #bs.name = "ANTS_#{bs.name}"
-  #bs.configure({set_grid_name: :draw_ants}, deep: false)
-  #result << bs
 
   result
 }
 
 result = [BS.dup]
-result = result.map(&have_grid_versions).flatten
+#result = result.map(&have_grid_versions).flatten
 #result = result.map(&have_hand_versions).flatten
+result = result.map(&have_configured_versions).flatten
 $configs_loaded = result

@@ -1,6 +1,21 @@
 require 'date'
 require_relative 'lib/calendar'
 require_relative 'lib/contour'
+require 'yaml'
+
+personalize = File.join __dir__, '../../BSE.yml'
+$personalize = nil
+$personalize = YAML.load_file personalize if File.exist? personalize
+
+# - [ ] 6-square week view, weekend has links to both days
+# - [ ] iteration notes at the top
+
+# I could split into two BSE, one for current and another for end of the day processing
+# because big volume of pages makes on of them slow
+# left and right as separate files?
+# (free planner vs specific controls)
+# (agility support to replan less vs stability support to see patterns and be informed of right statuses)
+# (time use over time with plans vs outcomes and level visibility in time)
 
 # ~shrunk version? - last thing to have
 
@@ -31,9 +46,6 @@ require_relative 'lib/contour'
 this_name = File.basename(__FILE__).sub /\..*/, ''
 
 frame = -> w, h { Grid.new.apply(w,h).rect 1, 0, -2, -2 }
-
-WEEK_MON = %w[monday tuesday wednesday thursday friday saturday sunday]
-WEEK_SUN = %w[sunday monday tuesday wednesday thursday friday saturday]
 
 def configure_calendar days:, month_start:, week:
   month_start_weekday = week.index(month_start) or raise 'wrong :month_start given for the :week'
@@ -86,17 +98,19 @@ BSE = BlankSlatePDF.new(this_name) do
   item_pages = []
   item_details_pages = []
   week_pages = []
+  focused_week_pages = []
+  pageset_pages = []
 
   item_cell_to_page = {}
 
   draw_month_contour = -> _=nil {
     color 8 do
-      pdf.stroke_polygon *contour_points.map { |x| [x.x, x.y] }
+      pdf_stroke_polygon *contour_points.map { |x| [x.x, x.y] }
     end
   }
 
   draw_square = -> square {
-    pdf.stroke_polygon *square.points.map { |x| [x.x, x.y] }
+    pdf_stroke_polygon *square.points.map { |x| [x.x, x.y] }
     day = square.day.to_s
     (x, y) = square.pos
     text_at = grid.at x, y+2, corner: 0 # text needs that shift up the cell
@@ -150,7 +164,7 @@ BSE = BlankSlatePDF.new(this_name) do
         weekday = square.weekday
 
         (at, w, h, pos, dx, dy) = rects[weekday].fetch_values :at, :width, :height, :pos, :dx, :dy
-        pdf.stroke_rectangle at, w, h
+        pdf_stroke_rectangle at, w, h
 
         font $roboto do  # in this file can be deduplicated (the block)
           font_size step * 0.25 do
@@ -170,23 +184,65 @@ BSE = BlankSlatePDF.new(this_name) do
     end
   }
 
+  week_to_cell = -> week {
+    square = squares.reverse.find { |x| x.week == week }
+    pos = square.pos
+    week_cell = [*pos]
+    week_cell[1] -= 1
+    week_cell
+  }
+
+  # text line, print?
+  draw_line = -> cell, text, **props {
+    # Definetly squares abstraction need a look for more using it
+    text_at = grid.at cell[0], cell[1]+1, corner: 0 # text needs that shift up the cell
+    size = grid.by_x.step
+    color 8 do
+      font $roboto_light do
+        font_size size * 0.8 do
+          pad_x = 0
+          pad_y = size * 0.1
+          dy = size * -0.2
+          text_at[1] += dy
+          width = size * 12
+          pdf.text_box text, at: text_at, width: width-pad_x, height: size-pad_y, align: :left, valign: :bottom, **props
+        end
+      end
+    end
+  }
+
+  config_per_cell = {}
   item_cells = []
+  to_the_right = []
   18.times { |i|
-    item_cells << [-1.0, 18 - 1 - i] # at the left of the grid
+    cell = [-1.0, 18 - 1 - i] # at the left of the grid
+    item_cells << cell
+
+    config = ($personalize ? $personalize['left'][i] : {}) || {}
+    config['left'] = true
+    config_per_cell[cell] = config
   }
-  12.times { |i|
-    item_cells << [i, 18] # above the grid
-  }
-  #18.times { |i|
+  #12.times { |i|
+  #  item_cells << [i, 18] # above the grid
+  #}
   3.times { |i|
-    item_cells << [12, 18 - 1 - i] # at the right of the grid
+    cell = [12, 18 - 1 - i] # at the right of the grid
+    item_cells << cell
+    to_the_right << cell
     # pages are often turned + RM seem to have improved accidental hand recognition so no point in avoiding
     # at least to test how it goes
     # could cover RTL or left hand if it works-out well
+
+    config = ($personalize ? $personalize['right'][i] : {}) || {}
+    config['right'] = true
+    config_per_cell[cell] = config
   }
+
+  #item_cells = item_cells.take 1 # XXX
 
   # main pages
   page do
+    current_page.data = { root: true }
     root_page = current_page
 
     instance_eval &draw_month_contour
@@ -206,6 +262,8 @@ BSE = BlankSlatePDF.new(this_name) do
       end
     }
   end
+
+  # Mixing page ordering and ui rendering, separation could make sense
 
   # menu on main/overview pages
   ([root_page] + item_pages).each { |page|
@@ -230,6 +288,7 @@ BSE = BlankSlatePDF.new(this_name) do
           current_page.data = item_page.data.merge(day: day)
 
           draw_month_contour.call # no point in eval?
+
           color(8) { draw_square[square] }
           draw_grid.call
           double_back_arrow
@@ -289,17 +348,70 @@ BSE = BlankSlatePDF.new(this_name) do
     end
   }
 
+  # also but separately grouped
+  # generating focused week on month view pages
+  week_count = squares.last.week + 1 # from 0
+  item_pages.each { |item_page|
+    with_parent item_page do
+      week_count.times { |week|
+        bottom_square = squares.reverse.find { |x| x.week == week }
+
+        # dsl thing vs MyPage.add :tag do, dsl flateness seem nice though (explicitness and simplicity of insides therefore)
+        page do
+          focused_week_pages << current_page
+          current_page.data = item_page.data.merge(week: week, focus: true)
+
+          instance_eval &draw_days_squares
+
+          at = week_to_cell.call current_page.data[:week]
+          at = [*at]
+          at[0] += 0.5 # centered between two smaller cells
+
+          # Definetly squares abstraction need a look for more using it
+          text_at = grid.at at[0], at[1]+1, corner: 0 # text needs that shift up the cell
+          size = grid.by_x.step
+          color 8 do
+            font $roboto do
+              font_size size * 0.9 do
+                text = ?^
+                pad_x = 0
+                pad_y = 0
+                dy = size * -0.2
+                text_at[1] += dy
+                pdf.text_box text, at: text_at, width: size-pad_x, height: size-pad_y, align: :center, valign: :bottom
+              end
+            end
+          end
+          draw_grid.call
+          double_back_arrow
+
+          diamond item_page.data[:item_cell], corner: 0.5
+        end
+      }
+    end
+  }
+
   # linking week pages from parents
   week_pages.each { |page|
     revisit_page page.parent do
-      week = page.data[:week]
-      square = squares.reverse.find { |x| x.week == week }
-      pos = square.pos
-      week_cell = pos
-      week_cell[1] -= 1
-      link! [*week_cell, week_cell[0]+1, week_cell[1]], page
+      week_cell = week_to_cell.call page.data[:week]
+      #link! [*week_cell, week_cell[0]+1, week_cell[1]], page
+      link! week_cell, page
     end
   }
+
+  # linking focused week pages from parents
+  focused_week_pages.each { |page|
+    linked_pages = [page.parent] + focused_week_pages.select { |x| x.id != page.id && x[:item_cell] == page[:item_cell] }
+    linked_pages.each { |linked_page|
+      revisit_page linked_page do
+        week_cell = week_to_cell.call page.data[:week]
+        week_cell[0] += 1
+        link! week_cell, page
+      end
+    }
+  }
+  # ++ do render items links, week links, day square links
 
   # menu on week pages
   week_pages.each { |page|
@@ -320,6 +432,102 @@ BSE = BlankSlatePDF.new(this_name) do
       cell[1] -= 1
       that_page = week_pages.find { |x| x.data[:item_cell] == page.data[:item_cell] && x.data[:week] == square.week }
       link! [*cell, cell[0]+1, cell[1]], that_page
+    end
+  }
+
+  ### page-sets feature
+
+  page_set_layout = -> set_cell {
+    #at = week_to_cell.call current_page.data[:week]
+    at = set_cell.dup
+
+    text_at = grid.at at[0], at[1]+1, corner: 0 # text needs that shift up the cell
+    size = grid.by_x.step
+    color 8 do
+      font $roboto do
+        font_size size * 0.9 do
+          text = ?*
+          pad_x = 0
+          pad_y = 0
+          dy = size * -0.2
+          text_at[1] += dy
+          pdf.text_box text, at: text_at, width: size-pad_x, height: size-pad_y, align: :center, valign: :bottom
+        end
+      end
+    end
+  }
+
+  # generating
+  ([root_page] + item_pages + item_details_pages + week_pages).each { |parent|
+    next unless parent.data[:root] || to_the_right.include?(parent[:item_cell])
+
+    with_parent parent do
+      3.times { |set_index|
+        set_cell = [12-1 - 2 + set_index, 18]
+
+        9.times { |page_index|
+          page_cell = [page_index, 18]
+
+          page do
+            pageset_pages << current_page
+            current_page.data = parent.data.merge(set_cell: set_cell, page_cell: page_cell, page_index: page_index)
+
+            marker = current_page[:page_cell].dup
+            marker[1] -= 0.5 # between grid top row dots, not interactive and header may be above
+            mark2 marker, corner: 0.5
+
+            page_set_layout.call set_cell
+            double_back_arrow
+
+            draw_dots only: [{ y: 18 }]
+            draw_crosses
+            # ++ new grid instead
+
+            # between subsets menu
+            # (nothing else should be there since it is a separate and distanced/non-integrated into cross-navigation feature)
+            # vs just having same navigation as the parent page that just looses subset context?
+          end
+        }
+      }
+    end
+  }
+
+  # linking
+  pageset_pages.select { |x| x[:page_index] == 0 }.each { |page|
+    revisit_page page.parent do
+      link! page[:set_cell], page
+    end
+  }
+
+  ### feature: headers if given
+
+  # at root for item links
+  revisit_page root_page do
+    item_cells.each { |item_cell|
+      config = config_per_cell[item_cell]
+      header = config['header']
+      text_cell = item_cell.dup
+      text_cell[0] = 0
+      if config['left']
+        #text_cell[0] += 1
+        #text_cell[0] = 0
+        draw_line.call text_cell, header if header
+      end
+      if config['right']
+        #text_cell[0] = 0
+        draw_line.call text_cell, header, align: :right if header
+      end
+    }
+  end
+
+  # at any page as header
+  (item_pages + item_details_pages + week_pages + focused_week_pages + pageset_pages).each { |page|
+    next unless page.data[:item_cell]
+    item_cell = page[:item_cell]
+    config = config_per_cell[item_cell]
+    header = config['header']
+    revisit_page page do
+      draw_line.call [0, 18], header if header
     end
   }
 
@@ -397,7 +605,8 @@ have_month_versions = -> *months {
       bs.configure({ day_count: day_count }, deep: false)
       bs.configure({ start_weekday: start_weekday }, deep: false)
       bs.configure({ week: week }, deep: false)
-      bs.configure({ set_grid_name: :draw_stars}, deep: false)
+      #bs.configure({ set_grid_name: :draw_stars}, deep: false)
+      bs.configure({ set_grid_name: :draw_dots}, deep: false)
       # + additional note into metadata on date?
       bs
     }
@@ -406,10 +615,9 @@ have_month_versions = -> *months {
 
 # first day of the needed month dates
 result = result.flat_map(&have_month_versions[
-  Date.new(2023, 12, 1),
   Date.new(2024, 1, 1),
-  Date.new(2024, 2, 1),
-  Date.new(2024, 3, 1),
+  #Date.new(2024, 2, 1),
+  #Date.new(2024, 3, 1),
 ])
 
 #result = result.flat_map(&have_grid_versions)

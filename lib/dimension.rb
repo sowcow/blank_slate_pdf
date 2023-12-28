@@ -10,9 +10,10 @@ class Dimension
 
   # corner: 0 - 0.5 - 1
   def at index, corner: 0
-    unless index.is_a? Float # way to opt-out
-      index += divizor while index < 0
-    end
+    # no point since I use exact corner names:
+    #unless index.is_a? Float # way to opt-out
+    #  index += divizor while index < 0
+    #end
     index += corner
     @delta + step * index
   end

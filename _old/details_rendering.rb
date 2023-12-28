@@ -27,7 +27,7 @@ module DetailsRendering
   def revisit_page page, &block
     throw unless page.page_number
     pdf.go_to_page page.page_number
-    instance_eval &block
+    page.instance_eval &block
     go_last_page
   end
 
@@ -238,7 +238,7 @@ module DetailsRendering
     end
   end
 
-  def draw_stars except: :borders
+  def draw_crosses except: :borders
     if except == :borders
       except = []
     end
@@ -265,6 +265,56 @@ module DetailsRendering
           when x % 3 == grid.dx && y % 3 == grid.dy
             cross [x, y]
           else
+            #pdf.fill_rectangle sum.(grid.at(x, y), [-half_size,half_size]), dot_size, dot_size
+          end
+        }
+      }
+    end
+  end
+
+
+  def draw_stars except: :borders
+    if except == :borders
+      except = []
+    end
+
+    dot_size = 1
+    dot_color = ?0*6
+
+    sum = -> v1, v2 {
+      [v1[0] + v2[0], v1[1] + v2[1]]
+    }
+
+    half_size = dot_size / 2.0
+
+    color dot_color do
+      (0..grid.x).each { |x|
+        (0..grid.y).each { |y|
+          given = { x: x, y: y }
+          (gx, gy) = grid.at(x, y)
+          next if except_lines.any? { |(from, to)|
+            if from[0] == to[0]
+              arange = [from[1], to[1]].sort
+              range = Range.new *arange
+              gx == from[0] && range === gy
+            elsif from[1] == to[1]
+              arange = [from[0], to[0]].sort
+              range = Range.new *arange
+              gy == from[1] && range === gx
+            else
+              # skewed lines are not expected
+              false
+            end
+          }
+          next if except.any? { |rule|
+            rule.all? { |k, v|
+              v === given[k]
+            }
+          }
+          case
+          when x % 3 == grid.dx && y % 3 == grid.dy
+            cross [x, y]
+          else
             pdf.fill_rectangle sum.(grid.at(x, y), [-half_size,half_size]), dot_size, dot_size
           end
         }
@@ -273,7 +323,7 @@ module DetailsRendering
   end
 
   def draw_sand; draw_dots end
-  def draw_dots except: :borders
+  def draw_dots except: :borders, only: nil
     if except == :borders
       except = []
     end
@@ -291,7 +341,27 @@ module DetailsRendering
       (0..grid_x).each { |x|
         (0..grid_y).each { |y|
           given = { x: x, y: y }
+          (gx, gy) = grid.at(x, y)
+          next if except_lines.any? { |(from, to)|
+            if from[0] == to[0]
+              arange = [from[1], to[1]].sort
+              range = Range.new *arange
+              gx == from[0] && range === gy
+            elsif from[1] == to[1]
+              arange = [from[0], to[0]].sort
+              range = Range.new *arange
+              gy == from[1] && range === gx
+            else
+              # skewed lines are not expected
+              false
+            end
+          }
           next if except.any? { |rule|
+            rule.all? { |k, v|
+              v === given[k]
+            }
+          }
+          next if only && only.none? { |rule|
             rule.all? { |k, v|
               v === given[k]
             }
@@ -425,6 +495,23 @@ module DetailsRendering
     end
   end
 
+  def dot pos, corner: 0
+    (x, y) = grid.at(*pos, corner: corner)
+
+    dot_size = 1
+    dot_color = 0
+
+    half_size = dot_size / 2.0
+
+    at = Point[x, y]
+    at += Point[-half_size, half_size]
+
+    color dot_color do
+      #pdf.fill_circle [x, y], dot_size/2.0
+      pdf.fill_rectangle at.to_a, dot_size, dot_size
+    end
+  end
+
   def cross at, corner: 0
     (x, y) = grid.at(*at, corner: corner)
     r = step_x * 0.1
@@ -481,5 +568,20 @@ module DetailsRendering
     return true if x == 0 && y == grid_y-1 && device == RM && hand == RIGHT # blind spot because of round "show toolbar" button
     return true if x == 0 && y == grid_y-1 && device == RM && hand == LEFT && page_number > 1 # back button is there
     return true if x == grid_x-1 && y == grid_y-1 && device == RM && hand == RIGHT && page_number > 1 # back button
+  end
+
+  def pdf_stroke_polygon *points
+    (points + [points[0]]).each_cons(2).to_a.each { |pair|
+      add_except pair
+    }
+    pdf.stroke_polygon *points
+  end
+
+  def pdf_stroke_rectangle at, w, h
+    add_except [at, [at[0]+w, at[1]]]
+    add_except [[at[0]+w, at[1]], [at[0]+w, at[1]+h]]
+    add_except [[at[0]+w, at[1]+h], [at[0], at[1]+h]]
+    add_except [[at[0], at[1]+h], at]
+    pdf.stroke_rectangle at, w, h
   end
 end

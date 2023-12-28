@@ -1,3 +1,5 @@
+require_relative './point'
+
 module Contour
   # neat algorithm worked from the first run (except for floating point comparison and some omission)
   def self.sequence squares, step
@@ -72,8 +74,9 @@ module Contour
 end
 
 class Square < Struct.new :x, :y, :x2, :y2
-  def self.sized x, y, size=1
-    Square.new x, y, x+size, y+size
+  def self.sized x, y, size=1, size2=nil
+    size2 = size2 || size
+    Square.new x, y, x+size, y+size2
   end
 
   def points
@@ -83,12 +86,6 @@ class Square < Struct.new :x, :y, :x2, :y2
       Point[x2, y2],
       Point[x, y2],
     ]
-  end
-
-  class Point < Struct.new :x, :y
-    def to_s
-      to_a.map(&:round) * ?,
-    end
   end
 end
 

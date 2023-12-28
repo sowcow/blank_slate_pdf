@@ -15,6 +15,13 @@ class BlankSlatePDF
 
   attr_accessor :name
 
+  def add_except *a
+    current_page.add_except *a
+  end
+  def except_lines
+    current_page.except_lines
+  end
+
   def initialize name, &block
     @name = name
     @config = {}
@@ -151,6 +158,10 @@ class BlankSlatePDF
   end
 
   include DetailsRendering
+
+  def inspect
+    "BS(#@name)"
+  end
 end
 
 $Page_next_page_id = 0
@@ -161,9 +172,14 @@ class Page
   attr_reader :breadcrumbs
   attr_reader :page_number
   attr_accessor :data
+  attr_accessor :except_lines
 
   extend Forwardable
   delegate [:pdf, :grid_x, :get_parent, :grid_y, :grid, :page, :page_stack, :page_queue, :current_page, :hand, :device, :use_background] => :@context
+
+  def [] key
+    data.fetch key
+  end
 
   def initialize context, &block
     @id = 'page-' + $Page_next_page_id.to_s # to_s is mandatory
@@ -173,6 +189,7 @@ class Page
     @parent = get_parent
     @block = block
     @breadcrumbs = []
+    @except_lines = []
   end
 
   def render
@@ -180,5 +197,13 @@ class Page
     instance_eval &@block if @block
   end
 
+  def add_except pair
+    @except_lines.push pair
+  end
+
   include DetailsRendering
+
+  def inspect
+    "Page(#@id)"
+  end
 end

@@ -44,7 +44,9 @@ Pathname.glob(here + 'v2_configs/*.rb') do |x|
   load x
   $configs_loaded.each { |x|
     next if x.name.to_s =~ /BS-Habits/i # Released on github and stable
+    #next unless x.name.to_s =~ /ABS/i # XXX
     #next unless x.name.to_s =~ /BSE/i # XXX
+    next unless x.name.to_s =~ /NBS/i # XXX
     print x.name
     print '...'
     x.generate output
