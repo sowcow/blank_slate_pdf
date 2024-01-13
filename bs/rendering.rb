@@ -1,5 +1,36 @@
 require_relative 'fonts'
 
+# HSV values in [0..1[
+# returns [r, g, b] values from 0 to 255
+def hsv_to_rgb(h, s, v)
+  h_i = (h*6).to_i
+  f = h*6 - h_i
+  p = v * (1 - s)
+  q = v * (1 - f*s)
+  t = v * (1 - (1 - f) * s)
+  r, g, b = v, t, p if h_i==0
+  r, g, b = q, v, p if h_i==1
+  r, g, b = p, v, t if h_i==2
+  r, g, b = p, q, v if h_i==3
+  r, g, b = t, p, v if h_i==4
+  r, g, b = v, p, q if h_i==5
+
+  rgb = [(r*256).to_i, (g*256).to_i, (b*256).to_i]
+  hex = rgb.map { |x| x.to_s(16).rjust(2, '0') }.join
+
+  result = hex
+  result.define_singleton_method :rgb do rgb end
+  result
+end
+
+$color_generator_position = 0
+def generate_random_color
+  golden_ratio_conjugate = 0.618033988749895
+  $color_generator_position += golden_ratio_conjugate
+  $color_generator_position %= 1
+  hsv_to_rgb($color_generator_position, 1, 0.5)
+end
+
 module Rendering
   #def with color: nil, font: nil, font_size: nil, line_width: nil
   #  #
@@ -8,8 +39,15 @@ module Rendering
   # store priority and on nesting increment it
   # non-nested way too?
 
-  def polygon *a, **aa, &b
-    pdf.stroke_polygon *a, **aa, &b
+  def polygon *a
+    a = a.first if a.size == 1 && a[0].length > 2
+    pdf.stroke_polygon *a
+  end
+  alias poly polygon
+
+  def fill_poly *a
+    a = a.first if a.size == 1 && a[0].length > 2
+    pdf.fill_polygon *a
   end
 
   def link_back
@@ -44,7 +82,7 @@ module Rendering
 
       at = link_cell
       rect = [at[0], at[1], at[0] + link_cell_side, at[1] - link_cell_side]
-      link rect, page.parent, raw: true
+      link rect, page.parent, raw: true, ignore_for_overview_structure: true
     }
   end
   
@@ -55,12 +93,33 @@ module Rendering
   end
 
   # could use At / Pos to differentiate instead of raw
-  def link given, target, raw: false
+  def link given, target, raw: false, ignore_for_overview_structure: false
     given = given.to_a
     given = given.count == 2 ? given+given : given
     square = grid.rect *given
 
-    square = given if raw
+    square = Rect.new(*given) if raw
+
+    if $just_overview
+      s = Square[*square.margin] # different squares...
+      $tag_colors ||= {}
+      $tag_colors[target.tag] ||= generate_random_color
+      c = $tag_colors[target.tag]
+      page.local[:overviews] ||= []
+      pdf.transparent 0.5 do
+        color c do
+          coords = s.points.map &:to_a
+          unless page.local[:overviews]&.include? coords
+            fill_poly coords
+            page.local[:overviews].push coords
+            unless ignore_for_overview_structure
+              page.local[:links] ||= []
+              page.local[:links] << target
+            end
+          end
+        end
+      end
+    end
 
     pdf.link_annotation(
       square.to_a,

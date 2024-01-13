@@ -29,6 +29,7 @@ class BS::Context
     return @current_page unless block
     raise "new page type expected" unless type
     new_page = BS::Page.add self, data: { type: type }.merge(data)
+    new_page.tag = type
     new_page.visit &block
   end
 

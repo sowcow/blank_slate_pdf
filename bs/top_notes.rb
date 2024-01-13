@@ -1,15 +1,19 @@
-module BS
-  module TopNotes
-    extend self
+require_relative 'base'
 
-    def generate count: 12, parent: nil, prefix: 'note', &block
+module BS
+  class TopNotes < Base
+    KEY=:top_note
+
+    def generate count: 12, parent: nil, &block
       parent = parent || BS.pages.get(:root)
       area = $bs.g.lt.up.select_right(count)
 
       area.each { |pos|
+        first = nil
         12.times { |note_page_index|
-          data = { :"#{prefix}_pos" => pos }
-          parent.child_page :note, data do
+          data = { key(:pos) => pos }
+          parent.child_page key, data do
+            first ||= page
             link_back
 
             asterisk pos
@@ -20,15 +24,17 @@ module BS
             instance_eval &block if block
           end
         }
+        first.local[:pages] = 12
       }
       $bs.instance_eval { @notes = area }
     end
 
     def integrate pages=BS.pages
+      that = self
       pages.each { |page|
         page.visit do
           @notes.each { |xy|
-            that_page = pages.find { |x| x.data[:note_pos] == xy }
+            that_page = pages.find { |x| x.data[that.key :pos] == xy }
             link xy, that_page
           }
         end

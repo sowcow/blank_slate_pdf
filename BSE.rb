@@ -1,11 +1,12 @@
 require_relative 'bs/all'
 BS.will_generate if __FILE__ == $0
 
-year = 2024
-month = 1
-
+# - do I stick corner-notes on week change?
 # - double-run day pagination?
 # - contour is noisy so no point now in it (file with algorithm I'll keep)
+
+year = 2024
+month = 1
 
 path = File.join __dir__, 'output'
 BS.setup name: 'BSE', path: path, description: <<END
@@ -37,18 +38,22 @@ end
 month = BS::Month.new.setup year: year, month: month, parent: BS.page(:root)
 
 BS::Items.generate left: month.week_squares.count do
+  page.tag = :week
   BS::Items[:subitem].generate parent: page, right: 18, include_parent: true do
+    page.tag = :week_aspect if page.tag == :subitem
     instance_eval &draw_grid
   end
 end
 
 month.generate do
   BS::Pagination.generate page do
+    page.tag = :day_note
     instance_eval &draw_grid
   end
 end
 
 BS::CornerNotes.generate BS.pages.xs(:item) do
+  page.tag = :week_note
   instance_eval &draw_grid
 end
 

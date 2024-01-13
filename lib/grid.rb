@@ -94,7 +94,12 @@ class Rect < Struct.new :x, :y, :x2, :y2
     [x, y, x2, y2]
   end
 
-  def margin *a
-    to_a.margin *a
+  def margin delta=1
+    Rect[
+      x + delta,
+      y + delta,
+      x2 - delta,
+      y2 - delta,
+    ]
   end
 end

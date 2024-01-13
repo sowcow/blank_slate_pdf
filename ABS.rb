@@ -31,12 +31,14 @@ end
 
 is_left = -> page { page[:item_pos].x == -1 }
 
-BS::Items.generate left: 18, right: 18 do
+BS::Items.generate left: 18, right: 3 do
   if is_left[page]
+    page.tag = :left_item
     BS::Pagination.generate page do
       instance_eval &draw_grid
     end
   else
+    page.tag = :right_item
     instance_eval &draw_grid
   end
 end

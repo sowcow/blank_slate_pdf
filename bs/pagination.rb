@@ -8,6 +8,7 @@ module BS
     # so given block renders that page and all the rest of them
     #
     def generate prototype, count: 12, &block
+      prototype.local[:pages] = count
       prototype.data.merge! page_index: 0
       prototype.visit &block if block
       parent = prototype.parent || prototype
@@ -23,7 +24,9 @@ module BS
 
         # same type and data
         data = prototype.data.merge page_index: i
+        tag = prototype.tag
         parent.child_page prototype[:type], data do
+          page.tag = tag
           link_back
           mark2 pos.down(0.5), corner: 0.5
           instance_eval &block if block

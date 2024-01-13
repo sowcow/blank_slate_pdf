@@ -27,6 +27,7 @@ end
 
 BS.pages.xs(:item).each { |parent|
   BS::Items[:item2].generate parent: parent, right: 18 do
+    page.tag = :subitem
     instance_eval &draw_grid
   end
 }
@@ -36,7 +37,7 @@ BS::TopNotes.generate do
 end
 
 BS::Items.integrate
-BS::Items[:item2].integrate BS.pages.drop(1).to_sa, stick: [
+BS::Items[:item2].integrate BS.pages.reject { |x| x[:type] == :root || x[:type] == :top_note }.to_sa, stick: [
   :item_pos
 ]
 BS::TopNotes.integrate
