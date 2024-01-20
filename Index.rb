@@ -1,8 +1,8 @@
 require_relative 'bs/all'
-#END { Index.make name: 'Index_DOT', grid: ?D } if __FILE__ == $0
+END { Index.make name: 'Index_12x12_DOT', grid: ?D, scale: 1 } if __FILE__ == $0
 
 module Index
-  def self.make name:, grid: 
+  def self.make name:, grid: ,scale: 1.5
 #####
 
 path = File.join __dir__, 'output'
@@ -31,8 +31,8 @@ END
 BS.grid 16
 
 # kind of area
-size = 8 #12 / 1.5
-square = BS::CellsGrid.new x: 0, y: 16-1-12, w: size, h: size, scale: 1.5
+size = (12 / scale).to_i
+square = BS::CellsGrid.new x: 0, y: 16-1-12, w: size, h: size, scale: scale
 
 BS.page :root do
   page.tag = 'Index.pdf'
@@ -69,7 +69,9 @@ root.visit do
       mark2 marker_pos, corner: 0.5
       draw_grid.call bg.take
     end
-    link pos.expand(0.5, 0.5), child
+    delta = scale - 1
+    pos = pos.expand delta, delta
+    link pos, child
   }
 end
 

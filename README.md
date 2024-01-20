@@ -9,7 +9,10 @@ PDFs for RM.
 - [Days.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days_MIX.pdf)
 - [Projects.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Projects_MIX.pdf)
 - [Index.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_MIX.pdf)
+- [Index_12x12.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_12x12_MIX.pdf)
 - [All other background versions ('cdot' version has higher density of dots than 'DOT' version)](https://github.com/sowcow/blank_slate_pdf/releases/latest)
+
+NOTE: closed RM toolbar is needed to see the back link at the top.
 
 # Current stable state of the Project
 
@@ -82,6 +85,7 @@ Usage pattern:
 - divide the grid into parts and write topics to have this type grouping on creation of new notes
 
 ![Structure overview](output/COLOR_Index_MIX.png?raw=true)
+![Structure overview](output/COLOR_Index_12x12_MIX.png?raw=true)
 
 # Usage Assumptions
 
@@ -93,6 +97,7 @@ Usage pattern:
 - download and extract needed fonts as expected by `bs/fonts.rb`.
 - have ruby installed and run `bundle` in the root
 - run `rake`, check `output/` dir
+- for development some files generate PDFs by just running `ruby <FileName>.rb`
 
 # Changelog
 
