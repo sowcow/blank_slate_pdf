@@ -5,8 +5,16 @@ class Array
     SearchableArray.call self
     self
   end
+
+  # place+-
+  def visit &block
+    each do |p|
+      p.visit &block
+    end
+  end
 end
 
+# refinements are stable yet? 10 years ago they were not...
 module SearchableArray
   extend self
 
@@ -22,7 +30,7 @@ module SearchableArray
 
     def array.xs matcher
       matcher = SearchableArray.expand_matcher matcher
-      select &matcher
+      select(&matcher).to_sa
     end
   end
 

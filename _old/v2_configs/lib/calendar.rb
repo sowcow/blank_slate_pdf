@@ -11,8 +11,14 @@ class MonthCalendar
     day_count = date.next_month.prev_day.day
 
     week = WEEK_MON
-    wday = date.wday == 0 ? 7 : date.wday - 1
+    wday = date.wday
+    wday = wday - 1
+    wday = 6 if wday < 0
     start_weekday = week[wday]
+
+    if !start_weekday
+      p week, wday, date.wday
+    end
 
     month_start_weekday = week.index(start_weekday) or raise 'wrong :month_start given for the :week'
 

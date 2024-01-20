@@ -11,6 +11,8 @@ module Positioning
     case which
     when nil
       @grid
+    when 16
+      @grid = Grid.new(x: 12, y: 16).apply(pdf_width, pdf_height)
     when 18
       @grid = Positioning.grid_portrait_18_padded(pdf_width, pdf_height)
     else

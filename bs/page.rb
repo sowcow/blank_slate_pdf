@@ -31,6 +31,7 @@ class Page
 
   def visit &block
     @context.visit_page self, &block
+    self
   end
 
   def dest_id
@@ -46,6 +47,7 @@ class Page
     page = Page.add @context, parent: self, data: data.merge({ type: type }).merge(given_data)
     page.tag = type
     page.visit &block if block
+    page
   end
 end
 end

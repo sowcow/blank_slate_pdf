@@ -9,7 +9,7 @@ module BS
 
       pagination = $bs.g.tl.up.select_right(12)
 
-      parents.each { |parent|
+      [*parents].each { |parent|
         first_child = nil
         pagination.each { |pos|
           parent.child_page key do

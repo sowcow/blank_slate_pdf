@@ -1,6 +1,10 @@
 require_relative 'bs/all'
 BS.will_generate if __FILE__ == $0
 
+# +render day/week square in corner notes there too
+
+# - no corner notes needed with subitems everywhere?
+
 # - do I stick corner-notes on week change?
 # - double-run day pagination?
 # - contour is noisy so no point now in it (file with algorithm I'll keep)
@@ -10,6 +14,8 @@ month = 1
 
 path = File.join __dir__, 'output'
 BS.setup name: 'BSE', path: path, description: <<END
+  TODO: update
+  ...
   Blank Slate Exec PDF.
   Builds upon existing Blank Slate PDF patterns and adds time dimension explicitly.
   Root page - month view with an option to go into day details notes.
@@ -20,6 +26,8 @@ BS.setup name: 'BSE', path: path, description: <<END
   In the project language weeks are items on the left and habits/whatever are subitems on the right.
   There are corner-notes per week.
   ---
+  TODO: update
+  ...
   UI patterns:
   - RM user should have toolbar closed
   - file-scoped notes are above the grid
@@ -27,72 +35,188 @@ BS.setup name: 'BSE', path: path, description: <<END
   - item-scoped corner notes are in the upper-right corner of the grid
   - pagination is not UI-interactive, only page turning is meant
 END
-BS.grid 18
 
-draw_grid = -> _ { draw_dots } # want to postpone with smart dots avoiding lines collision noise
+draw_grid = -> { $bs.draw_dots } # want to postpone with smart dots avoiding lines collision noise
 
 BS.page :root do
-  instance_eval &draw_grid
+  draw_grid.call
 end
 
 month = BS::Month.new.setup year: year, month: month, parent: BS.page(:root)
 
-BS::Items.generate left: month.week_squares.count do
-  page.tag = :week
-  BS::Items[:subitem].generate parent: page, right: 18, include_parent: true do
-    page.tag = :week_aspect if page.tag == :subitem
-    instance_eval &draw_grid
-  end
-end
+# habits special page, 2x density
+BS.pages.last.child_page :habits do
+  days_count = month.squares.count
 
-month.generate do
-  BS::Pagination.generate page do
-    page.tag = :day_note
-    instance_eval &draw_grid
-  end
-end
+  limit_y = g.ys.at(days_count) / 2.0
 
-BS::CornerNotes.generate BS.pages.xs(:item) do
-  page.tag = :week_note
-  instance_eval &draw_grid
-end
+  # bar
+  h = limit_y
+  w = g.xs.step / 2.0
 
-BS::TopNotes.generate do
-  instance_eval &draw_grid
-end
+  (12).times { |ax|
+    axx = ax + 0.5
+    x = g.xs.at ax
+    xx = g.xs.at axx
+    y0 = g.ys.at 0
+    y1 = g.ys.at g.h
 
-BS::Items.integrate stick: [ :subitem_pos ]
-BS::Items[:subitem].integrate stick: [ :item_pos ]
-BS::TopNotes.integrate
-month.integrate
-
-# corner notes are accessible from sub-items too
-BS.pages.xs(:subitem).each { |subitem|
-  corner_note = BS.pages.xs(:corner_note).find { |x|
-    x.parent == subitem.parent
+    if ax.even?
+      c = (ax / 12.0 * 255).to_i.to_s(16).rjust(2, ?0) * 3
+      color c do
+        pdf.fill_rectangle [xx, h], w, h
+      end
+    end
+    color 8 do
+      pdf.line x, y0, x, y1
+      pdf.line xx, y0, xx, limit_y
+      pdf.stroke
+    end
   }
-  subitem.visit do
-    BS::CornerNotes.link corner_note
+  month.squares.reverse.each_with_index { |square, ay|
+    ay += 1
+    ay = ay / 2.0
+    y = g.ys.at ay
+    xs = []
+    12.times { |i|
+      xs << [i, i + 0.5]
+    }
+    xs.each { |(from, to)|
+      x0 = g.xs.at from
+      x1 = g.xs.at to
+      color 8 do
+        pdf.line x0, y, x1, y
+        pdf.stroke
+      end
+    }
+
+    if square.weekday == 0 # Monday
+      x0 = g.xs.at 0
+      x1 = g.xs.at g.w
+      line_width 1.5 do
+        color 8 do
+          pdf.line x0, y, x1, y
+          pdf.stroke
+        end
+      end
+    end
+  }
+end
+
+item_count = 18 - 6 # more space for fingers, squareness++
+
+item_generation = -> key { proc do
+  BS::Pagination.generate page do
+    draw_grid.call
+  end
+  BS::Items[key].generate grid_left: item_count, parent: page do
+    draw_grid.call
+    if page[:"#{key}_index"] == item_count - 1
+      x = g.xs.at 12
+      y0 = g.ys.at 0
+      y1 = g.ys.at g.h
+      color 8 do
+        pdf.line x, y0, x, y1
+      end
+    end
+  end
+end
+}
+
+BS::Items[:week].generate area: $bs.g.bl.down.select_right(month.week_squares.count) do
+  # unreachable items, custom integration anyway
+  draw_grid.call
+end
+
+# wtf pages reoredering?
+month.generate do
+  page.tag = :day_overview
+  draw_grid.call
+end
+
+#BS::CornerNotes.generate BS.pages.xs(:month_day) do
+#  draw_grid.call
+#end
+#BS::CornerNotes.generate BS.pages.xs(:week) do
+#  draw_grid.call
+#end
+
+
+# no subitems per day?
+# no subitems per week?
+
+# no idea if I'll have it after the habits part
+# +-have one exceptional not linked item (:hidden/hide data flag) if space/performance allows
+BS::Items.generate left: 4, space_y: 1, &item_generation[:subitem]
+BS::Items.generate top: 4, space_x: 1, &item_generation[:subitem]
+BS::Items.generate right: 1, space_y: 1, &item_generation[:subitem]
+
+have_corner_items = -> parent, key {
+  BS::Items[key].generate area: [$bs.g.tr], parent: parent do
+    BS::Pagination.generate page do
+      draw_grid.call
+    end
   end
 }
-# manually integrating since I used items manually
-BS.pages.xs(:item).each { |week_page|
-  index = week_page[:item_index]
+
+BS.pages.xs(:month_day).each { |parent| # naming it page => obscure behavior (overrides method name)
+  have_corner_items.call parent, :day_note
+  #BS::Items[:day_note].generate area: [$bs.g.tr], parent: parent do
+  #  BS::Pagination.generate page do
+  #    draw_grid.call
+  #  end
+  #end
+    #, &item_generation[:day_subitem]
+ # do
+ #   BS::Pagination.generate page do
+ #     draw_grid.call
+ #   end
+ # end
+  #BS::Items.generate right: 1, space_y: 1, &item_generation[:day_subitem], parent: page
+}
+BS.pages.xs(:week).each { |parent|
+  have_corner_items.call parent, :week_note
+}
+
+
+
+
+BS::Items[:day_note].integrate (BS.xs(:month_day)+BS.xs(:day_note)).to_sa, stick: [:month_square]
+BS::Items[:week_note].integrate (BS.xs(:week)+BS.xs(:week_note)).to_sa, stick: [:week_index]
+
+#p BS.pages.last.data #xs(:day_subitem).count
+#exit 0
+#BS::Items[:day_note].integrate BS.pages.xs(:day_subitem)
+#BS::Items[:day_subitem].integrate (BS.pages.xs(:day_note) + BS.pages.xs(:day_subitem)).to_sa
+BS::Items.integrate BS.pages.reject { |x| x[:type] == :habits }.to_sa
+xs = BS.pages.select { |x| %i[ item subitem ].include? x[:type] }
+BS::Items[:subitem].integrate xs.to_sa, stick: [
+  :item_pos
+]
+#xs = BS.pages.select { |x| %i[ day_note day_subitem ].include? x[:type] }
+##BS::Items[:day_subitem].integrate xs.to_sa, stick: [
+#  :month_square # means day
+#]
+month.integrate
+month.breadcrumb BS.xs(:day_note)
+# custom integration of weeks
+BS.pages.xs(:week).each { |week_page|
+  index = week_page[:week_index]
   pos = month.week_squares[index]
   week_page.parent.visit do
     link pos.expand(1, 0), week_page
   end
 }
-BS.pages.xs(:month_day).each { |day_page|
+(BS.xs(:month_day) + BS.xs(:day_note)).each { |day_page|
   square = day_page[:month_square] # day square it is
-  week_page = BS.pages.xs(:item).find { |x| x[:item_index] == square.week }
+  week_page = BS.pages.xs(:week).find { |x| x[:week_index] == square.week }
   day_page.visit do
     link square.pos.down.expand(1, 0), week_page
   end
 }
 # rendering week pages + linking
-(BS.pages.xs(:item) + BS.pages.xs(:subitem)).each { |week_page|
-  week_days = month.squares.select { |x| x.week == week_page[:item_index] }
+BS.pages.xs(:week).each { |week_page|
+  week_days = month.squares.select { |x| x.week == week_page[:week_index] }
   week_page.visit do
     size = g.w / 2
     had_saturday = false
@@ -146,5 +270,25 @@ BS.pages.xs(:month_day).each { |day_page|
         # movable into month module +-, still abstractions around numbers update is of interest
       end
     }
+  end
+}
+
+__END__
+
+BS::CornerNotes.generate BS.pages.xs(:item) do
+  page.tag = :week_note
+  instance_eval &draw_grid
+end
+
+###BS::Items.integrate stick: [ :subitem_pos ]
+###BS::Items[:subitem].integrate stick: [ :item_pos ]
+
+# corner notes are accessible from sub-items too
+BS.pages.xs(:subitem).each { |subitem|
+  corner_note = BS.pages.xs(:corner_note).find { |x|
+    x.parent == subitem.parent
+  }
+  subitem.visit do
+    BS::CornerNotes.link corner_note
   end
 }

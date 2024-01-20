@@ -1,3 +1,4 @@
 /fonts
 *.pdf
 _output
+*.dot

@@ -15,10 +15,14 @@ module BS
   class Month < Base
     KEY = :month
 
-    def setup year: , month: , parent: nil
+    attr_reader :month
+
+    def setup year: , month: , parent: nil, dy: nil, font_color: nil
       @year = year
       @month = month
       @parent = parent
+      @dy = dy if dy
+      @font_color = font_color if font_color
       self
     end
 
@@ -61,6 +65,9 @@ module BS
         (week, weekday, day) = d.fetch_values :week, :weekday, :day
         x = week * 2
         y = 18 - weekday * 2 - 2 # cell size
+        if @dy
+          y += @dy
+        end
         at = $bs.g.at x, y, corner: 0
         at2 = $bs.g.at x + 2, y + 2, corner: 0
         size = at2[0] - at[0]
@@ -85,12 +92,13 @@ module BS
         # day cell size
         step = g.xs.at(2, corner: 1) - g.xs.at(1, corner: 0)
 
-        color 8 do
           polygon *square.points.map { |x| [x.x, x.y] }
           day = square.day.to_s
           (x, y) = square.pos.to_a
           text_at = grid.at x, y+2, corner: 0 # text needs that shift up the cell
-          font $roboto do
+
+          color @font_color || ?8 do
+          font $roboto_light do
             font_size step * 0.25 do
               text = day.to_s
               pad_x = step * 0.05
@@ -98,27 +106,38 @@ module BS
               pdf.text_box text, at: text_at, width: step-pad_x, height: step-pad_y, align: :right, valign: :bottom
             end
           end
-        end
+          end
       end
     end
 
+    def breadcrumb pages
+      up = self
+      pages.each { |page|
+        square = page[key :square]
+        page.visit do
+          up.draw_square square
+        end
+      }
+    end
+
     # goes across pages, adds visuals and links
-    def integrate pages=BS.pages #, this: false
+    def integrate pages=BS.pages, bread: false  #, this: false
       #return $bs.data[key].integrate pages, this: true unless this
       days = pages.xs(key :day)
 
       already_linked = {}
       up = self
 
+      breadcrumb days if bread
+
       days.each { |page|
         square = page[key :square]
-        page.visit do
-          up.draw_square square
-        end
+        pos = square.pos
+        #pos = pos.up(@dy)
 
         next if already_linked[[square, page.parent]]
         page.parent.visit do
-          link square.pos.expand(1, 1), page
+          link pos.expand(1, 1), page
         end
         already_linked[[square, page.parent]] = true
       }

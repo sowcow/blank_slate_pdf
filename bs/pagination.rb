@@ -8,8 +8,8 @@ module BS
     # so given block renders that page and all the rest of them
     #
     def generate prototype, count: 12, &block
-      prototype.local[:pages] = count
-      prototype.data.merge! page_index: 0
+      prototype.local[:pages] = count # overview uses it...
+      prototype.data.merge! page_index: 0, page_count: count
       prototype.visit &block if block
       parent = prototype.parent || prototype
 
@@ -17,13 +17,14 @@ module BS
       pagination.each_with_index { |pos, i|
         if i == 0
           prototype.visit do
+            #require 'pry'; binding.pry
             mark2 pos.down(0.5), corner: 0.5
           end
           next
         end
 
         # same type and data
-        data = prototype.data.merge page_index: i
+        data = prototype.data.merge page_index: i, page_count: count
         tag = prototype.tag
         parent.child_page prototype[:type], data do
           page.tag = tag

@@ -22,6 +22,7 @@ class BS::Context
     SearchableArray.call @pages
     @current_page = nil
     @next_page_id = 1
+    grid 18 # default established in the project, portrait format
   end
 
   # both getter and creator of pages
@@ -41,6 +42,7 @@ class BS::Context
     self.current_page = page
     instance_eval &block
     self.current_page = prev
+    page
   end
 
   def current_page= page
@@ -65,6 +67,10 @@ class BS::Context
 
   def inspect
     "(BS::Context)"
+  end
+
+  def xs *a
+    pages.xs *a
   end
 
   include Pdf

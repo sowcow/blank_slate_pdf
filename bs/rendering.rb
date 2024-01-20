@@ -1,5 +1,102 @@
 require_relative 'fonts'
 
+module Prawn
+  module Graphics
+    module Patterns
+      def create_crosses_pattern r, x, y, w, h, count: 4, thickness: 1.0, key:
+        key = "SP#{key}"
+        patterns = page.resources[:Pattern] ||= {}
+        unless patterns[key]
+          dx = w / count.to_f
+          dy = dx
+          #dy = (h - thickness) / count.to_f
+
+          art_pat= ref!(
+            #Type: '/Pattern',
+            PatternType: 1,
+            PaintType: 1,
+            TilingType: 2,
+            BBox: [ -10,-10,x+10,y+10 ],
+            XStep: dx,
+            YStep: dy,
+            Matrix: [ 1.0,0.0,0.0,1.0,0.0,0.0 ],
+            PatternColors: [1.0, 0.0, 0.0]
+          )
+
+          stream= PDF::Core::Stream.new
+          stream << "0.53 0.53 0.53 rg"
+          stream << " #{x-r} #{y} #{2*r+thickness} #{thickness} re"
+          stream << " #{x} #{y-r} #{thickness} #{2*r+thickness} re"
+          stream << "\nf"
+
+          art_pat.stream = stream
+
+          patterns[key] = art_pat
+        end
+
+        type= :fill
+        operator =
+          case type
+          when :fill
+            'scn'
+          when :stroke
+            'SCN'
+          else
+            raise ArgumentError, "unknown type '#{type}'"
+          end
+
+        set_color_space type, :Pattern
+        renderer.add_content "/#{key} #{operator}"
+      end
+
+      def create_dotted_pattern x, y, w, h, count: 12, thickness: 1.0, key:
+        key = "SP#{key}"
+        patterns = page.resources[:Pattern] ||= {}
+        unless patterns[key]
+          dx = w / count.to_f
+          dy = dx
+          #dy = (h - thickness) / count.to_f
+
+          art_pat= ref!(
+            #Type: '/Pattern',
+            PatternType: 1,
+            PaintType: 1,
+            TilingType: 2,
+            BBox: [ -10,-10,x+10,y+10 ],
+            XStep: dx,
+            YStep: dy,
+            Matrix: [ 1.0,0.0,0.0,1.0,0.0,0.0 ]
+          )
+
+          stream= PDF::Core::Stream.new
+          stream << "#{x} #{y} #{thickness} #{thickness} re"
+          stream << "\nf"
+
+          art_pat.stream = stream
+
+          patterns[key] = art_pat
+        end
+
+        type= :fill
+        operator =
+          case type
+          when :fill
+            'scn'
+          when :stroke
+            'SCN'
+          else
+            raise ArgumentError, "unknown type '#{type}'"
+          end
+
+        set_color_space type, :Pattern
+        renderer.add_content "/#{key} #{operator}"
+      end
+
+    end
+  end
+end
+
+
 # HSV values in [0..1[
 # returns [r, g, b] values from 0 to 255
 def hsv_to_rgb(h, s, v)
@@ -45,6 +142,21 @@ module Rendering
   end
   alias poly polygon
 
+  def draw_grid key
+    case key
+    when ?D then draw_dots
+    when ?S then draw_stars
+    when ?L then draw_lines
+    when ?G then draw_lines cross: true
+    when ?B then :noop
+    when ?d then draw_dots_compact
+    when ?l then draw_lines_compact
+    when ?g then draw_lines_compact cross: true
+    else
+      raise "Unexpected grid to draw: #{key}"
+    end
+  end
+
   def fill_poly *a
     a = a.first if a.size == 1 && a[0].length > 2
     pdf.fill_polygon *a
@@ -52,6 +164,8 @@ module Rendering
 
   def link_back
     text = ?↑
+    grid = Positioning.grid_portrait_18_padded pdf_width, pdf_height
+
     dx = grid.xs.step
     dy = grid.ys.step
     bigger_cell = pdf_width / 12
@@ -100,7 +214,7 @@ module Rendering
 
     square = Rect.new(*given) if raw
 
-    if $just_overview
+    if $colored
       s = Square[*square.margin] # different squares...
       $tag_colors ||= {}
       $tag_colors[target.tag] ||= generate_random_color
@@ -136,6 +250,35 @@ module Rendering
     end
   end
 
+  def text_at pos, text, align: nil
+    text_at = grid.at *pos.up, corner: 0
+    further_at = grid.at *pos.up, corner: 1
+    size = grid.xs.step
+
+      font $roboto_light do
+        font_size size * 0.8 do
+          #pad_x = 0 ~width or pos
+          pad_y = 0
+          dy = size * -0.1 # manual centering
+          text_at[1] += dy # again? because alignment or what?
+
+          width = nil #size-pad_x #...
+          case align
+          when :left
+            width = pdf_width - text_at[0] # full width, no aligning-right/centering then
+          when :right
+            text_at[0] = 0
+            width = further_at[0]
+          end
+
+          align = :left if !align
+
+          pdf.text_box text, at: text_at, width: width, height: size-pad_y, align: align, valign: :bottom
+          #pdf.text_box text, at: text_at, width: size-pad_x, height: size-pad_y, align: :center, valign: :center
+        end
+      end
+  end
+
   def asterisk pos
     text_at = grid.at *pos.up, corner: 0
     size = grid.xs.step
@@ -159,12 +302,15 @@ module Rendering
     end
   end
 
-  def diamond at, corner: 0
+  def diamond at, corner: 0, fill: false
     (x, y) = grid.at(*at, corner: corner)
     r = grid.xs.step * 0.1
 
     color 8 do
       pdf.stroke_polygon [x - r, y], [x, y + r], [x + r, y], [x, y - r]
+      if fill
+        pdf.fill_polygon [x - r, y], [x, y + r], [x + r, y], [x, y - r]
+      end
     end
   end
 
@@ -244,9 +390,90 @@ module Rendering
     pdf.font_size prev if prev
   end
 
-  def draw_dots border: false
+  def draw_lines_compact cross: false, max_y: nil
+    if g.h == 16
+      return draw_lines cross: cross, step: 2, max_y: max_y
+    end
+    x0 = g.xs.at 0
+    y0 = g.ys.at 0
+
+    grid_16_step = g.ys.at(18) / 15.0 # up to actually be on the corner point, 10x15 is what is left from 16 height grid there
+    step = grid_16_step / 2
+
+    xs = []
+    ys = []
+    (10*2 + 1).times { |ax| # + border
+      x = x0 + ax * step
+      xs << x
+    }
+    (15*2 + 1).times { |ay|
+      y = y0 + ay * step
+      ys << y
+    }
+
+    ys.each { |y|
+      x0 = grid.xs.at 0
+      x1 = grid.xs.at grid.w
+
+      pdf.line [x0, y], [x1, y]
+    }
+
+    cross and xs.each { |x|
+      y0 = grid.ys.at 0
+      y1 = grid.ys.at grid.h
+
+      pdf.line [x, y0], [x, y1]
+    }
+
+    line_width 0.5 do
+      color ?a do
+        pdf.stroke
+      end
+    end
+  end
+
+  def draw_dots_compact max_y: grid.h
+    if g.h == 16
+      return draw_dots step: 2, max_y: max_y
+    end
+
+    x0 = g.xs.at 0
+    y0 = g.ys.at 0
+
+    grid_16_step = g.ys.at(18) / 15.0 # up to actually be on the corner point, 10x15 is what is left from 16 height grid there
+    step = grid_16_step / 2
+
+    positions = []
+    (10*2 + 1).times { |ax| # + border
+      (15*2 + 1).times { |ay|
+        x = x0 + ax * step
+        y = y0 + ay * step
+        positions << Pos[x, y]
+      }
+    }
+
+    dot_size = 1
+    dot_color = 0
+
+    shift = dot_size / 2.0
+
+    color dot_color do
+      positions.each { |pos|
+        #(gx, gy) = grid.at pos
+        pdf.fill_rectangle [pos.x - shift, pos.y + shift], dot_size, dot_size
+      }
+    end
+  end
+
+
+  def draw_dots border: false, max_y: grid.h, step: 1
     xs = g.tl.select_right(grid.w + 1).map &:x
-    ys = g.bl.select_up(grid.h + 1).map &:y
+    ys = g.bl.select_up(max_y + 1).map &:y
+
+    if step > 1
+      xs = xs.flat_map { |x| step.times.map { |i| x + i * 1/step.to_f } }
+      ys = ys.flat_map { |y| step.times.map { |i| y + i * 1/step.to_f } }
+    end
 
     positions = []
     xs.each { |x|
@@ -254,6 +481,10 @@ module Rendering
         positions << Pos[x, y]
       }
     }
+
+    if max_y
+      positions.reject! { |pos| pos.y > max_y }
+    end
 
     if border
       xs = [xs.first, xs.last]
@@ -301,22 +532,36 @@ module Rendering
     end
   end
 
-  def draw_lines
-    color 0 do
-      (0..grid.h).each { |y|
+  def draw_lines cross: false, step: 1, max_y: g.h
+    (0..max_y * step).each { |y|
+      y /= step.to_f
 
-        x0 = grid.xs.at 0
-        x1 = grid.xs.at grid.x
-        y0 = grid.ys.at y, corner: 0
+      x0 = grid.xs.at 0
+      x1 = grid.xs.at grid.w
+      y0 = grid.ys.at y, corner: 0
 
-        line_width 0.5 do
-          color ?c do
-            pdf.line [x0, y0], [x1, y0]
-            pdf.stroke
-          end
+      line_width 0.5 do
+        color ?a do
+          pdf.line [x0, y0], [x1, y0]
+          pdf.stroke
         end
-      }
-    end
+      end
+    }
+
+    cross and (0..grid.w * step).each { |x|
+      x /= step.to_f
+
+      y0 = grid.ys.at 0
+      y1 = grid.ys.at max_y
+      x0 = grid.xs.at x, corner: 0
+
+      line_width 0.5 do
+        color ?a do
+          pdf.line [x0, y0], [x0, y1]
+          pdf.stroke
+        end
+      end
+    }
   end
 
   def line_width given=1, &block
@@ -326,5 +571,46 @@ module Rendering
     instance_eval &block
 
     pdf.line_width prev if prev
+  end
+
+  def dots
+    g = grid
+    x = g.xs.at 0
+    y = g.ys.at 0
+    w = g.xs.size
+    h = g.ys.size
+
+    x -= 0.5
+    y -= 0.5
+
+    rect = [
+      [x, y+h+1],
+      w+1, h+1
+    ]
+    pdf.create_dotted_pattern x, y, w, h, key: 'dots_pattern'
+    pdf.fill_rectangle *rect
+  end
+
+  def stars
+    dots
+
+    g = grid
+    x = g.xs.at 0
+    y = g.ys.at 0
+    w = g.xs.size #- 0.5
+    h = g.ys.size #- 0.5
+
+    x -= 0.5
+    y -= 0.5
+
+    r = 2
+    rect = [
+      #[x, y+h],
+      #w, h
+      [x-r, y+h+1+r],
+      w+1+r*2, h+1+r*2
+    ]
+    pdf.create_crosses_pattern r, x, y, w, h, key: 'stars_pattern'
+    pdf.fill_rectangle *rect
   end
 end
