@@ -99,7 +99,7 @@ Anyway the volume could open interesting uses like a habit per page plus three c
 
 Horizontal lines are week divisions (Monday-starting weeks).
 
-![Structure overview](output/Monitors.png?raw=true)
+![Structure overview](output/COLOR_Monitors.png?raw=true)
 
 # Usage Assumptions
 
