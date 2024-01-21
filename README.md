@@ -10,6 +10,7 @@ PDFs for RM.
 - [Projects.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Projects_MIX.pdf)
 - [Index.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_MIX.pdf)
 - [Index_12x12.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_12x12_MIX.pdf)
+- [Monitors](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Monitors.pdf)
 - [All other background versions ('cdot' version has higher density of dots than 'DOT' version)](https://github.com/sowcow/blank_slate_pdf/releases/latest)
 
 NOTE: closed RM toolbar is needed to see the back link at the top.
@@ -32,7 +33,8 @@ I assume switching between files "cost" is smaller if the system is clear and on
 
 - Days PDF
 - Projects PDF (separate files per PARa letters if/when needed)
-- Index cards PDF
+- (optional) Index cards PDF
+- (optional) Monitors PDF
 
 Morning pages and such longer content goes into a separate default template Notebook.
 Paper and other mediums are good for own specialized uses as well.
@@ -85,6 +87,18 @@ Usage pattern:
 
 ![Structure overview](output/COLOR_Index_MIX.png?raw=true)
 ![Structure overview](output/COLOR_Index_12x12_MIX.png?raw=true)
+
+# Monitors PDF
+
+PDF to monitor weather, habits, or whatever else.
+One page has a table of four columns for every day of month.
+PDF has 12 pages of that for every month of the year.
+Because of the volume it is meant for mostly less essential, more experimental columns/variables to record and see.
+Contrasting to that Days.pdf has only a single such page per month.
+
+Horizontal lines are week divisions (Monday-starting weeks).
+
+![Structure overview](output/Monitors.png?raw=true)
 
 # Usage Assumptions
 

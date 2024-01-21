@@ -68,9 +68,10 @@ module BS
 
     # for words (not checkmarks):
 
-    def generate2 parent, month, &block
+    def generate2 parent, month, here: nil, &block
       g2 = Positioning.grid_portrait_18_padded $bs.pdf_width, $bs.pdf_height
-      parent.child_page :habits do
+
+      gen = proc do
         instance_eval &block if block
         link_back
         days_count = month.squares.count
@@ -137,6 +138,13 @@ module BS
             end
           end
         }
+      end
+
+      if here
+        here.visit &gen
+        here
+      else
+        parent.child_page :habits, &gen
       end
     end
   end
