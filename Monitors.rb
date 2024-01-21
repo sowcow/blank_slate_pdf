@@ -18,6 +18,7 @@ BS.setup name: name, path: path, description: <<END
   PDF has 12 pages of that for every month of the year.
   Because of the volume it is meant for mostly less essential experimental columns/variables to record and see.
   Contrasting to that Days.pdf has only a single such page per month.
+  Anyway the volume could open interesting uses like a habit per page plus three columns for some related controls/variables.
 
   Horizontal lines are week divisions (Monday-starting weeks).
 
