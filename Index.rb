@@ -14,8 +14,7 @@ BS.setup name: name, path: path, description: <<END
   Having single page inside any entry so grouping is imposed from the
   grid page instead.
   More likely to be used for more random content that still can be grouped into topics.
-  It was somewhere on the path inspired by index cards.
-  But in this case index cards are more likely to be organized.
+  It is more organizable than plain index cards but less powerfull then physical/digital board of them.
   It can be seen as grid view where you make own preview or just mark page as used.
   It can be seen as less powerful verision of tagged pages but more experimental instead.
 
