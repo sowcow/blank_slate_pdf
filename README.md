@@ -59,7 +59,7 @@ There are some hidden features:
 # Projects PDF
 
 There is a grid of entries, every one having 12 consecutive pages inside.
-So it can be seen as a folder of fixed-size files with the difference that you don't use file-system UI and write names by hand.
+So it can be seen as a folder of fixed-size files with the difference that you don't use file-system UI, write names by hand, and have trace of dones accumulated while in file system-way they are moved to archives.
 
 Usage:
 - write a project name into any cell
