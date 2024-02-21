@@ -1,8 +1,8 @@
 require_relative 'bs/all'
-#END { Projects.make name: 'Projects', grid: ?g } if __FILE__ == $0
+END { Projects.make name: 'Projects', grid: ?B, rows: 3, timeline: true } if __FILE__ == $0
 
 module Projects
-def self.make name:, grid:
+def self.make name:, grid: ?B, timeline: false, rows: 3
 ###
 
 path = File.join __dir__, 'output'
@@ -43,39 +43,85 @@ last_page_marks = -> {
     y0 = a.g.ys.at 0
     y1 = a.g.ys.at g.h
     a.color 8 do
-    a.line_width 5 do
-      a.pdf.stroke_line x, y0, x, y1
-    end
+      a.line_width 10 do
+        a.pdf.stroke_line x, y0, x, y1
+      end
     end
   end
 }
 
-rects = []
-12.times { |ay|
-  4.times { |ax|
-    rects << Pos[ax * 3, 14 - ay]
-  }
-}
+projects = BS::Group.new
+
+one = BS::LinesGrid.new
+one.xs 0, 1
+one.ys *2.times.map { |i| 15 - i }
+projects.push one
+
+one = BS::LinesGrid.new
+one.xs 11, 12
+one.ys *2.times.map { |i| 15 - i }
+projects.push one
+
+one = BS::LinesGrid.new
+one.xs 0, 1
+one.ys *2.times.map { |i| 15 - i - 11 }
+projects.push one
+
+one = BS::LinesGrid.new
+one.xs 11, 12
+one.ys *2.times.map { |i| 15 - i - 11 }
+projects.push one
+
+projects_bg = BS::Group.new
+one = BS::LinesGrid.new
+one.xs *13.times.flat_map { |x| [x, x -0.5] }
+one.ys *13.times.flat_map { |i| [15 - i, 15-i-0.5] }.reject { |i| i < 3 }
+
+projects_bg.push one
+
+# margin = 3
+# bgg = BS::LinesGrid.new
+# bgg.xs *(0..12-margin)
+# bgg.ys *(0..15)
+
+# bgg2 = BS::LinesGrid.new
+# bgg2.xs *(12-margin..12).flat_map { |x| [x, x+0.5] }
+# bgg2.ys *(0..15).flat_map { |x| [x, x-0.5] }
+
+leaf_page_bg = BS::LinesGrid.new
+leaf_page_bg.xs *(0..12).flat_map { |x| [x, x+0.5] }
+leaf_page_bg.ys *(0..15).flat_map { |x| [x, x-0.5] }
+
+decomposition_page_bg = BS::Group.new
+one = BS::LinesGrid.new
+one.xs 1
+one.ys *15.times.map { |x| x + 1 }
+one.x_range 0, 12
+one.y_range 0, 15
+decomposition_page_bg.push one
 
 root = BS.pages.first
 root.visit do
-  rects.each { |pos|
-    coords = []
-    coords << pos
-    coords << pos.right(3)
-    coords << pos.right(3).up(1)
-    coords << pos.up(1)
-
-    color ?a do
-      line_width 0.5 do
-        poly coords.map { |x| g.at x }
-      end
-    end
+  projects.render_lines
+  projects_bg.render_dots { |at|
+    x = at.x
+    y = at.y
+    next false if projects.rects.find { |(at1, at2)|
+      x1 = at1.x
+      y1 = at1.y
+      x2 = at2.x
+      y2 = at2.y
+      (x1..x2) === x && (y1..y2) === y
+    }
+    true
   }
 end
 
 draw_grid = -> key {
-  case key
+  # bgg.render_lines :hlines
+  decomposition_page_bg.render_lines
+
+  false and case key
   when ?D then $bs.draw_dots max_y: 15
   when ?S then $bs.draw_stars max_y: 15
   when ?L then $bs.draw_lines max_y: 15
@@ -90,7 +136,7 @@ draw_grid = -> key {
 }
 
 root.visit do
-  rects.each { |pos|
+  projects.rects.each { |(pos, pos2)|
     this_bg = bg.take
     child = page.child_page :project, pos: pos do
       BS::Pagination.generate page do
@@ -100,12 +146,36 @@ root.visit do
       end
     end
     root.visit do
-      pos = [*pos, *pos]
-      pos[2] += 2
-      link pos, child
+      link [*pos, *pos2.left.down], child
     end
   }
 end
+
+decomposition_page_bg.xs 0 # adding that line for rects to exist between available lines
+
+# so I have both pagination and list, and limited number of projects as needed
+# four projects to rotate file fast and to not have long-running stuff
+# main space between projects for creative activity logging
+
+BS.xs(:project).each { |parent|
+  pos = parent[:page_pos]
+  decomposition_page_bg.rects.reverse_each { |rect|
+    child = parent.child_page :leaf do
+      # leaf_page_bg.render_dots
+      leaf_page_bg.render_lines
+      link_back
+      $bs.line_width 1 do
+        diamond rect.first, corner: 0.5, use_color: [?f, ?a], fill: true
+      end
+      $bs.line_width 1 do
+        mark2 pos.down(0.5), corner: 0.5
+      end
+    end
+    parent.visit do
+      link rect.first, child
+    end
+  }
+}
 
 =begin
 BS.pages.each { |pg|

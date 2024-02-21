@@ -7,13 +7,27 @@ PDFs for RM.
 # Where
 
 - [Days.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days_MIX.pdf)
-- [Projects.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Projects_MIX.pdf)
+- [Projects.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Projects.pdf)
 - [Index.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_MIX.pdf)
 - [Index_12x12.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_12x12_MIX.pdf)
 - [Monitors](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Monitors.pdf)
 - [All other background versions ('cdot' version has higher density of dots than 'DOT' version)](https://github.com/sowcow/blank_slate_pdf/releases/latest)
 
 NOTE: closed RM toolbar is needed to see the back link at the top.
+
+# Latest update
+
+- General UI principles:
+  1. RM toolbar needs to be closed
+  1. squares are links except the bottom row
+- Projects PDF changed to hold only four projects.
+  They are meant to be reasonably scoped to rotate the PDF often.
+  Also this can be seen as a type of kanban WIP limit.
+- Instead of quantity projects got additional level of depth.
+  Now inside the project there are 12 pages of lists.
+  Every item in the list (except the bottom row) has additional single page inside.
+- Main page can be used for whatever creative activity logging one can come-up with.
+- I assume this structure favors decomposition.
 
 # Current stable state of the Project
 
@@ -60,15 +74,17 @@ There are some hidden features:
 
 # Projects PDF
 
-There is a grid of entries, every one having 12 consecutive pages inside.
-So it can be seen as a folder of fixed-size files with the difference that you don't use file-system UI, write names by hand, and have trace of dones accumulated while in file system-way they are moved to archives.
+Latest update description is way above.
 
 Usage:
-- write a project name into any cell
-- enter it, use any number of pages
+- given RM toolbar is closed
+- write a project name near one square on the main page
+- enter the project square
+- 12 consecutive pages can be seen as todo lists where every item can be entered for details
+  page inside it by entering the square at the left of the item
 - use back button at the top to return to the grid
 
-![Structure overview](output/COLOR_Projects_MIX.png?raw=true)
+![Structure overview](output/COLOR_Projects.png?raw=true)
 
 # Index cards PDF
 

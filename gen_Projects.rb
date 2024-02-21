@@ -1,5 +1,15 @@
 require_relative 'Projects'
 
+$colored = true
+Projects.make name: 'COLOR_Projects'
+$colored = false
+
+Projects.make name: 'Projects'
+
+system 'rm output/info*.png'
+system 'rm output/COLOR*.pdf'
+
+__END__
 mix_bg = 'DLGBdlgB'
 
 $colored = true

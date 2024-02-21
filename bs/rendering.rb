@@ -250,10 +250,39 @@ module Rendering
     end
   end
 
-  def text_at pos, text, align: nil
+  def omg_text_at pos, text, align: nil, size: nil, centering: -0.1, font_is: $roboto_light
+    text_at = pos #grid.at *pos.up, corner: 0
+    further_at = pos #grid.at *pos.up, corner: 1
+    size = grid.xs.step unless size
+
+      font font_is do
+        font_size size * 0.8 do
+          #pad_x = 0 ~width or pos
+          pad_y = 0
+          dy = size * centering # manual centering
+          text_at[1] += dy # again? because alignment or what?
+
+          width = nil #size-pad_x #...
+          case align
+          when :left
+            width = pdf_width - text_at[0] # full width, no aligning-right/centering then
+          when :right
+            text_at[0] = 0
+            width = further_at[0]
+          end
+
+          align = :left if !align
+
+          pdf.text_box text, at: text_at, width: width, height: size-pad_y, align: align, valign: :bottom
+          #pdf.text_box text, at: text_at, width: size-pad_x, height: size-pad_y, align: :center, valign: :center
+        end
+      end
+  end
+
+  def text_at pos, text, align: nil, size: nil
     text_at = grid.at *pos.up, corner: 0
     further_at = grid.at *pos.up, corner: 1
-    size = grid.xs.step
+    size = grid.xs.step unless size
 
       font $roboto_light do
         font_size size * 0.8 do
@@ -302,11 +331,11 @@ module Rendering
     end
   end
 
-  def diamond at, corner: 0, fill: false
+  def diamond at, corner: 0, fill: false, use_color: 8
     (x, y) = grid.at(*at, corner: corner)
     r = grid.xs.step * 0.1
 
-    color 8 do
+    color *[*use_color] do
       pdf.stroke_polygon [x - r, y], [x, y + r], [x + r, y], [x, y - r]
       if fill
         pdf.fill_polygon [x - r, y], [x, y + r], [x + r, y], [x, y - r]

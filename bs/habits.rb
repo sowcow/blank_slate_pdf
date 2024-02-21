@@ -84,26 +84,17 @@ module BS
 
         (5).times { |ax|
           ax *= 3
-          #axx = ax * 3 #+ 0.5
           x = g.xs.at ax
-          #xx = g.xs.at axx
           y0 = g.ys.at 0
           y1 = g.ys.at g.h - 1
 
-          #if ax.even?
-          #  c = (ax / 12.0 * 255).to_i.to_s(16).rjust(2, ?0) * 3
-          #  color c do
-          #    pdf.fill_rectangle [xx, h], w, h
-          #  end
-          #end
-            pdf.line x, y0, x, y1
-            #pdf.line xx, y0, xx, limit_y
+          pdf.line x, y0, x, y1
         }
-          line_width 1 do
-          color 8 do
-            pdf.stroke
-          end
-          end
+        line_width 1 do
+        color 8 do
+          pdf.stroke
+        end
+        end
 
         month.squares.reverse.each_with_index { |square, ay|
           ay += 1
@@ -113,21 +104,22 @@ module BS
 
           x0 = g.xs.at 0
           x1 = g.xs.at g.w
-          #12.times { |i|
-          #  xs << [i, i + 0.5]
-          #}
-          #xs.each { |(from, to)|
-          #  x0 = g.xs.at from
-          #  x1 = g.xs.at to
-              pdf.line x0, y, x1, y
-          #}
+
+          pdf.line x0, y, x1, y
+
           line_width 0.5 do
             color ?a do
               pdf.stroke
             end
           end
 
-          if square.weekday == 0 # Monday
+          step = g2.ys.step * 0.5 * 1
+          color ?8 do
+            omg_text_at Pos[step * 0.2, y], square.day.to_s, size: step, centering: 0
+          end
+
+          #if [0, 5].include? square.weekday # Monday/Weekend
+          if [0].include? square.weekday # Monday
             x0 = g.xs.at 0
             x1 = g.xs.at g.w
             line_width 1 do

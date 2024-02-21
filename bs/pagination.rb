@@ -16,6 +16,7 @@ module BS
       pagination = $bs.g.tl.up.select_right(count)
       pagination.each_with_index { |pos, i|
         if i == 0
+          prototype.data.merge! page_index: i, page_count: count, page_pos: pos
           prototype.visit do
             #require 'pry'; binding.pry
             mark2 pos.down(0.5), corner: 0.5
@@ -24,7 +25,7 @@ module BS
         end
 
         # same type and data
-        data = prototype.data.merge page_index: i, page_count: count
+        data = prototype.data.merge page_index: i, page_count: count, page_pos: pos
         tag = prototype.tag
         parent.child_page prototype[:type], data do
           page.tag = tag
