@@ -250,13 +250,15 @@ module Rendering
     end
   end
 
-  def omg_text_at pos, text, align: nil, size: nil, centering: -0.1, font_is: $roboto_light
+  def omg_text_at pos, text, align: nil, size: nil, centering: -0.1, font_is: $roboto_light, size2: nil
+    size2 = size if size2.nil? # font scaling, quick-fix for shit not fitting text and ignoring it
+
     text_at = pos #grid.at *pos.up, corner: 0
     further_at = pos #grid.at *pos.up, corner: 1
     size = grid.xs.step unless size
 
       font font_is do
-        font_size size * 0.8 do
+        font_size size2 * 0.8 do
           #pad_x = 0 ~width or pos
           pad_y = 0
           dy = size * centering # manual centering
@@ -269,6 +271,8 @@ module Rendering
           when :right
             text_at[0] = 0
             width = further_at[0]
+          when :center
+            width = size
           end
 
           align = :left if !align

@@ -21,7 +21,12 @@ module BS
       @ys = []
       @x_range = nil
       @y_range = nil
+      @color = ?a
+      @width = 0.5
     end
+
+    attr_accessor :color
+    attr_accessor :width
 
     def xs *x
       @xs.push *x
@@ -71,9 +76,10 @@ module BS
     end
 
     def render_lines which=:lines
+      x = self
       public_send(which).each { |coords|
-        $bs.color ?a do
-          $bs.line_width 0.5 do
+        $bs.color x.color do
+          $bs.line_width x.width do
             $bs.poly *coords.map { |x| $bs.g.at *x }
           end
         end

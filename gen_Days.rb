@@ -6,6 +6,8 @@ $colored = true
 Days.make name: 'COLOR_Days_MIX', grid: mix_bg
 $colored = false
 
+Days.make name: 'Days_focus', grid: ?g, focus: true
+
 Days.make name: 'Days_MIX', grid: mix_bg
 Days.make name: 'Days_BLANK', grid: ?B
 Days.make name: 'Days_DOT', grid: ?D

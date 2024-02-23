@@ -1,6 +1,9 @@
 require 'date'
 require_relative 'bs/all'
-END { Days.make name: 'Days_DOT', grid: ?G } if __FILE__ == $0
+END { Days.make name: 'Days_focus', grid: ?g, focus: true } if __FILE__ == $0
+
+# - [ ] link back from habits back at the same invisible position
+#       could be another use somewhere else
 
 # Month names alignment may feel a bit chaotic but I use the principle of blank slate upper-left corner for writing
 
@@ -11,7 +14,7 @@ END { Days.make name: 'Days_DOT', grid: ?G } if __FILE__ == $0
 module Days
   YEAR = 2024
 
-  def self.make name:, grid: 
+  def self.make name:, grid: , focus: false
 #####
 
 path = File.join __dir__, 'output'
@@ -94,6 +97,92 @@ root.visit do
   }
 end
 
+number_mapping = {
+}
+num_i = 1
+'Ⅰ	Ⅱ 	Ⅲ 	Ⅳ 	Ⅴ 	Ⅵ 	Ⅶ 	Ⅷ 	Ⅸ 	Ⅹ 	Ⅺ 	Ⅻ'.chars.each { |c|
+  next if c =~ /\s/
+  p [num_i, c]
+  number_mapping[num_i.to_s] = c
+  num_i += 1
+}
+have = -> x, y, text {
+  text = number_mapping[text] || text
+
+  x *= 0.5
+  y *= 0.5
+
+  at = Pos[x, y].up 0.5
+  pos = $bs.g.at at
+
+  size = $bs.g.xs.step*0.5
+
+  $bs.omg_text_at pos, text, centering: 0.25, size: size, align: :center,
+    font_is: $ao, size2: size * 0.6
+}
+have_numbers = -> {
+  have.call 11+7, 11, '4'
+  have.call 11+1, 11, '5'
+  have.call 11, 11, '6'
+  have.call 11-6, 11, '7'
+
+  have.call 11+7, 24, '1'
+  have.call 11+1, 24, '12'
+  have.call 11, 24, '11'
+  have.call 11-6, 24, '10'
+
+  have.call 11-6, 11+6, '8'
+  have.call 11-6, 11+7, '9'
+
+  have.call 11+7, 11+7, '2'
+  have.call 11+7, 11+6, '3'
+}
+
+
+focus_bg = BS::Group.new
+w = 1 #0.5
+c = 0
+
+one = BS::LinesGrid.new
+one.xs 0, 3
+one.ys *5.times.map { |i| 15 - i * 3 }
+one.width = w
+one.color = c
+focus_bg.push one
+
+one = BS::LinesGrid.new
+one.xs 12-0, 12-3
+one.ys *5.times.map { |i| 15 - i * 3 }
+one.width = w
+one.color = c
+focus_bg.push one
+
+one = BS::LinesGrid.new
+one.xs 6
+one.x_range 3, 9
+one.ys 12, 15
+one.width = w
+one.color = c
+focus_bg.push one
+
+one = BS::LinesGrid.new
+one.xs 6
+one.x_range 3, 9
+one.ys 3, 6
+one.width = w
+one.color = c
+focus_bg.push one
+
+one = BS::LinesGrid.new
+one.xs 6
+one.x_range 6-0.5, 6+0.5
+one.ys 9
+one.y_range 9-0.5, 9+0.5
+one.width = w
+one.color = c
+focus_bg.push one
+
+
 months = {}
 
 BS.xs(:month).each_with_index { |pg, i|
@@ -103,6 +192,11 @@ BS.xs(:month).each_with_index { |pg, i|
   month.generate do
     page.tag = :day
     draw_grid.call bg.take
+    focus_bg.render_lines
+    have_numbers.call
+
+    if focus
+    end
 
     omg = page[:"m_#{i}_square"]
     day_d = Date.new YEAR, d.month, omg.day

@@ -6,6 +6,7 @@ PDFs for RM.
 
 # Where
 
+- [Days_focus.pdf has predefined background with hour blocks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days_focus.pdf)
 - [Days.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days_MIX.pdf)
 - [Projects.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Projects.pdf)
 - [Index.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_MIX.pdf)
@@ -69,6 +70,13 @@ There are some hidden features:
 - hidden links below upper corners (second row) that lead from Month view to Habits page
 - hidden links below upper corners that lead from Day view to Week view
 - also less intuitive links from Month view to Week view are positioned right below every column of days
+
+Also there is a predefined background version where center suqare can be used as:
+- Focus of the day
+- Eisenhower matrix in four parts
+- Sketch built over the day
+- Mix of these
+- Bottom space is probably catchall/followup then (unless another tool does it)
 
 ![Structure overview](output/COLOR_Days_MIX.png?raw=true)
 
