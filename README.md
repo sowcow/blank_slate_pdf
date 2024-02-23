@@ -16,7 +16,7 @@ PDFs for RM.
 
 NOTE: closed RM toolbar is needed to see the back link at the top.
 
-# Latest update
+# Latest bigger update
 
 - General UI principles:
   1. RM toolbar needs to be closed
@@ -71,7 +71,7 @@ There are some hidden features:
 - hidden links below upper corners that lead from Day view to Week view
 - also less intuitive links from Month view to Week view are positioned right below every column of days
 
-Also there is a predefined background version where center suqare can be used as:
+Also there is a predefined background version where center square can be used as:
 - Focus of the day
 - Eisenhower matrix in four parts
 - Sketch built over the day
