@@ -102,7 +102,6 @@ number_mapping = {
 num_i = 1
 'Ⅰ	Ⅱ 	Ⅲ 	Ⅳ 	Ⅴ 	Ⅵ 	Ⅶ 	Ⅷ 	Ⅸ 	Ⅹ 	Ⅺ 	Ⅻ'.chars.each { |c|
   next if c =~ /\s/
-  p [num_i, c]
   number_mapping[num_i.to_s] = c
   num_i += 1
 }
@@ -142,6 +141,17 @@ have_numbers = -> {
 focus_bg = BS::Group.new
 w = 1 #0.5
 c = 0
+
+one = BS::LinesGrid.new
+one.xs *(0..12).flat_map { |x| [x, x+0.5] }
+one.ys *(4..15).flat_map { |x| [x, x-0.5] }
+one.y_range 3, 15
+focus_bg.push one
+
+one = BS::LinesGrid.new
+one.ys *(0..3).flat_map { |x| [x, x-0.5] }
+one.x_range 0, 12
+focus_bg.push one
 
 one = BS::LinesGrid.new
 one.xs 0, 3
@@ -191,7 +201,7 @@ BS.xs(:month).each_with_index { |pg, i|
   months[i] = month
   month.generate do
     page.tag = :day
-    draw_grid.call bg.take
+    # draw_grid.call bg.take
     focus_bg.render_lines
     have_numbers.call
 

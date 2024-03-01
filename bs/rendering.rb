@@ -129,6 +129,13 @@ def generate_random_color
 end
 
 module Rendering
+  def link_back_bg
+    bg = BS::LinesGrid.new
+    bg.ys 15, 16
+    bg.xs 10, 12
+    bg
+  end
+
   #def with color: nil, font: nil, font_size: nil, line_width: nil
   #  #
   #end
@@ -163,6 +170,48 @@ module Rendering
   end
 
   def link_back
+    text = ?↑
+    grid = Positioning.grid_portrait_18_padded pdf_width, pdf_height
+
+    # old positioning but probably in line with the round thing at the other side
+    dx = grid.xs.step
+    dy = grid.ys.step
+    bigger_cell = pdf_width / 12
+
+    link_cell_height = bigger_cell
+    link_cell_side = bigger_cell * 2 # more space to cover for scrollbar active area theft
+    dx = link_cell_side
+
+    cells = [
+      [pdf_width - dx, pdf_height],
+    ]
+
+    cells.each_with_index { |text_cell, i|
+      link_cell = [pdf_width - link_cell_side, pdf_height]
+
+      text_at = text_cell.clone
+      text_at[1] += R(15) # manual centering
+      color 8 do
+        font $noto_semibold do
+          font_size dy - R(60) do # ...
+            pdf.text_box text, at: text_at, width: dx, height: dy, align: :center, valign: :center
+          end
+        end
+      end
+
+      at = link_cell
+      rect = [at[0], at[1], at[0] + link_cell_side, at[1] - link_cell_height]
+      link rect, page.parent, raw: true, ignore_for_overview_structure: true
+
+      line_width 0.5 do
+        color ?a do
+          link_back_bg.render_lines
+        end
+      end
+    }
+  end
+
+  def prev_double_link_back
     text = ?↑
     grid = Positioning.grid_portrait_18_padded pdf_width, pdf_height
 

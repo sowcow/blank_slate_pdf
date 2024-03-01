@@ -6,60 +6,23 @@ PDFs for RM.
 
 # Where
 
-- [Days_focus.pdf has predefined background with hour blocks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days_focus.pdf)
-- [Days.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days_MIX.pdf)
-- [Projects.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Projects.pdf)
-- [Index.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_MIX.pdf)
-- [Index_12x12.pdf random background version](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Index_12x12_MIX.pdf)
-- [Monitors](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Monitors.pdf)
-- [All other background versions ('cdot' version has higher density of dots than 'DOT' version)](https://github.com/sowcow/blank_slate_pdf/releases/latest)
+- [Days.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days.pdf)
+- [Lists.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Lists.pdf)
 
-NOTE: closed RM toolbar is needed to see the back link at the top.
+NOTE:
+- closed RM toolbar is assumed
+- I use rm-hacks to hide the round thing in the corner RM adds so that may be assumed in PDFs too
+- PDFs I don't use get remeved from the list but may be there in older releases for example there should be Days.pdf with random flat backgrounds more fitting Bujo use
 
-# Latest bigger update
+# Current System
 
-- General UI principles:
-  1. RM toolbar needs to be closed
-  1. squares are links except the bottom row
-- Projects PDF changed to hold only four projects.
-  They are meant to be reasonably scoped to rotate the PDF often.
-  Also this can be seen as a type of kanban WIP limit.
-- Instead of quantity projects got additional level of depth.
-  Now inside the project there are 12 pages of lists.
-  Every item in the list (except the bottom row) has additional single page inside.
-- Main page can be used for whatever creative activity logging one can come-up with.
-- I assume this structure favors decomposition.
+- Days PDF as calendar or anything time-related
+- Lists PDF for main things (PA in PARA)
+- Separate files or Quick sheets + tags for most of other things
 
-# Current stable state of the Project
+# Days PDF (Monday weeks only)
 
-PDFs went from being abstract and experimental to asbstract and simplistic.
-Sadly names got simpler too and there are no more names like "Square BS PDF".
-
-Initially I was looking into combining things.
-And I think that value of combining is there when it comes to grouping similar things like habbits.
-But it looks like otherwise combining different things in such interactive PDFs may loose value.
-And those combined PDFs exist just to be more marketable.
-
-The idea is that things with different speed of change should be separable.
-Then things should be combined by the system.
-I assume switching between files "cost" is smaller if the system is clear and one knows it by memory.
-
-# System
-
-- Days PDF
-- Projects PDF (separate files per PARa letters if/when needed)
-- (optional) Index cards PDF
-- (optional) Monitors PDF
-
-Morning pages and such longer content goes into a separate default template Notebook.
-Paper and other mediums are good for own specialized uses as well.
-
-Still one interesting scenario would be to not use Index cards and navigate between two remaining PDFs
-with a `rm-hacks` gesture. Maybe Days can have that Areas aspect from PARa, maybe with using tags.
-
-# Days PDF
-
-It is a year calendar (using Monday weeks) having only a single page for everything.
+It is a year calendar having only a single page for everything.
 Day pages only have a grid of choice with no dashboard or anything.
 Also there is a habits grid per month that can be used for word input or for checkmarks.
 
@@ -76,64 +39,42 @@ Also there is a predefined background version where center square can be used as
 - Eisenhower matrix in four parts
 - Sketch built over the day
 - Mix of these
-- Bottom space is probably catchall/followup then (unless another tool does it)
 
 ![Structure overview](output/COLOR_Days_MIX.png?raw=true)
 
-# Projects PDF
+# Lists PDF
 
-Latest update description is way above.
+This can be seen as advanced todo lists PDF.
+It supports a type of todo items that need further decomposition because every item has 12 pages inside.
+Also it supports catchall for relevant ideas/inputs that can be processed later.
+Adding titles and marking used links is a good idea to navigate within the PDF.
 
-Usage:
-- given RM toolbar is closed
-- write a project name near one square on the main page
-- enter the project square
-- 12 consecutive pages can be seen as todo lists where every item can be entered for details
-  page inside it by entering the square at the left of the item
-- use back button at the top to return to the grid
+First page (root) is a table of contents:
+- First row of links goes to 12 ideas/inputs pages.
+- Then two rows link to 12 lists pages, these links are bigger so there is space to give them name when needed.
+- Other links below link to items of lists in case that is needed at some point
 
-![Structure overview](output/COLOR_Projects.png?raw=true)
+Lists:
+- Lists can be accessed just by turning to the next page from the root
+- Every list has 7 items, linked by squares at the left
 
-# Index cards PDF
+Items:
+- Items have 12 consecutive pages each
+- Also all pages have links to ideas/inputs pages (in the upper-right corner)
 
-Similar to Projects but having single page inside any entry so grouping is imposed from the
-grid page instead.
-More likely to be used for more random content that still can be grouped into topics.
-It is more organizable than plain index cards but less powerfull then physical/digital board of them.
-It can be seen as grid view where you make own preview or just mark page as used.
-It can be seen as less powerful verision of tagged pages but more experimental instead.
+Ideas:
+- linked from every page to be very accessible for addition
+- Overall 12 pages with navigation between them at the top or by turning pages
 
-Usage pattern:
-- mark any square as being used
-- enter it, use any number of pages for any content (marker above shows current column in the square)
-- use back button, mark used pages anyhow
-- divide the grid into parts and write topics to have this type grouping on creation of new notes
+Also title can be rendered on every page by setting `title: 'ABC'` in `Lists.rb`.
+It should be useful if separate PDF file is used per project.
 
-![Structure overview](output/COLOR_Index_MIX.png?raw=true)
-![Structure overview](output/COLOR_Index_12x12_MIX.png?raw=true)
-
-# Monitors PDF
-
-PDF to monitor weather, habits, or whatever else.
-One page has a table of four columns for every day of month.
-PDF has 12 pages of that for every month of the year.
-Because of the volume it is meant for mostly less essential, more experimental columns/variables to record and see.
-Contrasting to that Days.pdf has only a single such page per month.
-Anyway the volume could open interesting uses like a habit per page plus three columns for some related controls/variables.
-
-Horizontal lines are week divisions (Monday-starting weeks).
-
-![Structure overview](output/COLOR_Monitors.png?raw=true)
-
-# Usage Assumptions
-
-- generally I don't use layers or tags or toolbar
-- still manual copying of pages content is easy so pre-made daily dashboard thing is never necessary
+![Structure overview](output/COLOR_Lists.png?raw=true)
 
 # Technical Usage
 
 - download and extract needed fonts as expected by `bs/fonts.rb`.
-- have ruby installed and run `bundle` in the root
+- have ruby installed and run `bundle` in the root of the project
 - run `rake`, check `output/` dir
 - for development some files generate PDFs by just running `ruby <FileName>.rb`
 
@@ -143,6 +84,12 @@ Horizontal lines are week divisions (Monday-starting weeks).
 - it started as simplistic setup that allows generation of any interactive pdfs to be filled by the user
 - then enough patterns crystallized so it became more incremental and modular technically
 - then actual PDFs got to be stupid-simple with least complexity introduced by them
-- will see if there are side effects to the project other than having dreams about linked pdf grids
+  (PDFs went from being abstract and experimental to asbstract and simplistic. Sadly names got simpler too and there are no more names like "Square BS PDF".)
+- (there was funny side effect of the project is having dreams about linked pdf grids)
+- then I tried to optimize PDFs for use approaches (Bujo/PARA)
+- also Days PDF got clockface and focus area
+- merged other simplistic PDFs back into abstract PDF for lists (that can fit Bujo/PARA by itself);
+  it is not abstract in style as early PDFs but there are no arbitrary decisions so it is true to the idea still.
 
-## [DAFUQPL](https://github.com/dafuqpl/dafuqpl) License
+
+# [DAFUQPL](https://github.com/dafuqpl/dafuqpl) License

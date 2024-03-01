@@ -30,18 +30,22 @@ module BS
 
     def xs *x
       @xs.push *x
+      self
     end
 
     def ys *x
       @ys.push *x
+      self
     end
 
     def x_range a, b
       @x_range = [a, b].sort
+      self
     end
 
     def y_range a, b
       @y_range = [a, b].sort
+      self
     end
 
     def vlines
