@@ -22,27 +22,29 @@ NOTE:
 
 # Days PDF (Monday weeks only)
 
+![Structure overview](output/COLOR_Days_MIX.png?raw=true)
+
 It is a year calendar having only a single page for everything.
-Day pages only have a grid of choice with no dashboard or anything.
+Day pages have predefined blocks for hours in the form of clock face.
 Also there is a habits grid per month that can be used for word input or for checkmarks.
 
 Single page is a feature because it makes the calendar more single-purpose.
 So it is on the reviewability side of things.
+
+There is predefined background with clock face for hours blocks and the central square can be used as:
+- Focus of the day
+- Eisenhower matrix in four parts
+- Sketch built over the day
+- Mix of these
 
 There are some hidden features:
 - hidden links below upper corners (second row) that lead from Month view to Habits page
 - hidden links below upper corners that lead from Day view to Week view
 - also less intuitive links from Month view to Week view are positioned right below every column of days
 
-Also there is a predefined background version where center square can be used as:
-- Focus of the day
-- Eisenhower matrix in four parts
-- Sketch built over the day
-- Mix of these
-
-![Structure overview](output/COLOR_Days_MIX.png?raw=true)
-
 # Lists PDF
+
+![Structure overview](output/COLOR_Lists.png?raw=true)
 
 This can be seen as advanced todo lists PDF.
 It supports a type of todo items that need further decomposition because every item has 12 pages inside.
@@ -68,8 +70,6 @@ Ideas:
 
 Also title can be rendered on every page by setting `title: 'ABC'` in `Lists.rb`.
 It should be useful if separate PDF file is used per project.
-
-![Structure overview](output/COLOR_Lists.png?raw=true)
 
 # Technical Usage
 
