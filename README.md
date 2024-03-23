@@ -41,6 +41,8 @@ The point is in using the week page more.
 Interesting feature of those week pages in Sunday-weeks mode is that weekend days wrap weekdays.
 This adds plan-review functionality without special pages or separate space.
 
+Also some notes from Days.pdf below apply to this too.
+
 # Lists landscape 1/2 PDF
 
 ![Structure overview](output/COLOR_Lists_L12.png?raw=true)
