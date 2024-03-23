@@ -10,6 +10,19 @@ class Point < Struct.new :x, :y
     end
   end
 
+  # expand + into corner points from top-left corner
+  def corners w=0, h=0
+    a = At[x, y]
+    b = At[x+w, y]
+    c = At[x+w, y-h]
+    d = At[x, y-h]
+    [a, b, c, d]
+  end
+
+  def corners_with another
+    corners another.x - x, y - another.y
+  end
+
   # into square for bigger links
   def expand w=0, h=0
     [x, y, x+w, y+h]
@@ -25,14 +38,14 @@ class Point < Struct.new :x, :y
     Point[x + other.x, y + other.y]
   end
 
-  def select count, direction: nil
+  def select count, direction: nil, step: 1
     count.times.map { |i|
-      public_send direction, i
+      public_send direction, i * step
     }
   end
   %i[ up down left right ].each { |name|
-    define_method "select_#{name}" do |count|
-      select count, direction: name
+    define_method "select_#{name}" do |count, step: 1|
+      select count, direction: name, step: step
     end
   }
 

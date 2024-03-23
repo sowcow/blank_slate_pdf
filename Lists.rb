@@ -1,6 +1,6 @@
 require_relative 'bs/all'
 END {
-  Lists.make name: 'Lists', grid: ?B, title: nil
+  Lists.make name: 'Lists', grid: ?B, title: nil, format: nil
 } if __FILE__ == $0
 
 # write that general use is to move to next page form front-page TOC
@@ -10,7 +10,7 @@ END {
 # omg leave square on leaf pages to see inputs link square or render it with filled squares
 
 module Lists
-def self.make name:, grid: ?B, title: nil
+def self.make name:, grid: ?B, title: nil, format: 16
 ###
 
 path = File.join __dir__, 'output'
@@ -33,6 +33,7 @@ $render_id = -> a, b, text {
   end
 }
 
+reformat_page format
 BS.setup name: name, path: path, description: <<END
   Lists.pdf
 
@@ -64,8 +65,7 @@ BS.setup name: name, path: path, description: <<END
   Author: Alexander K.
   Project: https://github.com/sowcow/blank_slate_pdf
 END
-
-BS.grid 16
+BS.grid format
 
 bg = BS::Bg.new grid
 

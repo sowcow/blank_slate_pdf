@@ -131,8 +131,8 @@ end
 module Rendering
   def link_back_bg
     bg = BS::LinesGrid.new
-    bg.ys 15, 16
-    bg.xs 10, 12
+    bg.ys g.h-1, g.h
+    bg.xs g.w-2, g.w
     bg
   end
 
@@ -171,44 +171,67 @@ module Rendering
 
   def link_back
     text = ?↑
-    grid = Positioning.grid_portrait_18_padded pdf_width, pdf_height
+    # grid = Positioning.grid_portrait_18_padded pdf_width, pdf_height
 
-    # old positioning but probably in line with the round thing at the other side
-    dx = grid.xs.step
-    dy = grid.ys.step
-    bigger_cell = pdf_width / 12
+    # # old positioning but probably in line with the round thing at the other side
+    # dx = grid.xs.step
+    # dy = grid.ys.step
+    # bigger_cell = pdf_width / 12
 
-    link_cell_height = bigger_cell
-    link_cell_side = bigger_cell * 2 # more space to cover for scrollbar active area theft
-    dx = link_cell_side
+    # link_cell_height = bigger_cell
+    # link_cell_side = bigger_cell * 2 # more space to cover for scrollbar active area theft
+    # dx = link_cell_side
 
-    cells = [
-      [pdf_width - dx, pdf_height],
-    ]
+    # cells = [
+    #   [pdf_width - dx, pdf_height],
+    # ]
 
-    cells.each_with_index { |text_cell, i|
-      link_cell = [pdf_width - link_cell_side, pdf_height]
+    # cells.each_with_index { |text_cell, i|
+      # link_cell = [pdf_width - link_cell_side, pdf_height]
+      # text_at = text_cell.clone
+      # text_at[1] += R(15) # manual centering
+      # color 8 do
+      #   font $noto_semibold do
+      #     font_size dy - R(60) do # ...
+      #       pdf.text_box text, at: text_at, width: dx, height: dy, align: :center, valign: :center
+      #     end
+      #   end
+      # end
+    
+      # pos = 
+      # size = 
+      # color 8 do
+      #   omg_text_at pos, text, align: nil, size: size, centering: -0.1, font_is: $noto_semibold, size2: nil
+      #   # font $noto_semibold do
+      #     # font_size dy - R(60) do # ...
+      #       # pdf.text_box text, at: text_at, width: dx, height: dy, align: :center, valign: :center
+      #     # end
+      #   # end
+      # end
 
-      text_at = text_cell.clone
-      text_at[1] += R(15) # manual centering
-      color 8 do
-        font $noto_semibold do
-          font_size dy - R(60) do # ...
-            pdf.text_box text, at: text_at, width: dx, height: dy, align: :center, valign: :center
-          end
+      font $noto_semibold do
+        color 8 do
+          h = pdf.height_of text
+          w = pdf.width_of text
+
+          rect = link_back_bg.rects.first
+          (a, b) = rect.map { |p| g.at *p }
+          at_x = (a[0] + b[0]) / 2 - w / 2
+          at_y = (a[1] + b[1]) / 2 - h / 2 * 0.33 # manual centering
+          pdf.draw_text text, :at => [at_x, at_y]
         end
       end
 
-      at = link_cell
-      rect = [at[0], at[1], at[0] + link_cell_side, at[1] - link_cell_height]
-      link rect, page.parent, raw: true, ignore_for_overview_structure: true
+      rect = link_back_bg.link_rects.first
+      rect = rect.map(&:to_a).flatten
+      link rect, page.parent, ignore_for_overview_structure: true
 
       line_width 0.5 do
         color ?a do
           link_back_bg.render_lines
         end
       end
-    }
+    # }
   end
 
   def prev_double_link_back
@@ -297,6 +320,22 @@ module Rendering
     else
       grid.rect *given.take(4)
     end
+  end
+
+  # text_box that allows aligning is annoying too much and not easy to wrap sanely
+  # so now I wrap draw_text with own aligning instead
+  # x: 0..1 is align left..right, 0.5 - center
+  # adjust is height adjustment only when centering things
+  def put_text at, text, adjust: 0.33, x: 0.5, y: 0.5
+    adjust = 1 if y != 0.5
+
+    h = pdf.height_of text
+    w = pdf.width_of text
+
+    (a, b) = g.at *at
+    at_x = a - w * x unless at_x
+    at_y = b - h * y * adjust
+    pdf.draw_text text, :at => [at_x, at_y]
   end
 
   def omg_text_at pos, text, align: nil, size: nil, centering: -0.1, font_is: $roboto_light, size2: nil

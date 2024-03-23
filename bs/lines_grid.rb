@@ -102,6 +102,13 @@ module BS
       result
     end
 
+    def link_rects
+      rects.map { |(a, b)|
+        [a, b.left.down] # non raw links do that move by themselves...
+      }
+      .sort_by { |p| [-p[0].y, p[0].x] } # up-down, left-right
+    end
+
     def y_min
       return @ys.min unless @y_range
       @y_range[0]

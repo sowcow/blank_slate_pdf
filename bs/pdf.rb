@@ -11,8 +11,8 @@ module Pdf
     description = self[:description].strip.lines.map(&:strip).join(?\n)
 
     params = {
-      page_size: [PAGE_WIDTH, PAGE_HEIGHT],
-      page_layout: :portrait,
+      page_size: [$PAGE_WIDTH, $PAGE_HEIGHT],
+      page_layout: :portrait, # meaningless as it seems from RM perspective
       margin: [0,0,0,0],
       info: {
         Title: title,

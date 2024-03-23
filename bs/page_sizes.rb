@@ -23,3 +23,21 @@ end
 
 PAGE_WIDTH = R REMARKABLE2_SCREEN_WIDTH_PX
 PAGE_HEIGHT = R REMARKABLE2_SCREEN_HEIGHT_PX
+
+$PAGE_HEIGHT = PAGE_HEIGHT
+$PAGE_WIDTH = PAGE_WIDTH
+
+def reformat_page format_name
+  format_name = 16 unless format_name
+  case format_name
+  when 16
+    $PAGE_HEIGHT = PAGE_HEIGHT
+    $PAGE_WIDTH = PAGE_WIDTH
+    $PAGE_LAYOUT = :portrait
+  when :L12 # landscape orientation split in halves
+    $PAGE_HEIGHT = PAGE_WIDTH
+    $PAGE_WIDTH = PAGE_HEIGHT / 2
+  else
+    raise %'Unexpected format: #{format_name.inspect}'
+  end
+end

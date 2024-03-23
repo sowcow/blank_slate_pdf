@@ -6,10 +6,16 @@ PDFs for RM.
 
 # Where
 
+Latest landscape + split-mode PDFs:
+- [Sundays_L12.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Sundays_L12.pdf)
+- [Lists_L12.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Lists_L12.pdf)
+
+Older portrait full-size PDFs:
 - [Days.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days.pdf)
 - [Lists.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Lists.pdf)
 
 NOTE:
+- when using split-mode PDFs, I go with lists being on the left currently
 - closed RM toolbar is assumed
 - I use rm-hacks to hide the round thing in the corner RM adds so that may be assumed in PDFs too
 - PDFs I don't use get remeved from the list but may be there in older releases for example there should be Days.pdf with random flat backgrounds more fitting Bujo use
@@ -20,9 +26,47 @@ NOTE:
 - Lists PDF for main things (PA in PARA)
 - Separate files or Quick sheets + tags for most of other things
 
-# Days PDF (Monday weeks only)
+# Sundays landscape 1/2 PDF
 
-![Structure overview](output/COLOR_Days_MIX.png?raw=true)
+![Structure overview](output/COLOR_Sundays_L12.png?raw=true)
+
+Sunday weeks calendar + notes page per day.
+It is made for landscape forced + split 1/2 mode in RM (that requires rm-hacks currently).
+
+NOTE: They don't use Sunday-week calendars in my location but there may be a point in using this format still.
+
+Notably navigation from month overview can be made only to weeks.
+The point is in using the week page more.
+Interesting feature of those week pages in Sunday-weeks mode is that weekend days wrap weekdays.
+This adds plan-review functionality without special pages or separate space.
+
+# Lists landscape 1/2 PDF
+
+![Structure overview](output/COLOR_Lists_L12.png?raw=true)
+
+This can be seen as advanced todo lists PDF.
+It is made for landscape forced + split 1/2 mode in RM (that requires rm-hacks currently).
+
+It supports a type of items that need further decomposition because every item has 11 pages inside.
+Adding titles and marking used links is the way to navigate within the PDF.
+
+First page (root) has:
+- links to lists pages, these links have space inside to give short name to the list
+- dots for whatever use, possibly to differentiate file preview by drawing something
+
+Lists:
+- every list has 7 items, linked by squares at the left
+- odd space at the left of every item row can be used for priority/ordering
+
+Items:
+- items have 11 consecutive pages each
+
+Also technically title can be rendered on every page by setting `title: 'ABC'` in `Lists.rb`.
+It should be useful if separate PDF file is used per project.
+
+# Days PDF (Monday weeks only, week overivew pages are secondary)
+
+![Structure overview](output/COLOR_Days.png?raw=true)
 
 It is a year calendar having only a single page for everything.
 Day pages have predefined blocks for hours in the form of clock face.
@@ -73,6 +117,7 @@ It should be useful if separate PDF file is used per project.
 
 # Technical Usage
 
+- the readable file with comments currently is `Lists_12.rb`, feel free to ask in issues if that file is unclear in some regards
 - download and extract needed fonts as expected by `bs/fonts.rb`.
 - have ruby installed and run `bundle` in the root of the project
 - run `rake`, check `output/` dir

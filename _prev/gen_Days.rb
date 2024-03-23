@@ -1,9 +1,7 @@
 require_relative 'Days'
 
-mix_bg = 'DLGBdlgB'
-
 $colored = true
-Days.make name: 'COLOR_Days_MIX', grid: mix_bg
+Days.make name: 'COLOR_Days', grid: ?g
 $colored = false
 
 Days.make name: 'Days', grid: ?g, focus: true

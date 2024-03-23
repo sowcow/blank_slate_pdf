@@ -7,13 +7,13 @@ module BS
     # for expected page order
     # so given block renders that page and all the rest of them
     #
-    def generate prototype, count: 12, &block
+    def generate prototype, count: 12, step: 1, &block
       prototype.local[:pages] = count # overview uses it...
       prototype.data.merge! page_index: 0, page_count: count
       prototype.visit &block if block
       parent = prototype.parent || prototype
 
-      pagination = $bs.g.tl.up.select_right(count)
+      pagination = $bs.g.tl.up.select_right(count, step: step)
       pagination.each_with_index { |pos, i|
         if i == 0
           prototype.data.merge! page_index: i, page_count: count, page_pos: pos

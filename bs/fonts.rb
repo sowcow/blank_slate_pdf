@@ -12,7 +12,7 @@ $noto_semibold = $noto.sub('Medium', 'SemiBold')
 # used for calendar
 $roboto = path.call './fonts/Roboto/Roboto-Regular.ttf'
 $roboto_light = path.call './fonts/Roboto/Roboto-Light.ttf'
-#$roboto_thin = path.call './fonts/Roboto/Roboto-Thin.ttf'
+# $roboto_thin = path.call './fonts/Roboto/Roboto-Thin.ttf'
 #$roboto_bold = path.call './fonts/Roboto/Roboto-Bold.ttf'
 
 # roman literals in Days.pdf
