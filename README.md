@@ -82,6 +82,7 @@ There is predefined background with clock face for hours blocks and the central 
 - Focus of the day
 - Eisenhower matrix in four parts
 - Sketch built over the day
+- Some review-type visual summary after the fact per hour
 - Mix of these
 
 There are some hidden features:
