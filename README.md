@@ -15,6 +15,7 @@ Older portrait full-size PDFs:
 - [Lists.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Lists.pdf)
 
 NOTE:
+- use new three finger gesture to reset the zoom after splitting
 - when using split-mode PDFs, I go with lists being on the left currently
 - closed RM toolbar is assumed
 - I use rm-hacks to hide the round thing in the corner RM adds so that may be assumed in PDFs too
