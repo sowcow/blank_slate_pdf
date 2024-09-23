@@ -2,127 +2,98 @@
 
 # What
 
-PDFs for RM.
+PDFs for RM with experimental features.
 
 # Where
 
-Latest landscape + split-mode PDFs:
-- [Sundays_L12.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Sundays_L12.pdf)
-- [Lists_L12.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Lists_L12.pdf)
+- [32.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/32.pdf)
+- [Q3 2024.pdf monday weeks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/2024_Q3_MON.pdf)
+- [Q3 2024.pdf sunday weeks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/2024_Q3_SUN.pdf)
+- [Q4 2024.pdf monday weeks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/2024_Q4_MON.pdf)
+- [Q4 2024.pdf sunday weeks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/2024_Q4_SUN.pdf)
+- [other](https://github.com/sowcow/blank_slate_pdf/releases/latest/)
 
-Older portrait full-size PDFs:
-- [Days.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Days.pdf)
-- [Lists.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Lists.pdf)
+Also, PDFs I don't use get removed from the list but stay in older releases downloads.
 
-NOTE:
-- use new three finger gesture to reset the zoom after splitting
-- when using split-mode PDFs, I go with lists being on the left currently
-- closed RM toolbar is assumed
-- I use rm-hacks to hide the round thing in the corner RM adds so that may be assumed in PDFs too
-- PDFs I don't use get remeved from the list but may be there in older releases for example there should be Days.pdf with random flat backgrounds more fitting Bujo use
 
-# Current System
+# 32.pdf
 
-- Days PDF as calendar or anything time-related
-- Lists PDF for main things (PA in PARA)
-- Separate files or Quick sheets + tags for most of other things
+![Structure overview](output/COLOR_32.png?raw=true)
 
-# Sundays landscape 1/2 PDF
+Random abstract PDF.
+The main page may be the most interesting by itself.
+Otherwise it simple set of 32 5-item lists with 17 consecutive pages per item.
 
-![Structure overview](output/COLOR_Sundays_L12.png?raw=true)
+- main page has a hexagon grid of roundish links,
+  so it can have experimental uses like mind mapping
+- inside such links there is a single page of content space and a list of five items with links per item to go down further
+- every such item has 17 consecutive pages with pagination marker on top
+- turning pages outside those paginated items just moves between those list pages
+- link for going back/up is in the top right corner
+- must do with such PDFs is to mark or name links before entering them and then to write the same name into the page header after entered the link
 
-Sunday weeks calendar + notes page per day.
-It is made for landscape forced + split 1/2 mode in RM (that requires rm-hacks currently).
+Catchall is not part of the PDF, I assume it should be just flat.
 
-NOTE: They don't use Sunday-week calendars in my location but there may be a point in using this format still.
+This info is also on the last page of the PDF.
 
-Notably navigation from month overview can be made only to weeks.
-The point is in using the week page more.
-Interesting feature of those week pages in Sunday-weeks mode is that weekend days wrap weekdays.
-This adds plan-review functionality without special pages or separate space.
 
-Also some notes from Days.pdf below apply to this too.
+# Q.pdf
 
-# Lists landscape 1/2 PDF
+![Structure overview](output/COLOR_Q.png?raw=true)
 
-![Structure overview](output/COLOR_Lists_L12.png?raw=true)
+Flexible quarter calendar PDF with write-friendly minimalistic UI.
 
-This can be seen as advanced todo lists PDF.
-It is made for landscape forced + split 1/2 mode in RM (that requires rm-hacks currently).
+Main pages: Quarter > Month > Week > Day > Hour
 
-It supports a type of items that need further decomposition because every item has 11 pages inside.
-Adding titles and marking used links is the way to navigate within the PDF.
+Main experimental feature is having extra page per any calendar page - it can be used for plan/review for example.
+Since those extra/review pages have own parallel navigation between them, they can be seen as parallel second calendar with bigger single area for writing.
+Second experimental feature is the presence of own hour pages (covering 12 hours per day).
 
-First page (root) has:
-- links to lists pages, these links have space inside to give short name to the list
-- dots for whatever use, possibly to differentiate file preview by drawing something
+Must know is the use of hidden links, there are two types:
+- moving up/back in main calendar is done by the wide link area in the upper-right corner (also exits extra page into corresponding calendar page)
+- entering extra page is done by the square link in the bottom-left corner (this corner toggles between extra and main page)
 
-Lists:
-- every list has 7 items, linked by squares at the left
-- odd space at the left of every item row can be used for priority/ordering
+Also on month overview page the last square/day of each column/week will open the week overview.
 
-Items:
-- items have 11 consecutive pages each
+Also there is best practice to mark used links before entering them.
 
-Also technically title can be rendered on every page by setting `title: 'ABC'` in `Lists.rb`.
-It should be useful if separate PDF file is used per project.
+Also turning pages opens the next month/week/day/hour.
+From turning pages perspective start of the day is assumed at 7, and end at 6, so if you open 6 and turn to the next page, it gives 7 of the next day (header shows that).
 
-# Days PDF (Monday weeks only, week overivew pages are secondary)
-
-![Structure overview](output/COLOR_Days.png?raw=true)
-
-It is a year calendar having only a single page for everything.
-Day pages have predefined blocks for hours in the form of clock face.
-Also there is a habits grid per month that can be used for word input or for checkmarks.
-
-Single page is a feature because it makes the calendar more single-purpose.
-So it is on the reviewability side of things.
-
-There is predefined background with clock face for hours blocks and the central square can be used as:
+Day pages have predefined background with clock face for hours blocks and the central square can be used as:
 - Focus of the day
 - Eisenhower matrix in four parts
 - Sketch built over the day
-- Some review-type visual summary after the fact per hour
 - Mix of these
 
-There are some hidden features:
-- hidden links below upper corners (second row) that lead from Month view to Habits page
-- hidden links below upper corners that lead from Day view to Week view
-- also less intuitive links from Month view to Week view are positioned right below every column of days
+Flat habit grids are not part of the PDF but there is plenty of more hierarchical plan/review type of space.
 
-# Lists PDF
+This info is also on the last page of the PDF.
 
-![Structure overview](output/COLOR_Lists.png?raw=true)
+# Technical Info
 
-This can be seen as advanced todo lists PDF.
-It supports a type of todo items that need further decomposition because every item has 12 pages inside.
-Also it supports catchall for relevant ideas/inputs that can be processed later.
-Adding titles and marking used links is a good idea to navigate within the PDF.
+Disclaimer: creative chaos codebase that serves it's purpose well lies ahead.
+Other than that, top level `.rb` files should have some comments.
 
-First page (root) is a table of contents:
-- First row of links goes to 12 ideas/inputs pages.
-- Then two rows link to 12 lists pages, these links are bigger so there is space to give them name when needed.
-- Other links below link to items of lists in case that is needed at some point
+Big picture:
 
-Lists:
-- Lists can be accessed just by turning to the next page from the root
-- Every list has 7 items, linked by squares at the left
+- the pdf is defined by a tree structure starting from root page and going down by child page branches that link back to the parent page
+- every child page is defined by link position within the parent page
+- there are sequential collections of pages that share the parent and only the first page of them is linked from the parent, this adds volume to be used so you don't cram things onto one page but the tradeoff is you loose turning to the next-page also opening the sibling page (from parent perspective) interaction
 
-Items:
-- Items have 12 consecutive pages each
-- Also all pages have links to ideas/inputs pages (in the upper-right corner)
+Order of things in code:
 
-Ideas:
-- linked from every page to be very accessible for addition
-- Overall 12 pages with navigation between them at the top or by turning pages
-
-Also title can be rendered on every page by setting `title: 'ABC'` in `Lists.rb`.
-It should be useful if separate PDF file is used per project.
+- generally generation ruby file has pdf description text very early in the file
+- then data for rendering may be generated beforehand if it is needed that way
+- then in separate chunks of code different types of pages are generated
+  (this also makes them appear consequently)
+- (then optionally some advanced rendering depending on all pages being in place is done)
+- also ui helpers may go to the end of file
 
 # Technical Usage
 
-- the readable file with comments currently is `Lists_12.rb`, feel free to ask in issues if that file is unclear in some regards
 - download and extract needed fonts as expected by `bs/fonts.rb`.
+  `ls fonts => Aoboshi_One/  Noto_Sans_Symbols/  Roboto/`
 - have ruby installed and run `bundle` in the root of the project
 - run `rake`, check `output/` dir
 - for development some files generate PDFs by just running `ruby <FileName>.rb`
@@ -139,6 +110,13 @@ It should be useful if separate PDF file is used per project.
 - also Days PDF got clockface and focus area
 - merged other simplistic PDFs back into abstract PDF for lists (that can fit Bujo/PARA by itself);
   it is not abstract in style as early PDFs but there are no arbitrary decisions so it is true to the idea still.
+- went back for asbstract for lists, went for plan/review at all scales in calendar (previously Sunday weeks version had that aspect)
 
+# Maybe todo
+
+- unification about stuff (areas: There.at + there was some grid stuff), lots of code to remove too
+- fuck their coordinates, use top-left as 0,0; also have selection being about centers of cells, corners only play on use; no widths/heights interface, use natural directions
+- RM PRO renders those grays?
+- split each pdf generation between files Q/{data,ui,all}
 
 # [DAFUQPL](https://github.com/dafuqpl/dafuqpl) License

@@ -44,7 +44,7 @@ class Page
 
   # parent-child is core for back navigation
   def child_page type, given_data={}, &block
-    page = Page.add @context, parent: self, data: data.merge({ type: type }).merge(given_data)
+    page = Page.add @context, parent: self, data: data.merge({ type: type }).merge(given_data.to_h)
     page.tag = type
     page.visit &block if block
     page

@@ -29,7 +29,7 @@ module BS
         tag = prototype.tag
         parent.child_page prototype[:type], data do
           page.tag = tag
-          link_back
+          # link_back
           mark2 pos.down(0.5), corner: 0.5
           instance_eval &block if block
         end

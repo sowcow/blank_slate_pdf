@@ -59,7 +59,7 @@ class Grid
 
   # x, y - smaller ones
   def rect x, y, x2, y2
-    Rect[*at(x, y), *at(x2, y2, corner: 1)]
+    Rect[*at(x, y), *at(x2, y2, corner: 0)]
   end
 
   # top-left
@@ -81,7 +81,21 @@ class Grid
   alias rb br
 end
 
+# coords/rect with default size of 1... (to-do?)
 class Rect < Struct.new :x, :y, :x2, :y2
+  # def self.from given
+  #   if given.is_a? Hash
+  #     xs = []
+  #     xs.push given.fetch :x
+  #     xs.push given.fetch :y
+  #     xs.push given[:x2] || given.fetch(:w) + given.fetch(:x)
+  #     xs.push given[:y2] || given.fetch(:w) + given.fetch(:y)
+  #     Rect.new *xs
+  #   else
+  #     Rect.new *given
+  #   end
+  # end
+
   def width
     x2 - x
   end

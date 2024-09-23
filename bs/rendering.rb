@@ -143,11 +143,28 @@ module Rendering
   # store priority and on nesting increment it
   # non-nested way too?
 
+  # omg
+  def polyline *a
+    a = a.first if a.size == 1 && a[0].length > 2
+
+    a = a.dup
+    pdf.move_to a.shift
+    a.each { |xy|
+      pdf.line_to xy
+    }
+    pdf.stroke
+  end
+
   def polygon *a
     a = a.first if a.size == 1 && a[0].length > 2
     pdf.stroke_polygon *a
   end
   alias poly polygon
+
+  def fill_poly *a
+    a = a.first if a.size == 1 && a[0].length > 2
+    pdf.fill_polygon *a
+  end
 
   def draw_grid key
     case key
@@ -280,11 +297,14 @@ module Rendering
 
   # could use At / Pos to differentiate instead of raw
   def link given, target, raw: false, ignore_for_overview_structure: false
-    given = given.to_a
-    given = given.count == 2 ? given+given : given
-    square = grid.rect *given
+    require_relative '../lib/there'
+    given = There.at given
+    square = grid.rect *given.to_area # (raw - ignored...)
 
-    square = Rect.new(*given) if raw
+    # given = given.to_a
+    # given = given.count == 2 ? given+given : given
+    # square = grid.rect *given
+    # square = Rect.from(given) if raw
 
     if $colored
       s = Square[*square.margin] # different squares...

@@ -16,4 +16,4 @@ $roboto_light = path.call './fonts/Roboto/Roboto-Light.ttf'
 #$roboto_bold = path.call './fonts/Roboto/Roboto-Bold.ttf'
 
 # roman literals in Days.pdf
-$ao = path.call './fonts/AoboshiOne-Regular.ttf'
+$ao = path.call './fonts/Aoboshi_One/AoboshiOne-Regular.ttf'
