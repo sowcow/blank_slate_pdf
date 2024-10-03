@@ -55,7 +55,7 @@ BEGIN {
 
 END {
   $week_format = WeekFormat.new ?M
-  Q.make year: 2024, quarter: 3  # 1..4
+  Q.make year: 2024, quarter: 4  # 1..4
 } if __FILE__ == $0
 
 def month_to_days date
@@ -365,7 +365,8 @@ module Q
   def ui_style &block
     $bs.line_width 0.5 do
       # $bs.color '008080', &block
-      $bs.color 8, &block
+      # $bs.color 8, &block
+      $bs.color 'ff8800', &block
     end
   end
 

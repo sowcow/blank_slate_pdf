@@ -164,9 +164,14 @@ module Rounds32
   # rendering helpers
 
   def ui_style &block
+    # $bs.line_width 0.5 do
+    #   # $bs.color '008080', &block
+    #   $bs.color 8, &block
+    # end
     $bs.line_width 0.5 do
       # $bs.color '008080', &block
-      $bs.color 8, &block
+      # $bs.color '00ffff', &block
+      $bs.color 'ff8800', &block
     end
   end
 
