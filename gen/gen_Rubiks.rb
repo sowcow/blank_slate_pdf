@@ -1,10 +1,10 @@
-require_relative '../Rubicks.rb'
+require_relative '../Rubiks.rb'
 
 $colored = true
-Rubicks.make name: 'COLOR_Rubicks'
+Rubiks.make name: 'COLOR_Rubiks'
 $colored = false
 
-Rubicks.make
+Rubiks.make
 
 system 'rm output/info*.png'
 system 'rm output/COLOR*.pdf'

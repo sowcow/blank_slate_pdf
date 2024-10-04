@@ -3,10 +3,10 @@ BEGIN {
 }
 
 END {
-  Rubicks.make
+  Rubiks.make
 } if __FILE__ == $0
 
-module Rubicks
+module Rubiks
   module_function
 
   FORMAT = 16  # 12x16 standard grid fitting RM screen fully
@@ -37,10 +37,10 @@ module Rubicks
 end
 
 
-def Rubicks.make!
+def Rubiks.make!
   # root page generation
   BS.page :root do
-    page.tag = 'Rubicks.pdf'
+    page.tag = 'Rubiks.pdf'
   end
   root = BS.pages.first
 
@@ -64,7 +64,7 @@ def Rubicks.make!
       end
       this_child = root.child_page :scheme, &this_space
       this_child.visit do
-        Rubicks.link_back
+        Rubiks.link_back
       end
       child = this_child unless child
       space = this_space unless space
@@ -79,7 +79,7 @@ def Rubicks.make!
       end
       this_child = root.child_page :scheme, &this_space
       this_child.visit do
-        Rubicks.link_back
+        Rubiks.link_back
       end
     end
 
@@ -178,12 +178,12 @@ def make_color_space count_x: 12, count_y: 16, table:, &block
 end
 
 
-module Rubicks
+module Rubiks
   module_function
 
   # boilerplate
 
-  def make name: 'Rubicks'
+  def make name: 'Rubiks'
     format = FORMAT
 
     path = File.join __dir__, 'output'
