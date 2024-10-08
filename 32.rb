@@ -6,6 +6,8 @@ END {
   Rounds32.make
 } if __FILE__ == $0
 
+$mark_color = 'ff8800'
+
 module Rounds32
   module_function
 
@@ -15,6 +17,7 @@ module Rounds32
 
     Random abstract PDF.
     The main page may be the most interesting by itself.
+    Also there are hexagons on all children pages.
     Otherwise it simple set of 32 5-item lists with 17 consecutive pages per item.
 
     - main page has a hexagon grid of roundish links,
@@ -24,8 +27,6 @@ module Rounds32
     - turning pages outside those paginated items just moves between those list pages
     - link for going back/up is in the top right corner
     - must do with such PDFs is to mark or name links before entering them and then to write the same name into the page header after entered the link
-
-    Catchall is not part of the PDF, I assume it should be just flat.
 
     This info is also on the last page of the PDF.
 
@@ -113,6 +114,7 @@ def Rounds32.make!
       up.link_back
       up.draw_grid grid
       up.draw_footer d[:index] + 1
+      up.draw_hexagons
     end
 
     parent.visit do
@@ -130,6 +132,7 @@ def Rounds32.make!
           up.link_back
           up.draw_grid used_grid
           up.draw_footer "#{d[:round_index] + 1}.#{d[:item_index] + 1}"
+          up.draw_hexagons
         end
       end
 
@@ -247,5 +250,16 @@ module Rounds32
         align: :right, valign: :bottom
       end
     end
+  end
+
+  def draw_hexagons
+    [Hexagon.new.transition([6, 11]), Hexagon.new.rotate.transition([6, 4])].each { |hex|
+      hex.diagonals.each { |xs|
+        xs = xs.map { |x| $bs.grid.at x }
+        $bs.pdf.move_to xs[0]
+        $bs.pdf.line_to xs[1]
+      }
+    }
+    ui_style { $bs.pdf.stroke }
   end
 end

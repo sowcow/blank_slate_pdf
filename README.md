@@ -21,6 +21,7 @@ Also, PDFs I don't use get removed from the list but stay in older releases down
 
 Random abstract PDF.
 The main page may be the most interesting by itself.
+Also there are big hexagons on all children pages.
 Otherwise it simple set of 32 5-item lists with 17 consecutive pages per item.
 
 - main page has a hexagon grid of roundish links,
@@ -110,6 +111,7 @@ Order of things in code:
 - merged other simplistic PDFs back into abstract PDF for lists (that can fit Bujo/PARA by itself);
   it is not abstract in style as early PDFs but there are no arbitrary decisions so it is true to the idea still.
 - went back for asbstract for lists, went for plan/review at all scales in calendar (previously Sunday weeks version had that aspect)
+- went for more geometry with hexagons
 
 # Maybe todo
 

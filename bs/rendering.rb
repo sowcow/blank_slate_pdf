@@ -487,7 +487,7 @@ module Rendering
     (x, y) = grid.at(*at, corner: corner)
     r = grid.xs.step * 0.1
 
-    color 8 do
+    color $mark_color || 8 do
       pdf.line [x, y - r], [x, y + r]
       pdf.stroke
     end
