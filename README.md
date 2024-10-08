@@ -6,6 +6,7 @@ PDFs for RM with experimental features.
 
 # Where
 
+- [Hex.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Hex.pdf)
 - [Rubiks.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Rubiks.pdf)
 - [32.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/32.pdf)
 - [Q4 2024.pdf monday weeks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/2024_Q4_MON.pdf)
@@ -15,13 +16,25 @@ PDFs for RM with experimental features.
 Also, PDFs I don't use get removed from the list but stay in older releases downloads.
 
 
+# Hex.pdf
+
+![Structure overview](output/COLOR_Hex.png?raw=true)
+
+Experimental hexagons background PDF, full description is on the last page of it or in the corresponding `.rb` file here around.
+
+# Rubiks.pdf
+
+![Structure overview](output/COLOR_Rubiks.png?raw=true)
+
+Experimental colored PDF, full description is on the last page of it or in the corresponding `.rb` file here around.
+
 # 32.pdf
 
 ![Structure overview](output/COLOR_32.png?raw=true)
 
 Random abstract PDF.
 The main page may be the most interesting by itself.
-Also there are big hexagons on all children pages.
+Also there are big hexagons on all pages except main as part of the grid for potential interesting uses.
 Otherwise it simple set of 32 5-item lists with 17 consecutive pages per item.
 
 - main page has a hexagon grid of roundish links,

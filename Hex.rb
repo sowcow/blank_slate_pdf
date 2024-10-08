@@ -3,30 +3,27 @@ BEGIN {
 }
 
 END {
-  Rounds32.make
+  Hex.make
 } if __FILE__ == $0
 
 $mark_color = 'ff8800'
 
-module Rounds32
+module Hex
   module_function
 
   FORMAT = 16  # 12x16 standard grid fitting RM screen fully
   DESCRIPTION = <<~END
-    32.pdf
+    Hex.pdf
 
-    Random abstract PDF.
-    The main page may be the most interesting by itself.
-    Also there are big hexagons on all pages except main as part of the grid for potential interesting uses.
-    Otherwise it simple set of 32 5-item lists with 17 consecutive pages per item.
+    PDF to play around with hexagon-like background.
+    
+    The main page has a grid of 32 links to item pages.
+    Every item page has 17 consecutive pages and wide link back in the top-right corner.
 
-    - main page has a hexagon grid of roundish links,
-      so it can have experimental uses like mind mapping
-    - inside such links there is a single page of content space and a list of five items with links per item to go down further
-    - every such item has 17 consecutive pages with pagination marker on top
-    - turning pages outside those paginated items just moves between those list pages
-    - link for going back/up is in the top right corner
-    - must do with such PDFs is to mark or name links before entering them and then to write the same name into the page header after entered the link
+    The interesting part is backgounds used on main or item pages.
+    I'm thinking about mind-map-like uses.
+
+    Main disclaimer when using these abstract PDFs must do is to mark or name links on the main page before entering them and possibly also writing the same name into the item page header after entered the link.
 
     This info is also on the last page of the PDF.
 
@@ -40,7 +37,7 @@ module Rounds32
 end
 
 
-def Rounds32.make!
+def Hex.make!
   # rounds pages are defined by "door"/link area on the main/root page
   rounds = []
 
@@ -57,15 +54,6 @@ def Rounds32.make!
     col_count = i.odd?? 4 : 5
     col_count.times { |j|
       rounds.push << { x: x + j*w, y: y, w: w, h: h }
-
-      # setting data for internal list items here too
-      size = 1.5
-      rounds.last[:items] = 5.times.reverse_each.map.with_index { |i, item_index|
-        value = { x: 0, y: i*size, w: size, h: size }
-        value[:round_index] = index
-        value[:item_index] = item_index
-        value
-      }
       rounds.last[:index] = index
       index += 1
     }
@@ -75,46 +63,19 @@ def Rounds32.make!
 
   # root page generation
   BS.page :root do
-    page.tag = '32.pdf'
+    page.tag = 'Hex.pdf'
   end
   root = BS.pages.first
-
-  # grid for ui
-  grid = SmartGrid.new([0, 12], [0, 16])
-  grid.add_verticals 0.5
-  grid.add_horizontals 0.5
-
-  # bordering lines:
-  grid.drop_lines [0, nil]
-  grid.drop_lines [12, nil]
-  grid.drop_lines [nil, 0]
-  grid.drop_lines [nil, 16]
-
-  # header areas:
-  grid.cut_hole [
-    [0, 12 - Rounds32::LINK_BACK_AREA.w], [15, 16]
-  ]
-  grid.cut_hole [
-    [12 - Rounds32::LINK_BACK_AREA.w, 12], [15, 16]
-  ]
-  used_grid = grid
 
   # rounds pages generation
   parent = root
   rounds.each { |d|
-    child = parent.child_page :round, d do
-      grid = used_grid.dup
-      d[:items].each { |x|
-        at = There.at x
-        grid.cut_hole [
-          [at.x, at.x2], [at.y, at.y2]
-        ]
-      }
-
-      up.link_back
-      up.draw_grid grid
-      up.draw_footer d[:index] + 1
-      up.draw_hexagons
+    child = parent.child_page :item, d do
+      BS::Pagination.generate page, count: 17, step: 0.5 do
+        up.link_back
+        up.draw_footer "#{d[:index] + 1}"
+        up.draw_small_hexagons
+      end
     end
 
     parent.visit do
@@ -122,34 +83,15 @@ def Rounds32.make!
       up.draw_list_door There.at d
     end
   }
-
-  # items of rounds generation
-  BS.xs(:round).each do |parent|
-    parent[:items].each { |d|
-      child = parent.child_page :item, d do
-        BS::Pagination.generate page, count: 17, step: 0.5 do
-          # BS::Pagination.generate page, count: 9, step: 1 do
-          up.link_back
-          up.draw_grid used_grid
-          up.draw_footer "#{d[:round_index] + 1}.#{d[:item_index] + 1}"
-          up.draw_hexagons
-        end
-      end
-
-      parent.visit do
-        link d, child
-      end
-    }
-  end
 end
 
 
-module Rounds32
+module Hex
   module_function
 
   # boilerplate
 
-  def make name: '32'
+  def make name: 'Hex'
     format = FORMAT
 
     path = File.join __dir__, 'output'
@@ -167,13 +109,7 @@ module Rounds32
   # rendering helpers
 
   def ui_style &block
-    # $bs.line_width 0.5 do
-    #   # $bs.color '008080', &block
-    #   $bs.color 8, &block
-    # end
     $bs.line_width 0.5 do
-      # $bs.color '008080', &block
-      # $bs.color '00ffff', &block
       $bs.color 'ff8800', &block
     end
   end
@@ -252,9 +188,26 @@ module Rounds32
     end
   end
 
-  def draw_hexagons
-    [Hexagon.new.transition([6, 11]), Hexagon.new.rotate.transition([6, 4])].each { |hex|
+  def draw_small_hexagons
+    [
+      Hexagon.new.rotate.transition([4, 5]),
+      Hexagon.new.transition([12, 5]),
+      Hexagon.new.rotate.transition([20, 5]),
+
+      Hexagon.new.transition([4, 13]),
+      Hexagon.new.rotate.transition([12, 13]),
+      Hexagon.new.transition([20, 13]),
+
+      Hexagon.new.rotate.transition([4, 21]),
+      Hexagon.new.transition([12, 21]),
+      Hexagon.new.rotate.transition([20, 21]),
+
+      Hexagon.new.transition([4, 29]),
+      Hexagon.new.rotate.transition([12, 29]),
+      Hexagon.new.transition([20, 29]),
+    ].each { |hex|
       hex.diagonals.each { |xs|
+        xs = xs.map { |x, y| [x / 2.0, (y - 1) / 2.0] }
         xs = xs.map { |x| $bs.grid.at x }
         $bs.pdf.move_to xs[0]
         $bs.pdf.line_to xs[1]
