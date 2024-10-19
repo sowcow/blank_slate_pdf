@@ -1,10 +1,30 @@
+# Battery.pdf * new *
+
+- https://sowcow.github.io/blank_slate_pdf/
+
+This PDF is more fitting PARA type of use where flat "projects" folder has multiple such PDFs per project for example.
+For that reason to differentiate PDFs this one has option to configure header for all PDF pages and change visual style (especially relevant to PRO device).
+The grid can be used for a month-long PDF or other things unrelated to time so it still fits the general theme of unconstrained PDFs that can be used in different ways.
+
+Structure is simple:
+- "+" page(s) for whatever conception/abstract/main-page type of content (up to 17 consecutive pages)
+- "-" page is a numbered 6x6 grid of for whatever decomposition into entries
+- entry pages are linked from that 6x6 grid (up to 9 consecutive pages per entry)
+
+Configurables:
+- header text
+- colors and line thickness
+- grid entries can be renamed (numbers by default)
+
+Other:
+- everything except the grid "-" page has pagination shown by small progress marker at the top
+- the making PDF web page works offline (hopefully)
+
+---
+
+> NOTE: Content below is from previous iterations so it may need an update
+
 # Blank Slate PDF
-
-# * new * Latest stuff
-
-- TODO: git pages url
-- TODO: description
-- TODO: that structure screenshots thing may get restored or not
 
 # What
 
@@ -91,8 +111,8 @@ This info is also on the last page of the PDF.
 
 # Technical Info
 
-Disclaimer: creative chaos codebase that serves it's purpose well lies ahead.
-Other than that, top level `.rb` files should have some comments.
+- Disclaimer^2: since move from Ruby to Rust, code style may be in the odd space and lots of things in the README may be obsolete.
+- Disclaimer: creative chaos codebase that serves it's purpose well lies ahead.
 
 Big picture:
 
@@ -138,6 +158,6 @@ Order of things in code:
 - fuck their coordinates, use top-left as 0,0; also have selection being about centers of cells, corners only play on use; no widths/heights interface, use natural directions
 - RM PRO renders those grays?
 - split each pdf generation between files Q/{data,ui,all}
-- went for Rust + WASM to configure PDFs because going more PARA way - folder of PDFs per anything, so pre-generated header on all pages makes sense now
+- went from Ruby to Rust + WASM to configure PDFs because going more PARA way - folder of PDFs per anything, so pre-generated header on all pages makes sense now
 
 # [DAFUQPL](https://github.com/dafuqpl/dafuqpl) License

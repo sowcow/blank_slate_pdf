@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Blank Slate PDF: Battery</title>
+	</head>
+	<body>
+		<noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+
+		<h1>Blank Slate PDF: Battery</h1>
+
+		<form onsubmit="window.makePDF(event)">
+			<label style='display: block'>
+				Header
+				<input
+						name='title'
+						value=""
+						placeholder="Header of every page"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Line thickness
+				<input
+						name='line_thickness'
+						value="0.5"
+						placeholder="0.5 / 1 / 2"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Background grid color
+				<input
+						name='grid_color'
+						value="ffbf00"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Font color
+				<input
+						name='font_color'
+						value="000000"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Renamings of entries
+				<textarea name="renamings" rows="1" cols="15" placeholder="36 - review"></textarea>
+			</label>
+			<button type="submit">Make</button>
+		</form>
+		<script src="./bootstrap.js"></script>
+	</body>
+</html>

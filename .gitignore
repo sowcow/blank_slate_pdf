@@ -1,4 +1,7 @@
-/fonts
-*.pdf
-_output
-*.dot
+/public
+/target
+**/*.rs.bk
+Cargo.lock
+bin/
+pkg/
+wasm-pack.log
