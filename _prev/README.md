@@ -1,3 +1,0 @@
-- this stuff may be broken
-- to test that it need to be moved into the project root and ran with `ruby ABS.rb` for example
-- but actually going back in commit history is the more reliable way to run it
