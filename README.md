@@ -1,5 +1,11 @@
 # Blank Slate PDF
 
+# * new * Latest stuff
+
+- TODO: git pages url
+- TODO: description
+- TODO: that structure screenshots thing may get restored or not
+
 # What
 
 PDFs for RM with experimental features.
@@ -132,5 +138,6 @@ Order of things in code:
 - fuck their coordinates, use top-left as 0,0; also have selection being about centers of cells, corners only play on use; no widths/heights interface, use natural directions
 - RM PRO renders those grays?
 - split each pdf generation between files Q/{data,ui,all}
+- went for Rust + WASM to configure PDFs because going more PARA way - folder of PDFs per anything, so pre-generated header on all pages makes sense now
 
 # [DAFUQPL](https://github.com/dafuqpl/dafuqpl) License
