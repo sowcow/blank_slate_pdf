@@ -14,7 +14,7 @@ pub struct Render<'a, T: Clone> {
 }
 
 fn parse_color(given: &str) -> Color {
-    let hex = given.trim();
+    let hex = given.trim().trim_start_matches('#');
     if hex.len() != 6 {
         return Color::Rgb(Rgb::new(0.0, 0.0, 0.0, None));
     }
@@ -177,4 +177,104 @@ impl<'a, T: Clone> Render<'a, T> {
         current_layer.set_outline_thickness(self.thick);
         current_layer.add_line(line1);
     }
+
+    pub fn archer_target(&self, x1: f32, y1: f32, r1: f32) {
+        use printpdf::path::{PaintMode, WindingOrder};
+        use printpdf::*;
+
+        let doc = &self.pdf.doc;
+        let x = self.mm(self.x(x1));
+        let y = self.mm(self.y(y1));
+        let dr1 = self.x(r1);
+        let dr2 = self.x(r1 * 2.);
+        let r = self.mm(dr2 - dr1);
+
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+
+        // gold     red      blue
+        // #FFE552, #F65058, #00B4E4
+
+        //let outline1 = parse_color("aaaaaa");
+        let outline2 = parse_color("888888");
+        let rr = r / 10.; // radius step
+        let mut circles = vec![
+            //Ring {
+            //    r: rr,
+            //    color: parse_color("ffe552"),
+            //    outline: &outline1,
+            //},
+            Ring {
+                r: rr * 2.,
+                color: parse_color("ffe552"),
+                outline: &outline2,
+            },
+            //Ring {
+            //    r: rr * 3.,
+            //    color: parse_color("f65058"),
+            //    outline: &outline1,
+            //},
+            Ring {
+                r: rr * 4.,
+                color: parse_color("f65058"),
+                outline: &outline2,
+            },
+            //Ring {
+            //    r: rr * 5.,
+            //    color: parse_color("00b4e5"),
+            //    outline: &outline1,
+            //},
+            Ring {
+                r: rr * 6.,
+                color: parse_color("00b4e5"),
+                outline: &outline2,
+            },
+            //Ring {
+            //    r: rr * 7.,
+            //    color: parse_color("cccccc"),
+            //    outline: &outline1,
+            //},
+            Ring {
+                r: rr * 8.,
+                //color: parse_color("888888"),
+                //color: parse_color("a6a6a6"),
+                color: parse_color("cccccc"),
+                outline: &outline2,
+            },
+            //Ring {
+            //    r: rr * 9.,
+            //    color: parse_color("ffffff"),
+            //    outline: &outline1,
+            //},
+            Ring {
+                r: rr * 10.,
+                color: parse_color("ffffff"),
+                outline: &outline2,
+            },
+        ];
+        circles.sort_by(|a, b| b.r.cmp(&a.r));
+
+        for (index, one) in circles.iter().enumerate() {
+            let mode = if index == 0 {
+                PaintMode::FillStroke
+            } else {
+                PaintMode::Fill
+            };
+
+            let line = Polygon {
+                rings: vec![calculate_points_for_circle(one.r, x, y)],
+                mode,
+                winding_order: WindingOrder::EvenOdd,
+            };
+            current_layer.set_outline_color(one.outline.clone());
+            current_layer.set_fill_color(one.color.clone());
+            current_layer.set_outline_thickness(0.5); //self.thick);
+            current_layer.add_polygon(line);
+        }
+    }
+}
+
+struct Ring<'a> {
+    r: Mm,
+    color: Color,
+    outline: &'a Color,
 }

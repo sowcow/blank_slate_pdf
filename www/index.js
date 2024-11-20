@@ -29,6 +29,11 @@ window.makePDF = (event) => {
 
 	let data = Object.fromEntries(new FormData(event.target).entries())
 	let got = wasm.create(data).payload
-	downloadBlob(got, 'Battery.pdf', 'application/octet-stream');
+
+  let name = 'Battery.pdf'
+  if (data.arrows) name = 'Arrows.pdf'
+  if (data.title) name = `${data.title}.pdf`
+
+	downloadBlob(got, name, 'application/octet-stream');
 }
 

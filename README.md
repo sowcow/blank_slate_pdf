@@ -1,6 +1,11 @@
-# Battery.pdf * new *
+# Arrows.pdf * new *
+
+Same as pdf below but with three archery targets per every item of the grid.
+Same link too:
 
 - https://sowcow.github.io/blank_slate_pdf/
+
+# Battery.pdf
 
 This PDF is more fitting PARA type of use where flat "projects" folder has multiple such PDFs per project for example.
 For that reason to differentiate PDFs this one has option to configure header for all PDF pages and change visual style (especially relevant to PRO device).
@@ -8,7 +13,7 @@ The grid can be used for a month-long PDF or other things unrelated to time so i
 
 Structure is simple:
 - "+" page(s) for whatever conception/abstract/main-page type of content (up to 17 consecutive pages)
-- "-" page is a numbered 6x6 grid of for whatever decomposition into entries
+- "-" page is a numbered 6x6 grid of for whatever decomposition into items/entries
 - entry pages are linked from that 6x6 grid (up to 9 consecutive pages per entry)
 
 Configurables:
@@ -18,6 +23,7 @@ Configurables:
 
 Other:
 - everything except the grid "-" page has pagination shown by small progress marker at the top
+  (the point is to never really care about pages within the item, otherwise I may just add more pages per item)
 - the making PDF web page works offline (hopefully)
 
 ---

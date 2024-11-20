@@ -19,9 +19,11 @@ task :default do
     system 'pnpm run build'
   end
 
-  Dir.chdir 'public' do
-    system 'rm *'
-    system 'cp ../www/dist/* .'
-    system 'git add --all && git commit -m "pub" && git push'
-  end
+  # manual shtuff:
+  #
+  # Dir.chdir 'public' do
+  #   system 'rm *'
+  #   system 'cp ../www/dist/* .'
+  #   system 'git add --all && git commit -m "pub" && git push'
+  # end
 end

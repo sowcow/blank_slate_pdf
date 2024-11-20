@@ -40,6 +40,7 @@ struct Input {
     grid_color: String,
     font_color: String,
     renamings: String,
+    arrows: Option<String>,
 }
 
 type PageData = Option<String>;
@@ -93,7 +94,13 @@ pub fn create(given: JsValue) -> JsValue {
                 let subheader = renamings(&subheader, &input.renamings).to_string();
                 let page = pdf.add_page(Some(subheader));
                 pages.push(page.clone());
-                render_delta_entry(&pdf, page.clone(), grid.clone(), &input);
+
+                if i == 1 && input.arrows.is_some() {
+                    render_targets(&pdf, page.clone(), grid.clone(), &input);
+                    render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false);
+                } else {
+                    render_delta_entry(&pdf, page.clone(), grid.clone(), &input, true);
+                }
                 render_tick(
                     &pdf,
                     page,
@@ -236,12 +243,32 @@ fn render_tick(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &In
 }
 
 // page bg
-fn render_delta_entry(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &Input) {
+fn render_delta_entry(
+    pdf: &PDF<PageData>,
+    page: Page<PageData>,
+    grid: Grid,
+    input: &Input,
+    whole_page: bool,
+) {
     let mut render = Render::new(pdf, page, grid.clone());
     render.line_color_hex(&input.grid_color);
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
     for y in 1..=(render.grid.h - 1.) as usize {
+        if !whole_page && (5..15).contains(&y) {
+            continue;
+        }
         render.line(0., y as f32, render.grid.w, y as f32);
     }
+}
+
+fn render_targets(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &Input) {
+    let mut render = Render::new(pdf, page, grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+    let r = 2.8;
+    let dx = 0.10;
+    render.archer_target(6., 12., r);
+    render.archer_target(3. + dx, 7., r);
+    render.archer_target(9. - dx, 7., r);
 }
