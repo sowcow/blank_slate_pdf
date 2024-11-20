@@ -7,7 +7,7 @@
 	<body>
 		<noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
 
-		<h1>Blank Slate PDF: Battery</h1>
+		<h1>Blank Slate PDF: Battery/Arrows</h1>
 
 		<form onsubmit="window.makePDF(event)">
 			<label style='display: block'>
@@ -50,6 +50,10 @@
 				Renamings of entries
 				<textarea name="renamings" rows="1" cols="15" placeholder="36 - review"></textarea>
 			</label>
+			<label style='display: block'>
+        <input type="checkbox" name="arrows" value="arrows">
+        Arrows
+      </label>
 			<button type="submit">Make</button>
 		</form>
 		<script src="./bootstrap.js"></script>
