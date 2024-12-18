@@ -2,6 +2,12 @@ use printpdf::*;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
+// - probably abstract info/idea page from "-" page?
+// 1. yaml single field form (could even use query param with that text to store in bookmark)
+// 2. pages count control
+// 3. template of main header
+// 4. template of item header, separate
+
 mod area;
 mod grid;
 mod page;
@@ -41,6 +47,7 @@ struct Input {
     font_color: String,
     renamings: String,
     arrows: Option<String>,
+    timetable: Option<String>,
 }
 
 type PageData = Option<String>;
@@ -58,14 +65,15 @@ pub fn create(given: JsValue) -> JsValue {
     // main alpha page is existing root page ("+" page)
     let page = pdf.page(0);
     let alpha_page = page.clone();
-    let count_consecutive = 17;
+
+    let count_consecutive = 23;
     render_alpha(&pdf, page.clone(), grid.clone(), &input);
     render_tick(
         &pdf,
         page,
         grid.clone(),
         &input,
-        1. / count_consecutive as f32,
+        1. / (count_consecutive as f32 + 1.),
     );
     // consecutive alpha pages
     for i in 2..=count_consecutive {
@@ -76,7 +84,7 @@ pub fn create(given: JsValue) -> JsValue {
             page,
             grid.clone(),
             &input,
-            i as f32 / count_consecutive as f32,
+            i as f32 / (count_consecutive as f32 + 1.),
         );
     }
 
@@ -87,7 +95,7 @@ pub fn create(given: JsValue) -> JsValue {
     // delta pages that make 6x6=36 entries grid
     for yy in 0..6 {
         for xx in 0..6 {
-            let count_consecutive = 9;
+            let count_consecutive = 11;
             let mut pages = vec![];
             for i in 1..=count_consecutive {
                 let subheader = (xx + yy * 6 + 1).to_string();
@@ -95,18 +103,54 @@ pub fn create(given: JsValue) -> JsValue {
                 let page = pdf.add_page(Some(subheader));
                 pages.push(page.clone());
 
-                if i == 1 && input.arrows.is_some() {
-                    render_targets(&pdf, page.clone(), grid.clone(), &input);
-                    render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false);
+                let both = input.arrows.is_some() && input.timetable.is_some();
+                let one = input.arrows.is_some() || input.timetable.is_some();
+
+                // iterator composition is the way
+                if both {
+                    if i == 1 {
+                        render_targets(&pdf, page.clone(), grid.clone(), &input);
+                        render_delta_entry(&pdf, page.clone(), grid.clone(), &input, true, false);
+                    } else if i == 2 {
+                        render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, true);
+                    } else {
+                        render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, false);
+                    }
+                } else if one {
+                    if i == 1 {
+                        if input.arrows.is_some() {
+                            render_targets(&pdf, page.clone(), grid.clone(), &input);
+                            render_delta_entry(
+                                &pdf,
+                                page.clone(),
+                                grid.clone(),
+                                &input,
+                                true,
+                                false,
+                            );
+                        } else {
+                            render_delta_entry(
+                                &pdf,
+                                page.clone(),
+                                grid.clone(),
+                                &input,
+                                false,
+                                true,
+                            );
+                        }
+                    } else {
+                        render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, false);
+                    }
                 } else {
-                    render_delta_entry(&pdf, page.clone(), grid.clone(), &input, true);
+                    render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, false);
                 }
+
                 render_tick(
                     &pdf,
                     page,
                     grid.clone(),
                     &input,
-                    i as f32 / count_consecutive as f32,
+                    i as f32 / (count_consecutive as f32 + 1.),
                 );
             }
             let page = &pages[0];
@@ -144,10 +188,10 @@ pub fn create(given: JsValue) -> JsValue {
         render.header(&title);
         render.header_link(
             &alpha_page,
-            "+",
+            "-",
             Area::xywh(12. - 1.5, 16., -1.5, -1. + 0.02),
         );
-        render.header_link(&delta_page, "-", Area::xywh(12., 16., -1.5, -1. + 0.02));
+        render.header_link(&delta_page, "+", Area::xywh(12., 16., -1.5, -1. + 0.02));
     }
 
     let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
@@ -219,15 +263,10 @@ fn render_alpha(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &I
     let mut render = Render::new(pdf, page, grid.clone());
     render.line_color_hex(&input.grid_color);
     render.font_color_hex(&input.font_color);
-
     render.thickness(parse_thickness(&input.line_thickness));
-    for i in 1..=((render.grid.h - 1.) as i32 * 2) {
-        let y = (i as f32) / 2.;
-        render.line(0., y, render.grid.w, y);
-    }
-    for i in 1..=((render.grid.w) as i32 * 2 - 1) {
-        let x = (i as f32) / 2.;
-        render.line(x, 0., x, render.grid.h - 1.);
+
+    for y in 1..=(render.grid.h - 1.) as usize {
+        render.line(0., y as f32, render.grid.w, y as f32);
     }
 }
 
@@ -236,7 +275,7 @@ fn render_tick(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &In
     let mut render = Render::new(pdf, page, grid.clone());
     render.line_color_hex(&input.grid_color);
     render.font_color_hex(&input.font_color);
-    let breadth = 12. - 3.;
+    let breadth = 12.;
     let x = ratio * breadth;
     render.thickness(parse_thickness(&input.line_thickness));
     render.line(x, render.grid.h, x, render.grid.h - 0.1);
@@ -248,17 +287,40 @@ fn render_delta_entry(
     page: Page<PageData>,
     grid: Grid,
     input: &Input,
-    whole_page: bool,
+    // too lazy for new type
+    arrows_page: bool,
+    timetable_page: bool,
 ) {
+    if timetable_page {
+        render_timetable(&pdf, page, grid, input);
+        return;
+    }
+
     let mut render = Render::new(pdf, page, grid.clone());
     render.line_color_hex(&input.grid_color);
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
-    for y in 1..=(render.grid.h - 1.) as usize {
-        if !whole_page && (5..15).contains(&y) {
-            continue;
+
+    let mut max_y = render.grid.h;
+    if arrows_page {
+        max_y -= 11.;
+    }
+
+    if arrows_page && input.timetable.is_some() {
+        // just lines as on the following page
+        for y in 1..=4 {
+            render.line(0., y as f32, render.grid.w, y as f32);
         }
-        render.line(0., y as f32, render.grid.w, y as f32);
+        return;
+    }
+
+    for i in 1..=((max_y - 1.) as i32 * 2) {
+        let y = (i as f32) / 2.;
+        render.line(0., y, render.grid.w, y);
+    }
+    for i in 1..=((render.grid.w) as i32 * 2 - 1) {
+        let x = (i as f32) / 2.;
+        render.line(x, 0., x, max_y - 1.);
     }
 }
 
@@ -271,4 +333,60 @@ fn render_targets(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: 
     render.archer_target(6., 12., r);
     render.archer_target(3. + dx, 7., r);
     render.archer_target(9. - dx, 7., r);
+}
+
+static RADIUS_OPTIONS: [f32; 3] = [5., 10., 15.];
+
+fn mark_radius() -> f32 {
+    use rand::seq::SliceRandom;
+    use rand::thread_rng;
+    use wasm_bindgen::prelude::*;
+
+    let mut rng = thread_rng();
+    *RADIUS_OPTIONS.choose(&mut rng).unwrap()
+}
+
+fn render_timetable(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &Input) {
+    let mut render = Render::new(pdf, page, grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    // horizontal lines
+    for y in 1..=(render.grid.h - 1.) as usize {
+        render.line(0., y as f32, render.grid.w, y as f32);
+    }
+
+    // alternating pattern for lines
+    let x1 = render.grid.w / 4.;
+    let x2 = render.grid.w / 2.;
+    let x3 = render.grid.w * 3. / 4.;
+    let text_x = render.grid.w;
+
+    use std::collections::HashMap;
+    let mut mapping = HashMap::new();
+    let start_hour = 6;
+    let start_y = (render.grid.h - 2.) as usize;
+    for i in 0..=12 {
+        let hour = start_hour + i;
+        //let mut hour = (start_hour + i) % 12;
+        //if hour == 0 {
+        //    hour = 12;
+        //}
+        let y = start_y - i;
+        mapping.insert(y, hour);
+    }
+
+    for y in 1..=(render.grid.h - 1.) as usize {
+        if y % 2 != 0 {
+            render.circle(x1, y as f32 - 0.5, mark_radius());
+            render.circle(x3, y as f32 - 0.5, mark_radius());
+        } else {
+            render.circle(x2, y as f32 - 0.5, mark_radius());
+        }
+        if let Some(value) = mapping.get(&(y as usize)) {
+            let text = value.to_string();
+            render.line_text(&text, text_x, 0.33 + y as f32);
+        }
+    }
 }

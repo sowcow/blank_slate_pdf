@@ -18,12 +18,21 @@ task :default do
     system 'pnpm install'
     system 'pnpm run build'
   end
+end
 
-  # manual shtuff:
-  #
-  # Dir.chdir 'public' do
-  #   system 'rm *'
-  #   system 'cp ../www/dist/* .'
-  #   system 'git add --all && git commit -m "pub" && git push'
-  # end
+# does it work from rake or only manual?
+task :shtuff do
+  Dir.chdir 'public' do
+    system 'rm *'
+    system 'cp ../www/dist/* .'
+    system 'git add --all && git commit -m "pub" && git push'
+  end
+end
+
+task :dev do
+  sh 'watchexec -r -e rs,toml -- rake dev_one'
+end
+
+task :dev_one do
+  sh 'cargo build; wasm-pack build; cd www; pnpm install; pnpm run start'
 end

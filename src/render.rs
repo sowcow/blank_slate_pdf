@@ -271,6 +271,60 @@ impl<'a, T: Clone> Render<'a, T> {
             current_layer.add_polygon(line);
         }
     }
+
+    pub fn circle(&self, x: f32, y: f32, r: f32) {
+        use printpdf::path::{PaintMode, WindingOrder};
+        use printpdf::*;
+
+        let doc = &self.pdf.doc;
+        let x = self.mm(self.x(x));
+        let y = self.mm(self.y(y));
+        let r = self.mm(r);
+
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+
+        let mode = if flip_coin() {
+            PaintMode::Fill
+        } else {
+            PaintMode::Stroke
+        };
+
+        let line = Polygon {
+            rings: vec![calculate_points_for_circle(r, x, y)],
+            mode,
+            winding_order: WindingOrder::EvenOdd,
+        };
+        let color = self.line_color.clone();
+
+        current_layer.set_fill_color(color.clone());
+        current_layer.set_outline_color(color.clone());
+        current_layer.set_outline_thickness(2.); //self.thick);
+        current_layer.add_polygon(line);
+    }
+
+    pub fn line_text(&self, text: &str, grid_x: f32, grid_y: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        let font = doc.add_builtin_font(BuiltinFont::CourierOblique).unwrap();
+
+        let size = 16.;
+        let pad = 8.;
+        let dx = text.chars().count() as f32 * 32.;
+        let x = self.mm(self.x(grid_x) - dx); // - pad);
+        let y = self.mm(self.y(grid_y) + pad);
+
+        let color = self.font_color.clone();
+        current_layer.set_fill_color(color);
+        current_layer.use_text(text, size, x, y, &font);
+    }
+}
+
+fn flip_coin() -> bool {
+    use rand::thread_rng;
+    use rand::Rng;
+    use wasm_bindgen::prelude::*;
+    let mut rng = thread_rng();
+    rng.gen_bool(0.5)
 }
 
 struct Ring<'a> {

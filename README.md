@@ -1,9 +1,15 @@
-# Arrows.pdf * new *
+# Update * new *
 
-Same as pdf below but with three archery targets per every item of the grid.
-Same link too:
+- swapped "+" and "-", idea is that "-" should be about outline/constraints/rules and possibly some logs, while "+" is about any decomposition and actual specifics
+- now there is also nested by time decomposition option within each "+" square (timetable)
+
+Otherwise it is same as Battery.pdf.
 
 - https://sowcow.github.io/blank_slate_pdf/
+
+# Arrows.pdf
+
+Same as pdf below but with three archery targets per every square item.
 
 # Battery.pdf
 
@@ -12,9 +18,9 @@ For that reason to differentiate PDFs this one has option to configure header fo
 The grid can be used for a month-long PDF or other things unrelated to time so it still fits the general theme of unconstrained PDFs that can be used in different ways.
 
 Structure is simple:
-- "+" page(s) for whatever conception/abstract/main-page type of content (up to 17 consecutive pages)
-- "-" page is a numbered 6x6 grid of for whatever decomposition into items/entries
-- entry pages are linked from that 6x6 grid (up to 9 consecutive pages per entry)
+- now "-" page(s) for whatever conception/abstract/main-page type of content.
+- now "+" page is a numbered 6x6 grid of for whatever decomposition into items/entries
+- entry pages are linked from that 6x6 grid
 
 Configurables:
 - header text
@@ -22,7 +28,7 @@ Configurables:
 - grid entries can be renamed (numbers by default)
 
 Other:
-- everything except the grid "-" page has pagination shown by small progress marker at the top
+- everything except the grid now "+" page has pagination shown by small progress marker at the top
   (the point is to never really care about pages within the item, otherwise I may just add more pages per item)
 - the making PDF web page works offline (hopefully)
 
