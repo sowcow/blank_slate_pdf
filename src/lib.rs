@@ -47,6 +47,7 @@ struct Input {
     font_color: String,
     renamings: String,
     arrows: Option<String>,
+    target: Option<String>,
     timetable: Option<String>,
 }
 
@@ -103,8 +104,9 @@ pub fn create(given: JsValue) -> JsValue {
                 let page = pdf.add_page(Some(subheader));
                 pages.push(page.clone());
 
-                let both = input.arrows.is_some() && input.timetable.is_some();
-                let one = input.arrows.is_some() || input.timetable.is_some();
+                let with_targets = input.arrows.is_some() || input.target.is_some();
+                let both = with_targets && input.timetable.is_some();
+                let one = with_targets || input.timetable.is_some();
 
                 // iterator composition is the way
                 if both {
@@ -128,6 +130,8 @@ pub fn create(given: JsValue) -> JsValue {
                                 true,
                                 false,
                             );
+                        } else if input.target.is_some() {
+                            render_single_target(&pdf, page.clone(), grid.clone(), &input);
                         } else {
                             render_delta_entry(
                                 &pdf,
@@ -333,6 +337,14 @@ fn render_targets(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: 
     render.archer_target(6., 12., r);
     render.archer_target(3. + dx, 7., r);
     render.archer_target(9. - dx, 7., r);
+}
+
+fn render_single_target(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &Input) {
+    let mut render = Render::new(pdf, page, grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+    let r = 4.; // less in-your-face that 5.
+    render.archer_target(6., 8., r);
 }
 
 static RADIUS_OPTIONS: [f32; 3] = [5., 10., 15.];
