@@ -4,6 +4,7 @@ use crate::page::*;
 use crate::pdf::*;
 use printpdf::*;
 
+#[derive(Clone)]
 pub struct Render<'a, T: Clone> {
     pub pdf: &'a PDF<T>,
     pub page: Page<T>,
@@ -312,6 +313,38 @@ impl<'a, T: Clone> Render<'a, T> {
         let dx = text.chars().count() as f32 * 32.;
         let x = self.mm(self.x(grid_x) - dx); // - pad);
         let y = self.mm(self.y(grid_y) + pad);
+
+        let color = self.font_color.clone();
+        current_layer.set_fill_color(color);
+        current_layer.use_text(text, size, x, y, &font);
+    }
+
+    pub fn line_start_text(&self, text: &str, grid_x: f32, grid_y: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        let font = doc.add_builtin_font(BuiltinFont::CourierOblique).unwrap();
+
+        let size = 16.;
+        let pad = 8.;
+        let dx = 0.;
+        let x = self.mm(self.x(grid_x) - dx); // - pad);
+        let y = self.mm(self.y(grid_y) + pad);
+
+        let color = self.font_color.clone();
+        current_layer.set_fill_color(color);
+        current_layer.use_text(text, size, x, y, &font);
+    }
+
+    pub fn center_text(&self, text: &str, grid_x: f32, grid_y: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        let font = doc.add_builtin_font(BuiltinFont::CourierOblique).unwrap();
+
+        let size = 16.;
+        let pad = 8.;
+        let dx = text.chars().count() as f32 * 32.;
+        let x = self.mm(self.x(grid_x) - dx / 2.); // - pad);
+        let y = self.mm(self.y(grid_y) + pad / 2.);
 
         let color = self.font_color.clone();
         current_layer.set_fill_color(color);

@@ -37,3 +37,26 @@ window.makePDF = (event) => {
 	downloadBlob(got, name, 'application/octet-stream');
 }
 
+window.makeBalanceLog = (event) => {
+	event.preventDefault()
+	event.stopPropagation()
+
+	let data = Object.fromEntries(new FormData(event.target).entries())
+	let got = wasm.create_balance_log(data).payload
+
+  let name = 'Balance_log.pdf'
+
+	downloadBlob(got, name, 'application/octet-stream');
+}
+
+window.makeBalanceDetail = (event) => {
+	event.preventDefault()
+	event.stopPropagation()
+
+	let data = Object.fromEntries(new FormData(event.target).entries())
+	let got = wasm.create_balance_detail(data).payload
+
+  let name = 'Balance_detail.pdf'
+
+	downloadBlob(got, name, 'application/octet-stream');
+}

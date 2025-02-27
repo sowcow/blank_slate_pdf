@@ -2,12 +2,22 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Blank Slate PDF: Battery</title>
+		<title>Blank Slate PDF</title>
 	</head>
 	<body>
 		<noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
 
-		<h1>Blank Slate PDF: Battery/Arrows</h1>
+		<h1>Blank Slate PDF</h1>
+
+		<h2>Balance.pdf</h2>
+    <form onsubmit="window.makeBalanceLog(event)">
+      <button type="submit">Make Log</button>
+    </form>
+    <form onsubmit="window.makeBalanceDetail(event)">
+      <button type="submit">Make Detail</button>
+    </form>
+
+		<h2>Battery.pdf</h2>
 
 		<form onsubmit="window.makePDF(event)">
 			<label style='display: block'>
@@ -51,19 +61,20 @@
 				<textarea name="renamings" rows="1" cols="15" placeholder="36 - review"></textarea>
 			</label>
 			<label style='display: block'>
-        <input type="checkbox" name="target" value="target" checked="checked">
-        Target (good for calendar, daily focus page)
+        <input type="checkbox" name="target" value="target">
+        Target (idea for calendar, daily focus page)
       </label>
 			<label style='display: block'>
         <input type="checkbox" name="arrows" value="arrows">
-        Arrows (legacy option, three targets, conflicts with Target option)
+        Arrows (legacy calendar idea, three targets, conflicts with Target option)
       </label>
 			<label style='display: block'>
         <input type="checkbox" name="timetable" value="timetable">
-        Timetable
+        Timetable (calendar idea with time granularity)
       </label>
 			<button type="submit">Make</button>
 		</form>
+
 		<script src="./bootstrap.js"></script>
 	</body>
 </html>

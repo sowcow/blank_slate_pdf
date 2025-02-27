@@ -1,5 +1,17 @@
-# Update * new *
+# * new * Balance.pdf
 
+Abstract PDFs with human faculties.
+The idea is that humans perform five core actions, and roughly speaking, there are five corresponding faculties.
+For example, "move" corresponds to the body faculty, which aligns with Strength, Endurance, and Agility stats from S.P.E.C.I.A.L.
+Also, "roll" would be a catchall for more complex action sequences or actions involving unknown variables (~Luck attribute).
+
+There are two PDFs: Log and Detail.
+Log is the faculties page repeated 100 times.
+Detail has a single faculties page ("+" page) with linked/nested empty pages for any content.
+
+# Previous Updates
+
+- single target idea "daily focus"
 - swapped "+" and "-", idea is that "-" should be about outline/constraints/rules and possibly some logs, while "+" is about any decomposition and actual specifics
 - now there is also nested by time decomposition option within each "+" square (timetable)
 
