@@ -49,6 +49,8 @@ struct Input {
     arrows: Option<String>,
     target: Option<String>,
     timetable: Option<String>,
+    balance: Option<String>,
+    empty_pages: Option<String>,
 }
 
 type PageData = Option<String>;
@@ -93,59 +95,83 @@ pub fn create(given: JsValue) -> JsValue {
     let delta_page = pdf.add_page(None);
     render_delta(&pdf, delta_page.clone(), grid.clone(), &input);
 
+    #[derive(Default)]
+    struct Planned {
+        timetable: Option<bool>,
+        balance: Option<bool>,
+        target: Option<bool>,
+        arrows: Option<bool>,
+        empty: Option<bool>,
+    }
+    let mut plan: Vec<Planned> = vec![];
+
+    // (ordered these things, optimizing to not have double-jumps in key use cases)
+    // - time decomposition (goes first since it could have appointment entries)
+    // first)
+    // - faculties decomposition (balance, habits type of thing)
+    // - focus pages (target/arrows) (goes as review page, if previous are used, they should be
+    // more valuable as overview/summary since they are single pages and are detailed,
+    // not to say that drawing an arrow can be done on any page given RM-PRO colors and transparent
+    // tools)
+    //
+    if input.timetable.is_some() {
+        plan.push(Planned {
+            timetable: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.balance.is_some() {
+        plan.push(Planned {
+            balance: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.target.is_some() {
+        plan.push(Planned {
+            target: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.arrows.is_some() {
+        plan.push(Planned {
+            arrows: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.empty_pages.is_some() {
+        let count_goal = 11;
+        for x in (plan.len() + 1)..=count_goal {
+            plan.push(Planned {
+                empty: Some(true),
+                ..Default::default()
+            });
+        }
+    }
+
     // delta pages that make 6x6=36 entries grid
     for yy in 0..6 {
         for xx in 0..6 {
-            let count_consecutive = 11;
             let mut pages = vec![];
-            for i in 1..=count_consecutive {
+            let count_consecutive = plan.len();
+            for (ii, planned) in plan.iter().enumerate() {
+                let i = ii + 1;
                 let subheader = (xx + yy * 6 + 1).to_string();
                 let subheader = renamings(&subheader, &input.renamings).to_string();
                 let page = pdf.add_page(Some(subheader));
                 pages.push(page.clone());
 
-                let with_targets = input.arrows.is_some() || input.target.is_some();
-                let both = with_targets && input.timetable.is_some();
-                let one = with_targets || input.timetable.is_some();
-
-                // iterator composition is the way
-                if both {
-                    if i == 1 {
-                        render_targets(&pdf, page.clone(), grid.clone(), &input);
-                        render_delta_entry(&pdf, page.clone(), grid.clone(), &input, true, false);
-                    } else if i == 2 {
-                        render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, true);
-                    } else {
-                        render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, false);
-                    }
-                } else if one {
-                    if i == 1 {
-                        if input.arrows.is_some() {
-                            render_targets(&pdf, page.clone(), grid.clone(), &input);
-                            render_delta_entry(
-                                &pdf,
-                                page.clone(),
-                                grid.clone(),
-                                &input,
-                                true,
-                                false,
-                            );
-                        } else if input.target.is_some() {
-                            render_single_target(&pdf, page.clone(), grid.clone(), &input);
-                        } else {
-                            render_delta_entry(
-                                &pdf,
-                                page.clone(),
-                                grid.clone(),
-                                &input,
-                                false,
-                                true,
-                            );
-                        }
-                    } else {
-                        render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, false);
-                    }
-                } else {
+                if planned.timetable.is_some() {
+                    render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, true);
+                } else if planned.balance.is_some() {
+                    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                    let mut page = page.clone();
+                    render_faculties(&mut page, render);
+                } else if planned.target.is_some() {
+                    render_single_target(&pdf, page.clone(), grid.clone(), &input);
+                } else if planned.arrows.is_some() {
+                    render_targets(&pdf, page.clone(), grid.clone(), &input);
+                    render_delta_entry(&pdf, page.clone(), grid.clone(), &input, true, false);
+                } else if planned.empty.is_some() {
                     render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, false);
                 }
 
@@ -444,6 +470,8 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
         line_thickness: "1".into(),
         renamings: "".into(),
         title: "".into(),
+        balance: Some("".into()),
+        empty_pages: Some("checked".into()),
         target: None,
         timetable: None,
     };
@@ -526,6 +554,21 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
     produce_faculty("express", 0., 2.);
     produce_faculty("roll", 4., 2.);
 
+    produce_nested(&mut pdf, "express-OPT".into(), 0.0 / 2., 8.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "express-SON".into(), 1.0 / 2., 8.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "express-CHE".into(), 2.0 / 2., 8.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "express-HAP".into(), 3.0 / 2., 8.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "scan-OPT".into(), 4.0 / 2., 12.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "scan-SON".into(), 5.0 / 2., 12.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "scan-CHE".into(), 6.0 / 2., 12.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "scan-HAP".into(), 7.0 / 2., 12.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "move-A".into(), 8.0 / 2., 3.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "move-PP".into(), 8.0 / 2., 2.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "move-L".into(), 8.0 / 2., 1.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "move-E".into(), 8.0 / 2., 0.0 / 2., 1., 1.);
+
     // after all pages are there,
     // render header and navigation for all pages
     //
@@ -597,13 +640,13 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render.line(0., 3., 4., 3.);
     render.line(0., 3.5, 4., 3.5);
 
-    render.line(8., 0.5, w, 0.5);
+    render.line(9., 0.5, w, 0.5);
     render.line(8., 1., w, 1.);
-    render.line(8., 1.5, w, 1.5);
+    render.line(9., 1.5, w, 1.5);
     render.line(8., 2., w, 2.);
-    render.line(8., 2.5, w, 2.5);
+    render.line(9., 2.5, w, 2.5);
     render.line(8., 3., w, 3.);
-    render.line(8., 3.5, w, 3.5);
+    render.line(9., 3.5, w, 3.5);
 
     let dy = 8.;
     //render.line(0., dy + 0.5, 4., dy + 0.5);
@@ -649,6 +692,41 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
                                                  // roll as hand and tool action
     render.center_text("scan", 6., 10. - 0.125); // p
     render.center_text("move", 6., 2. - 0.125);
+
+    // scan features:
+    render.line(4., 12., 4., 13.);
+    render.center_text("OPT", 4.5, 12.5 - 0.125);
+
+    render.line(5., 12., 5., 13.);
+    render.center_text("SON", 5.5, 12.5 - 0.125);
+
+    render.line(6., 12., 6., 13.);
+    render.center_text("CHE", 6.5, 12.5 - 0.125);
+
+    render.line(7., 12., 7., 13.);
+    render.center_text("HAP", 7.5, 12.5 - 0.125);
+
+    render.line(8., 12., 8., 13.);
+
+    // express features: (mirroring scan features, but mirror neurons allow indirect HAP for example by
+    // observing another's dance as expression)
+    render.center_text("OPT", 0.5, 8.5 - 0.125);
+
+    render.line(1., 8., 1., 9.);
+    render.center_text("SON", 1.5, 8.5 - 0.125);
+
+    render.line(2., 8., 2., 9.);
+    render.center_text("CHE", 2.5, 8.5 - 0.125);
+
+    render.line(3., 8., 3., 9.);
+    render.center_text("HAP", 3.5, 8.5 - 0.125);
+
+    // move features:
+    render.line(9., 0., 9., 4.);
+    render.center_text("A", 8.5, 3.5 - 0.125);
+    render.center_text("PP", 8.5, 2.5 - 0.125);
+    render.center_text("L", 8.5, 1.5 - 0.125);
+    render.center_text("E", 8.5, 0.5 - 0.125);
 }
 
 // big grid has faster transition from my faculties page
