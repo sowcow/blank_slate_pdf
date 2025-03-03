@@ -60,17 +60,28 @@
 				Renamings of entries
 				<textarea name="renamings" rows="1" cols="15" placeholder="36 - review"></textarea>
 			</label>
+      <p>
+        Check boxes below configure what pages are nested/linked inside each square of the grid at the "+" page.
+      </p>
+			<label style='display: block'>
+        <input type="checkbox" name="timetable" value="timetable">
+        Timetable (calendar idea with time granularity)
+      </label>
+			<label style='display: block'>
+        <input type="checkbox" name="balance" value="balance">
+        Balance (human faculties page, can be seen as abstract habits page)
+      </label>
 			<label style='display: block'>
         <input type="checkbox" name="target" value="target">
         Target (idea for calendar, daily focus page)
       </label>
 			<label style='display: block'>
         <input type="checkbox" name="arrows" value="arrows">
-        Arrows (legacy calendar idea, three targets, conflicts with Target option)
+        Arrows (three targets version)
       </label>
 			<label style='display: block'>
-        <input type="checkbox" name="timetable" value="timetable">
-        Timetable (calendar idea with time granularity)
+        <input type="checkbox" name="empty_pages" value="empty_pages" checked="checked">
+        Empty pages (a set of empty pages, by unchecking this you can have instead ability to navigate between selected things above just by turning pages)
       </label>
 			<button type="submit">Make</button>
 		</form>
