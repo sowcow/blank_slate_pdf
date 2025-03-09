@@ -53,6 +53,14 @@ struct Input {
     empty_pages: Option<String>,
 }
 
+#[derive(Deserialize, Serialize)]
+struct Input123 {
+    title: String,
+    line_thickness: String,
+    grid_color: String,
+    font_color: String,
+}
+
 type PageData = Option<String>;
 
 #[wasm_bindgen]
@@ -569,6 +577,17 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
     produce_nested(&mut pdf, "move-L".into(), 8.0 / 2., 1.0 / 2., 1., 1.);
     produce_nested(&mut pdf, "move-E".into(), 8.0 / 2., 0.0 / 2., 1., 1.);
 
+    produce_nested(&mut pdf, "Day".into(), 1.5 / 2., 2.5 / 2., 1., 1.);
+    produce_nested(&mut pdf, "Night".into(), 1.5 / 2., 0.5 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "roll-C".into(), 8.0 / 2., 14.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "roll-D".into(), 8.0 / 2., 13.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "roll-E".into(), 8.0 / 2., 12.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "roll-F".into(), 8.0 / 2., 11.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "roll-G".into(), 8.0 / 2., 10.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "roll-A".into(), 8.0 / 2., 9.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "roll-B".into(), 8.0 / 2., 8.0 / 2., 1., 1.);
+
     // after all pages are there,
     // render header and navigation for all pages
     //
@@ -676,9 +695,19 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render.line(0., dy + 3.0, w, dy + 3.0);
     //render.line(0., dy + 3.5, w, dy + 3.5);
 
-    render.line_start_text("exercise/rest", 0., 0.);
-    render.line_text("inventory", 12., 0.);
+    //render.line_color_hex(&input.grid_color);
+    //render.font_color_hex(&input.font_color);
+    //render.thickness(parse_thickness(&input.line_thickness));
+    render.circle_omg(2., 2., 2.);
+    render.circle_omg(2., 3., 0.5);
+    render.half_circle(2., 1., 0.5);
 
+    render.line(8., 13., 8., 15.);
+    render.line(9., 15., 9., 8.);
+
+    //render.line_start_text("exercise/rest", 0., 0.);
+    //render.line_text("inventory", 12., 0.); // L generally speaking is about moving things up/down
+    //
     // "sea" of special is move, express is ~charisma but also cognitive summary expression for memory/intelligence-sake
     render.center_text("express", 2., 6. - 0.125);
     render.center_text("think", 6., 6. - 0.125); // i
@@ -746,4 +775,152 @@ fn render_big_grid(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input:
         let x = i as f32;
         render.line(x, 0., x, max_y - 1.);
     }
+}
+
+#[wasm_bindgen]
+pub fn create_123(given: JsValue) -> JsValue {
+    use serde_wasm_bindgen::from_value;
+    let input: Input123 = from_value(given).unwrap();
+
+    let data: PageData = None;
+
+    let mut pdf = PDF::new(&input.title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    let mut page = pdf.page(0);
+    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+
+    render_123(&mut page, render, &input);
+
+    for x in 2..=100 {
+        let mut page = pdf.add_page(None);
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render_123(&mut page, render, &input);
+    }
+
+    // after all pages are there,
+    // render header and navigation for all pages
+    //
+    for page in pdf.pages.iter() {
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        let data = page.data.clone();
+        let title = if let Some(subheader) = data {
+            if input.title == "" {
+                format!("{}", subheader)
+            } else {
+                format!("{} - {}", &input.title, subheader)
+            }
+        } else {
+            input.title.clone()
+        };
+        render.header(&title);
+        //render.header_link(
+        //    &alpha_page,
+        //    "-",
+        //    Area::xywh(12. - 1.5, 16., -1.5, -1. + 0.02),
+        //);
+        //render.header_link(&delta_page, "+", Area::xywh(12., 16., -1.5, -1. + 0.02));
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+fn render_123(page: &mut Page<Option<String>>, mut render: Render<PageData>, input: &Input123) {
+    //let grid_color = input.gri"ffbf00";
+    //let font_color = "000000";
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    render.hline(15., None, None);
+    render.sm_center_text("1.", 0.0 + 0.5, 14.0 + 0.5 - 0.125);
+
+    render.hline(14., None, None);
+    render.sm_center_text("1.1", 0.0 + 0.5, 13.0 + 0.5 - 0.125);
+    render.sm_center_text("1.2", 4.0 + 0.5, 13.0 + 0.5 - 0.125);
+    render.sm_center_text("1.3", 8.0 + 0.5, 13.0 + 0.5 - 0.125);
+
+    render.vline(1., Some(13.), Some(10.));
+    render.sm_center_text("1.1.1", 0.0 + 0.5, 12.0 + 0.5 - 0.125);
+    render.sm_center_text("1.1.2", 0.0 + 0.5, 11.0 + 0.5 - 0.125);
+    render.sm_center_text("1.1.3", 0.0 + 0.5, 10.0 + 0.5 - 0.125);
+
+    render.vline(4., Some(14.), Some(10.));
+    render.vline(5., Some(13.), Some(10.));
+    render.sm_center_text("1.2.1", 4.0 + 0.5, 12.0 + 0.5 - 0.125);
+    render.sm_center_text("1.2.2", 4.0 + 0.5, 11.0 + 0.5 - 0.125);
+    render.sm_center_text("1.2.3", 4.0 + 0.5, 10.0 + 0.5 - 0.125);
+
+    render.vline(8., Some(14.), Some(10.));
+    render.vline(9., Some(13.), Some(10.));
+    render.sm_center_text("1.3.1", 8.0 + 0.5, 12.0 + 0.5 - 0.125);
+    render.sm_center_text("1.3.2", 8.0 + 0.5, 11.0 + 0.5 - 0.125);
+    render.sm_center_text("1.3.3", 8.0 + 0.5, 10.0 + 0.5 - 0.125);
+    render.hline(13., None, None);
+    render.hline(12., None, None);
+    render.hline(11., None, None);
+
+    // 2.
+
+    render.hline(10., None, None);
+    render.sm_center_text("2.", 0.0 + 0.5, 9.0 + 0.5 - 0.125);
+
+    render.hline(9., None, None);
+    render.sm_center_text("2.1", 0.0 + 0.5, 8.0 + 0.5 - 0.125);
+    render.sm_center_text("2.2", 4.0 + 0.5, 8.0 + 0.5 - 0.125);
+    render.sm_center_text("2.3", 8.0 + 0.5, 8.0 + 0.5 - 0.125);
+
+    render.vline(1., Some(8.), Some(5.));
+    render.sm_center_text("2.1.1", 0.0 + 0.5, 7.0 + 0.5 - 0.125);
+    render.sm_center_text("2.1.2", 0.0 + 0.5, 6.0 + 0.5 - 0.125);
+    render.sm_center_text("2.1.3", 0.0 + 0.5, 5.0 + 0.5 - 0.125);
+
+    render.vline(4., Some(9.), Some(5.));
+    render.vline(5., Some(8.), Some(5.));
+    render.sm_center_text("2.2.1", 4.0 + 0.5, 7.0 + 0.5 - 0.125);
+    render.sm_center_text("2.2.2", 4.0 + 0.5, 6.0 + 0.5 - 0.125);
+    render.sm_center_text("2.2.3", 4.0 + 0.5, 5.0 + 0.5 - 0.125);
+
+    render.vline(8., Some(9.), Some(5.));
+    render.vline(9., Some(8.), Some(5.));
+    render.sm_center_text("2.3.1", 8.0 + 0.5, 7.0 + 0.5 - 0.125);
+    render.sm_center_text("2.3.2", 8.0 + 0.5, 6.0 + 0.5 - 0.125);
+    render.sm_center_text("2.3.3", 8.0 + 0.5, 5.0 + 0.5 - 0.125);
+    render.hline(8., None, None);
+    render.hline(7., None, None);
+    render.hline(6., None, None);
+
+    // 3.
+
+    render.hline(5., None, None);
+    render.sm_center_text("3.", 0.0 + 0.5, 4.0 + 0.5 - 0.125);
+
+    render.hline(4., None, None);
+    render.sm_center_text("3.1", 0.0 + 0.5, 3.0 + 0.5 - 0.125);
+    render.sm_center_text("3.2", 4.0 + 0.5, 3.0 + 0.5 - 0.125);
+    render.sm_center_text("3.3", 8.0 + 0.5, 3.0 + 0.5 - 0.125);
+
+    render.vline(1., Some(3.), Some(0.));
+    render.sm_center_text("3.1.1", 0.0 + 0.5, 2.0 + 0.5 - 0.125);
+    render.sm_center_text("3.1.2", 0.0 + 0.5, 1.0 + 0.5 - 0.125);
+    render.sm_center_text("3.1.3", 0.0 + 0.5, 0.0 + 0.5 - 0.125);
+
+    render.vline(4., Some(4.), Some(0.));
+    render.vline(5., Some(3.), Some(0.));
+    render.sm_center_text("3.2.1", 4.0 + 0.5, 2.0 + 0.5 - 0.125);
+    render.sm_center_text("3.2.2", 4.0 + 0.5, 1.0 + 0.5 - 0.125);
+    render.sm_center_text("3.2.3", 4.0 + 0.5, 0.0 + 0.5 - 0.125);
+
+    render.vline(8., Some(4.), Some(0.));
+    render.vline(9., Some(3.), Some(0.));
+    render.sm_center_text("3.3.1", 8.0 + 0.5, 2.0 + 0.5 - 0.125);
+    render.sm_center_text("3.3.2", 8.0 + 0.5, 1.0 + 0.5 - 0.125);
+    render.sm_center_text("3.3.3", 8.0 + 0.5, 0.0 + 0.5 - 0.125);
+    render.hline(3., None, None);
+    render.hline(2., None, None);
+    render.hline(1., None, None);
 }

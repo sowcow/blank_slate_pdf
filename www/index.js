@@ -60,3 +60,16 @@ window.makeBalanceDetail = (event) => {
 
 	downloadBlob(got, name, 'application/octet-stream');
 }
+
+window.make123 = (event) => {
+	event.preventDefault()
+	event.stopPropagation()
+
+	let data = Object.fromEntries(new FormData(event.target).entries())
+	let got = wasm.create_123(data).payload
+
+  let name = '123.pdf'
+  if (data.title) name = `${data.title}-123.pdf`
+
+	downloadBlob(got, name, 'application/octet-stream');
+}

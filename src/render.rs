@@ -273,6 +273,174 @@ impl<'a, T: Clone> Render<'a, T> {
         }
     }
 
+    #[inline]
+    pub fn calculate_points_for_half_circle<P: Into<Pt>>(
+        radius: P,
+        offset_x: P,
+        offset_y: P,
+    ) -> Vec<(Point, bool)> {
+        // PDF doesn't understand what a "circle" is, so we have to
+        // approximate it.
+        let C: f32 = 0.551915024494;
+
+        let (radius, offset_x, offset_y) = (radius.into(), offset_x.into(), offset_y.into());
+        let radius = radius.0;
+
+        let p10 = Point {
+            x: Pt(0.0 * radius),
+            y: Pt(1.0 * radius),
+        };
+        let p11 = Point {
+            x: Pt(C * radius),
+            y: Pt(1.0 * radius),
+        };
+        let p12 = Point {
+            x: Pt(1.0 * radius),
+            y: Pt(C * radius),
+        };
+        let p13 = Point {
+            x: Pt(1.0 * radius),
+            y: Pt(0.0 * radius),
+        };
+
+        let p20 = Point {
+            x: Pt(1.0 * radius),
+            y: Pt(0.0 * radius),
+        };
+        let p21 = Point {
+            x: Pt(1.0 * radius),
+            y: Pt(-C * radius),
+        };
+        let p22 = Point {
+            x: Pt(C * radius),
+            y: Pt(-1.0 * radius),
+        };
+        let p23 = Point {
+            x: Pt(0.0 * radius),
+            y: Pt(-1.0 * radius),
+        };
+
+        let p30 = Point {
+            x: Pt(0.0 * radius),
+            y: Pt(-1.0 * radius),
+        };
+        let p31 = Point {
+            x: Pt(-C * radius),
+            y: Pt(-1.0 * radius),
+        };
+        let p32 = Point {
+            x: Pt(-1.0 * radius),
+            y: Pt(-C * radius),
+        };
+        let p33 = Point {
+            x: Pt(-1.0 * radius),
+            y: Pt(0.0 * radius),
+        };
+
+        let p40 = Point {
+            x: Pt(-1.0 * radius),
+            y: Pt(0.0 * radius),
+        };
+        let p41 = Point {
+            x: Pt(-1.0 * radius),
+            y: Pt(C * radius),
+        };
+        let p42 = Point {
+            x: Pt(-C * radius),
+            y: Pt(1.0 * radius),
+        };
+        let p43 = Point {
+            x: Pt(0.0 * radius),
+            y: Pt(1.0 * radius),
+        };
+
+        let mut pts = vec![
+            (p10, true),
+            (p11, true),
+            (p12, true),
+            (p13, false),
+            (p20, true),
+            (p21, true),
+            (p22, true),
+            (p23, false),
+            //(p30, true),
+            //(p31, true),
+            //(p32, true),
+            //(p33, false),
+            //(p40, true),
+            //(p41, true),
+            //(p42, true),
+            //(p43, false),
+        ];
+
+        for &mut (ref mut p, _) in pts.iter_mut() {
+            p.x.0 += offset_x.0;
+            p.y.0 += offset_y.0;
+        }
+
+        pts
+    }
+
+    pub fn half_circle(&self, x: f32, y: f32, r: f32) {
+        let dr = self.x(1.);
+        let r = dr * r;
+
+        let x = self.mm(self.x(x));
+        let y = self.mm(self.y(y));
+        let r = self.mm(r);
+
+        //let dr = self.mm(dr2 - dr1);
+        //let r = selfr * dr;
+        //self.circle(x, y, r * dr);
+
+        use printpdf::path::{PaintMode, WindingOrder};
+        use printpdf::*;
+
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        let mode = PaintMode::Stroke;
+
+        let line = Polygon {
+            rings: vec![Self::calculate_points_for_half_circle(r, x, y)],
+            mode,
+            winding_order: WindingOrder::EvenOdd,
+        };
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color.clone());
+        current_layer.set_outline_thickness(1.); //self.thick);
+        current_layer.add_polygon(line);
+    }
+
+    pub fn circle_omg(&self, x: f32, y: f32, r: f32) {
+        let dr = self.x(1.);
+        let r = dr * r;
+
+        let x = self.mm(self.x(x));
+        let y = self.mm(self.y(y));
+        let r = self.mm(r);
+
+        //let dr = self.mm(dr2 - dr1);
+        //let r = selfr * dr;
+        //self.circle(x, y, r * dr);
+
+        use printpdf::path::{PaintMode, WindingOrder};
+        use printpdf::*;
+
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        let mode = PaintMode::Stroke;
+
+        let line = Polygon {
+            rings: vec![calculate_points_for_circle(r, x, y)],
+            mode,
+            winding_order: WindingOrder::EvenOdd,
+        };
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color.clone());
+        current_layer.set_outline_thickness(1.); //self.thick);
+        current_layer.add_polygon(line);
+    }
+
     pub fn circle(&self, x: f32, y: f32, r: f32) {
         use printpdf::path::{PaintMode, WindingOrder};
         use printpdf::*;
@@ -349,6 +517,33 @@ impl<'a, T: Clone> Render<'a, T> {
         let color = self.font_color.clone();
         current_layer.set_fill_color(color);
         current_layer.use_text(text, size, x, y, &font);
+    }
+    pub fn sm_center_text(&self, text: &str, grid_x: f32, grid_y: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        let font = doc.add_builtin_font(BuiltinFont::CourierOblique).unwrap();
+
+        let size = 12.;
+        let pad = 10.;
+        let dx = text.chars().count() as f32 * size * 2.;
+        let x = self.mm(self.x(grid_x) - dx / 2.); // - pad);
+        let y = self.mm(self.y(grid_y) + pad / 2.);
+
+        let color = self.font_color.clone();
+        current_layer.set_fill_color(color);
+        current_layer.use_text(text, size, x, y, &font);
+    }
+
+    pub fn hline(&self, y: f32, x1: Option<f32>, x2: Option<f32>) {
+        let x1: f32 = x1.unwrap_or(0.);
+        let x2: f32 = x2.unwrap_or(self.grid.w);
+        self.line(x1, y, x2, y);
+    }
+
+    pub fn vline(&self, x: f32, y1: Option<f32>, y2: Option<f32>) {
+        let y1: f32 = y1.unwrap_or(0.);
+        let y2: f32 = y2.unwrap_or(self.grid.h);
+        self.line(x, y1, x, y2);
     }
 }
 
