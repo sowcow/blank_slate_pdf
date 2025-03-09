@@ -9,14 +9,6 @@
 
 		<h1>Blank Slate PDF</h1>
 
-		<h2>Balance.pdf</h2>
-    <form onsubmit="window.makeBalanceLog(event)">
-      <button type="submit">Make Log</button>
-    </form>
-    <form onsubmit="window.makeBalanceDetail(event)">
-      <button type="submit">Make Detail</button>
-    </form>
-
 		<h2>Battery.pdf</h2>
 
 		<form onsubmit="window.makePDF(event)">
@@ -85,6 +77,68 @@
       </label>
 			<button type="submit">Make</button>
 		</form>
+
+		<h2>Balance.pdf</h2>
+
+    <form onsubmit="window.makeBalanceLog(event)">
+      <button type="submit">Make Log</button>
+    </form>
+    <form onsubmit="window.makeBalanceDetail(event)">
+      <button type="submit">Make Detail</button>
+    </form>
+
+		<h2>123.pdf</h2>
+
+    <p>
+      Decomposition into three.
+      Three levels of nesting flat on one page.
+      Log - 100 such pages.
+    </p>
+
+    <p>
+      (I'm considering linked version too, probably 27 links for leaves -> 11 empty pages each.
+      No idea if second layer of this nesting has any use.)
+    </p>
+
+    <form onsubmit="window.make123(event)">
+			<label style='display: block'>
+				Header
+				<input
+          name='title'
+          value=""
+          placeholder="Header of every page"
+          type="text"
+        />
+			</label>
+			<label style='display: block'>
+				Line thickness
+				<input
+						name='line_thickness'
+						value="0.5"
+						placeholder="0.5 / 1 / 2"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Background grid color
+				<input
+						name='grid_color'
+						value="ffbf00"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Font color
+				<input
+						name='font_color'
+						value="000000"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+      <button type="submit">Make 123</button>
+    </form>
 
 		<script src="./bootstrap.js"></script>
 	</body>
