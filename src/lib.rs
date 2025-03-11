@@ -596,11 +596,31 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
     let mut produce_faculty = |name: &str, x: f32, y: f32| {
         // star is fun, since the whole faculties page is like a human too
         let base: String = format!("*-{}", name).into();
-        produce_nested(&mut pdf, base.clone(), x, y + 0.5, 4., 2.);
+        let mut dx = 0.;
+        let mut dy = 0.;
+        if name == "think" {
+            dx = 0.25;
+        }
+        produce_nested(&mut pdf, base.clone(), x + dx, y + 0.5, 4. - dx * 2., 2.);
         // mitigating A's is important, no order issues here :train:
-        produce_nested(&mut pdf, format!("A-{}", name).into(), x + 1., y, 2., 1.);
+        let mut shift = 0.;
+        if name == "think" {
+            shift = 1.5 / 2.; // omf
+        }
+        produce_nested(
+            &mut pdf,
+            format!("A-{}", name).into(),
+            x + 1. + shift,
+            y,
+            2. - shift * 2.,
+            1.,
+        );
         produce_nested(&mut pdf, format!("B-{}", name).into(), x, y + 1.5, 2., 1.);
-        produce_nested(&mut pdf, format!("C-{}", name).into(), x, y, 2., 1.);
+        let mut w = 2.;
+        if name == "think" {
+            w = 0.5;
+        }
+        produce_nested(&mut pdf, format!("C-{}", name).into(), x, y, w, 1.);
         produce_nested(
             &mut pdf,
             format!("D-{}", name).into(),
@@ -609,6 +629,91 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
             2.,
             1.,
         );
+
+        if name == "think" {
+            // omf: / 2.
+            produce_nested(
+                &mut pdf,
+                format!("{}-r(cog)", name).into(),
+                4.5 / 2.,
+                4. / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-u(cog)", name).into(),
+                5.0 / 2.,
+                4. / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-ap(cog)", name).into(),
+                5.5 / 2.,
+                4. / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-an(cog)", name).into(),
+                6.0 / 2.,
+                4. / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-e(cog)", name).into(),
+                6.5 / 2.,
+                4. / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-cr(cog)", name).into(),
+                7.0 / 2.,
+                4. / 2.,
+                0.5,
+                0.5,
+            );
+
+            produce_nested(
+                &mut pdf,
+                format!("{}-f(kn)", name).into(),
+                4.0 / 2.,
+                5. / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-con(kn)", name).into(),
+                4.0 / 2.,
+                5.5 / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-p(kn)", name).into(),
+                4.0 / 2.,
+                6.0 / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-m(kn)", name).into(),
+                4.0 / 2.,
+                6.5 / 2.,
+                0.5,
+                0.5,
+            );
+        }
     };
     produce_faculty("scan", 2., 4.);
     produce_faculty("think", 2., 2.);
@@ -835,6 +940,33 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render.center_text("PP", 8.5, 2.5 - 0.125);
     render.center_text("L", 8.5, 1.5 - 0.125);
     render.center_text("E", 8.5, 0.5 - 0.125);
+
+    // int. training framework
+    render.hline(4.5, Some(4.5), Some(7.5));
+    render.vline(4.5, Some(4.), Some(4.5));
+    render.vline(5.0, Some(4.), Some(4.5));
+    render.vline(5.5, Some(4.), Some(4.5));
+    render.vline(6.5, Some(4.), Some(4.5));
+    render.vline(7.0, Some(4.), Some(4.5));
+    render.vline(7.5, Some(4.), Some(4.5));
+
+    render.sm_center_text("r", 4.5 + 0.25, 4.0 + 0.25 - 0.125);
+    render.sm_center_text("u", 5.0 + 0.25, 4.0 + 0.25 - 0.125);
+    render.sm_center_text("a", 5.5 + 0.25, 4.0 + 0.25 - 0.125);
+    render.sm_center_text("a", 6.0 + 0.25, 4.0 + 0.25 - 0.125);
+    render.sm_center_text("e", 6.5 + 0.25, 4.0 + 0.25 - 0.125);
+    render.sm_center_text("c", 7.0 + 0.25, 4.0 + 0.25 - 0.125);
+
+    render.sm_center_text("f", 4.0 + 0.25, 5.0 + 0.25 - 0.125);
+    render.sm_center_text("c", 4.0 + 0.25, 5.5 + 0.25 - 0.125);
+    render.sm_center_text("p", 4.0 + 0.25, 6.0 + 0.25 - 0.125);
+    render.sm_center_text("m", 4.0 + 0.25, 6.5 + 0.25 - 0.125);
+
+    render.vline(4.5, Some(5.), Some(7.));
+    render.hline(5., Some(4.), Some(4.5));
+    render.hline(5.5, Some(4.), Some(4.5));
+    render.hline(6.5, Some(4.), Some(4.5));
+    render.hline(7., Some(4.), Some(4.5));
 }
 
 // big grid has faster transition from my faculties page
