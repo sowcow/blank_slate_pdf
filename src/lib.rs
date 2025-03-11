@@ -57,6 +57,7 @@ struct Input {
 
 #[derive(Deserialize, Serialize)]
 struct Input123 {
+    action: String,
     title: String,
     line_thickness: String,
     grid_color: String,
@@ -858,8 +859,15 @@ fn render_big_grid(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input:
 #[wasm_bindgen]
 pub fn create_123(given: JsValue) -> JsValue {
     use serde_wasm_bindgen::from_value;
-    let input: Input123 = from_value(given).unwrap();
+    let input: Input123 = from_value(given.clone()).unwrap();
+    if input.action == "log" {
+        create_123_log(input)
+    } else {
+        create_123_detail(given)
+    }
+}
 
+pub fn create_123_log(input: Input123) -> JsValue {
     let data: PageData = None;
 
     let mut pdf = PDF::new(&input.title, Setup::rm_pro(), data);
@@ -907,9 +915,160 @@ pub fn create_123(given: JsValue) -> JsValue {
     serde_wasm_bindgen::to_value(&m).unwrap()
 }
 
+#[wasm_bindgen]
+pub fn create_123_detail(given: JsValue) -> JsValue {
+    use serde_wasm_bindgen::from_value;
+    let input: Input123 = from_value(given).unwrap();
+
+    let data: PageData = None;
+    let title = input.title.clone();
+
+    let mut pdf = PDF::new(&title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    // main alpha page is existing root page ("-" page)
+    let mut page = pdf.page(0);
+    let alpha_page = page.clone();
+
+    // shitty fix, actually styles should apply separately
+    let shit_input = Input {
+        arrows: None,
+        grid_color: input.grid_color.clone().into(), // into by macro idea
+        font_color: input.font_color.clone().into(),
+        line_thickness: input.line_thickness.clone().into(),
+        renamings: "".into(),
+        title: input.title.clone().into(),
+        balance: None,
+        empty_pages: None,
+        target: None,
+        timetable: None,
+        square: None,
+        hal: None,
+    };
+
+    let count_consecutive = 23;
+    render_alpha(&pdf, page.clone(), grid.clone(), &shit_input);
+    render_tick(
+        &pdf,
+        page.clone(),
+        grid.clone(),
+        &shit_input,
+        1. / (count_consecutive as f32 + 1.),
+    );
+    // consecutive alpha pages
+    for i in 2..=count_consecutive {
+        let page = pdf.add_page(None);
+        render_alpha(&pdf, page.clone(), grid.clone(), &shit_input);
+        render_tick(
+            &pdf,
+            page,
+            grid.clone(),
+            &shit_input,
+            i as f32 / (count_consecutive as f32 + 1.),
+        );
+    }
+
+    let mut whole_page = pdf.add_page(None); // whole: three levels of 123 decomposition on one page
+    let mut render = Render::new(&pdf, whole_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    render_123(&mut page, render, &input);
+
+    let mut produce_nested =
+        |pdf: &mut PDF<PageData>, subheader: String, x: f32, y: f32, sizex: f32, sizey: f32| {
+            let count_consecutive = 11;
+            let mut pages = vec![];
+            for i in 1..=count_consecutive {
+                let page = pdf.add_page(Some(subheader.clone()));
+                pages.push(page.clone());
+                render_big_grid(&pdf, page.clone(), grid.clone(), &shit_input);
+
+                render_tick(
+                    &pdf,
+                    page,
+                    grid.clone(),
+                    &shit_input,
+                    i as f32 / (count_consecutive as f32 + 1.),
+                );
+            }
+            let page = &pages[0];
+
+            let door = Area::xywh(x * 2., y * 2., sizex, sizey);
+            let mut render = Render::new(&pdf, whole_page.clone(), grid.clone());
+            render.link(&page, door.clone());
+            (page.clone(), door)
+        };
+
+    produce_nested(&mut pdf, "1.1.1".into(), 0.0 / 2., 12.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "1.1.2".into(), 0.0 / 2., 11.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "1.1.3".into(), 0.0 / 2., 10.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "1.2.1".into(), 4.0 / 2., 12.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "1.2.2".into(), 4.0 / 2., 11.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "1.2.3".into(), 4.0 / 2., 10.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "1.3.1".into(), 8.0 / 2., 12.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "1.3.2".into(), 8.0 / 2., 11.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "1.3.3".into(), 8.0 / 2., 10.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "2.1.1".into(), 0.0 / 2., 7.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "2.1.2".into(), 0.0 / 2., 6.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "2.1.3".into(), 0.0 / 2., 5.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "2.2.1".into(), 4.0 / 2., 7.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "2.2.2".into(), 4.0 / 2., 6.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "2.2.3".into(), 4.0 / 2., 5.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "2.3.1".into(), 8.0 / 2., 7.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "2.3.2".into(), 8.0 / 2., 6.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "2.3.3".into(), 8.0 / 2., 5.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "3.1.1".into(), 0.0 / 2., 2.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "3.1.2".into(), 0.0 / 2., 1.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "3.1.3".into(), 0.0 / 2., 0.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "3.2.1".into(), 4.0 / 2., 2.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "3.2.2".into(), 4.0 / 2., 1.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "3.2.3".into(), 4.0 / 2., 0.0 / 2., 1., 1.);
+
+    produce_nested(&mut pdf, "3.3.1".into(), 8.0 / 2., 2.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "3.3.2".into(), 8.0 / 2., 1.0 / 2., 1., 1.);
+    produce_nested(&mut pdf, "3.3.3".into(), 8.0 / 2., 0.0 / 2., 1., 1.);
+
+    // after all pages are there,
+    // render header and navigation for all pages
+    //
+    for page in pdf.pages.iter() {
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        let data = page.data.clone();
+        let title = if let Some(subheader) = data {
+            if input.title == "" {
+                format!("{}", subheader)
+            } else {
+                format!("{} - {}", &input.title, subheader)
+            }
+        } else {
+            input.title.clone()
+        };
+        render.header(&title);
+        render.header_link(
+            &alpha_page,
+            "-",
+            Area::xywh(12. - 1.5, 16., -1.5, -1. + 0.02),
+        );
+        render.header_link(&whole_page, "+", Area::xywh(12., 16., -1.5, -1. + 0.02));
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
 fn render_123(page: &mut Page<Option<String>>, mut render: Render<PageData>, input: &Input123) {
-    //let grid_color = input.gri"ffbf00";
-    //let font_color = "000000";
     render.line_color_hex(&input.grid_color);
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
