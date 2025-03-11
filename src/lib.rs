@@ -51,6 +51,8 @@ struct Input {
     timetable: Option<String>,
     balance: Option<String>,
     empty_pages: Option<String>,
+    square: Option<String>,
+    hal: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -110,6 +112,8 @@ pub fn create(given: JsValue) -> JsValue {
         target: Option<bool>,
         arrows: Option<bool>,
         empty: Option<bool>,
+        square: Option<bool>,
+        hal: Option<bool>,
     }
     let mut plan: Vec<Planned> = vec![];
 
@@ -131,6 +135,18 @@ pub fn create(given: JsValue) -> JsValue {
     if input.balance.is_some() {
         plan.push(Planned {
             balance: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.square.is_some() {
+        plan.push(Planned {
+            square: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.hal.is_some() {
+        plan.push(Planned {
+            hal: Some(true),
             ..Default::default()
         });
     }
@@ -172,8 +188,27 @@ pub fn create(given: JsValue) -> JsValue {
                     render_delta_entry(&pdf, page.clone(), grid.clone(), &input, false, true);
                 } else if planned.balance.is_some() {
                     let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                    render.line_color_hex(&input.grid_color);
+                    render.font_color_hex(&input.font_color);
+                    render.thickness(parse_thickness(&input.line_thickness));
                     let mut page = page.clone();
                     render_faculties(&mut page, render);
+                } else if planned.square.is_some() {
+                    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                    render.line_color_hex(&input.grid_color);
+                    render.font_color_hex(&input.font_color);
+                    render.thickness(parse_thickness(&input.line_thickness));
+
+                    let mut page = page.clone();
+                    render_square(&mut page, render);
+                } else if planned.hal.is_some() {
+                    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                    render.line_color_hex(&input.grid_color);
+                    render.font_color_hex(&input.font_color);
+                    render.thickness(parse_thickness(&input.line_thickness));
+
+                    let mut page = page.clone();
+                    render_hal(&mut page, render);
                 } else if planned.target.is_some() {
                     render_single_target(&pdf, page.clone(), grid.clone(), &input);
                 } else if planned.arrows.is_some() {
@@ -309,6 +344,7 @@ fn render_alpha(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &I
 }
 
 // pagination tick-mark
+// omg ratio does not allow to not-render conditionally on single tick
 fn render_tick(pdf: &PDF<PageData>, page: Page<PageData>, grid: Grid, input: &Input, ratio: f32) {
     let mut render = Render::new(pdf, page, grid.clone());
     render.line_color_hex(&input.grid_color);
@@ -447,11 +483,23 @@ pub fn create_balance_log(given: JsValue) -> JsValue {
 
     let mut page = pdf.page(0);
     let mut render = Render::new(&pdf, page.clone(), grid.clone());
+    let grid_color = "ffbf00";
+    let font_color = "000000";
+    render.line_color_hex(grid_color);
+    render.font_color_hex(font_color);
+    render.thickness(0.5);
+
     render_faculties(&mut page, render);
 
     for x in 2..=100 {
         let mut page = pdf.add_page(None);
         let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        let grid_color = "ffbf00";
+        let font_color = "000000";
+        render.line_color_hex(grid_color);
+        render.font_color_hex(font_color);
+        render.thickness(0.5);
+
         render_faculties(&mut page, render);
     }
 
@@ -482,6 +530,8 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
         empty_pages: Some("checked".into()),
         target: None,
         timetable: None,
+        square: None,
+        hal: None,
     };
 
     let count_consecutive = 23;
@@ -508,6 +558,9 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
 
     let mut whole_page = pdf.add_page(None); // whole: man/actions/...
     let mut render = Render::new(&pdf, whole_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
     render_faculties(&mut whole_page, render.clone());
 
     // nested pages for faculties
@@ -619,12 +672,37 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
     serde_wasm_bindgen::to_value(&m).unwrap()
 }
 
-fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData>) {
-    let grid_color = "ffbf00";
-    let font_color = "000000";
-    render.line_color_hex(&grid_color);
-    render.font_color_hex(&font_color);
+fn render_square(page: &mut Page<Option<String>>, mut render: Render<PageData>) {
+    render.hline(15., None, None);
+    render.hline(12., None, None);
+    render.hline(9., None, None);
+    render.hline(6., None, None);
+    render.hline(3., None, None);
+    //render.hline(2., None, None);
+    //render.hline(1., None, None);
 
+    render.vline(3., Some(3.), Some(15.));
+    render.vline(6., Some(3.), Some(15.));
+    render.vline(9., Some(3.), Some(15.));
+}
+
+fn render_hal(page: &mut Page<Option<String>>, mut render: Render<PageData>) {
+    for i in 1..=15 {
+        render.hline(i as f32, None, None);
+    }
+
+    let y = 4.;
+    render.vline(6., Some(y - 1.), Some(y + 1.));
+
+    render.circle_omg(6., y, 6.);
+    render.circle_omg(6., y, 5.);
+    render.circle_omg(6., y, 4.);
+    render.circle_omg(6., y, 3.);
+    render.circle_omg(6., y, 2.);
+    render.circle_omg(6., y, 1.);
+}
+
+fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData>) {
     let w = render.grid.w;
 
     render.line(0., 4., render.grid.w, 4.);

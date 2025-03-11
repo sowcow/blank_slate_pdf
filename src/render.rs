@@ -389,10 +389,6 @@ impl<'a, T: Clone> Render<'a, T> {
         let y = self.mm(self.y(y));
         let r = self.mm(r);
 
-        //let dr = self.mm(dr2 - dr1);
-        //let r = selfr * dr;
-        //self.circle(x, y, r * dr);
-
         use printpdf::path::{PaintMode, WindingOrder};
         use printpdf::*;
 
@@ -405,9 +401,6 @@ impl<'a, T: Clone> Render<'a, T> {
             mode,
             winding_order: WindingOrder::EvenOdd,
         };
-        let color = self.line_color.clone();
-        current_layer.set_outline_color(color.clone());
-        current_layer.set_outline_thickness(1.); //self.thick);
         current_layer.add_polygon(line);
     }
 
@@ -435,9 +428,6 @@ impl<'a, T: Clone> Render<'a, T> {
             mode,
             winding_order: WindingOrder::EvenOdd,
         };
-        let color = self.line_color.clone();
-        current_layer.set_outline_color(color.clone());
-        current_layer.set_outline_thickness(1.); //self.thick);
         current_layer.add_polygon(line);
     }
 
