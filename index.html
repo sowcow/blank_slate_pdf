@@ -100,10 +100,16 @@
     <p>
       Decomposition into three.
       Three levels of nesting flat on one page.
+    </p>
+    <div>
       Log - 100 such pages.
+      <div />
       Details - linked version: Battery pdf but having 123 grid with 27 links -> simple 11 empty pages each.
       (not need for second nested 123 grids - for that usage have separate pdfs)
-    </p>
+      <div />
+      Columns - simplistic pdf with 3 numbered columns.
+    </div>
+    <p />
 
     <form onsubmit="window.make123(event)">
 			<label style='display: block'>
@@ -142,9 +148,11 @@
 						type="text"
 						/>
 			</label>
+      <button type="submit" name="action" value="detail">Make 123 detail</button>
+      <div />
       <button type="submit" name="action" value="log">Make 123 log</button>
       <div />
-      <button type="submit" name="action" value="detail">Make 123 detail</button>
+      <button type="submit" name="action" value="columns_log">Make 3-columns log</button>
     </form>
 
 		<script src="./bootstrap.js"></script>
