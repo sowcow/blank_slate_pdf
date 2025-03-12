@@ -994,9 +994,53 @@ pub fn create_123(given: JsValue) -> JsValue {
     let input: Input123 = from_value(given.clone()).unwrap();
     if input.action == "log" {
         create_123_log(input)
+    } else if input.action == "columns_log" {
+        create_123_columns_log(input)
     } else {
         create_123_detail(given)
     }
+}
+
+pub fn create_123_columns_log(input: Input123) -> JsValue {
+    let data: PageData = None;
+
+    let mut pdf = PDF::new(&input.title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    let mut page = pdf.page(0);
+    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+
+    render_123_columns(&mut page, render, &input);
+
+    for x in 2..=100 {
+        let mut page = pdf.add_page(None);
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render_123_columns(&mut page, render, &input);
+    }
+
+    // after all pages are there,
+    // render header and navigation for all pages
+    //
+    for page in pdf.pages.iter() {
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        let data = page.data.clone();
+        let title = if let Some(subheader) = data {
+            if input.title == "" {
+                format!("{}", subheader)
+            } else {
+                format!("{} - {}", &input.title, subheader)
+            }
+        } else {
+            input.title.clone()
+        };
+        render.header(&title);
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
 }
 
 pub fn create_123_log(input: Input123) -> JsValue {
@@ -1292,4 +1336,29 @@ fn render_123(page: &mut Page<Option<String>>, mut render: Render<PageData>, inp
     render.hline(3., None, None);
     render.hline(2., None, None);
     render.hline(1., None, None);
+}
+
+fn render_123_columns(
+    page: &mut Page<Option<String>>,
+    mut render: Render<PageData>,
+    input: &Input123,
+) {
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    render.center_text("1.", 2., 14.5 - 0.125);
+    render.center_text("2.", 6., 14.5 - 0.125);
+    render.center_text("3.", 10., 14.5 - 0.125);
+
+    for i in 1..=13 {
+        render.hline(i as f32, None, None);
+    }
+
+    //render.line_color_hex("000000");
+    //render.thickness(parse_thickness("1"));
+    render.vline(4., None, Some(15.));
+    render.vline(8., None, Some(15.));
+    render.hline(14., None, None);
+    render.hline(15., None, None);
 }
