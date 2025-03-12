@@ -615,18 +615,26 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
             2. - shift * 2.,
             1.,
         );
-        produce_nested(&mut pdf, format!("B-{}", name).into(), x, y + 1.5, 2., 1.);
+        let mut w = 2.;
+        if name == "think" {
+            w = 1.;
+        }
+        produce_nested(&mut pdf, format!("B-{}", name).into(), x, y + 1.5, w, 1.);
         let mut w = 2.;
         if name == "think" {
             w = 0.5;
         }
         produce_nested(&mut pdf, format!("C-{}", name).into(), x, y, w, 1.);
+        let mut shift = 0.;
+        if name == "think" {
+            shift = 1.0 / 2.; // omf
+        }
         produce_nested(
             &mut pdf,
             format!("D-{}", name).into(),
-            x + 1.,
+            x + 1. + shift,
             y + 1.5,
-            2.,
+            2. - shift * 2.,
             1.,
         );
 
@@ -710,6 +718,41 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
                 format!("{}-m(kn)", name).into(),
                 4.0 / 2.,
                 6.5 / 2.,
+                0.5,
+                0.5,
+            );
+
+            // imagination/memory
+            // no problem in naming, gotta record mapping anyway
+            produce_nested(
+                &mut pdf,
+                format!("{}-VIS", name).into(),
+                5.0 / 2.,
+                7.5 / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-VER", name).into(),
+                5.5 / 2.,
+                7.5 / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-INT", name).into(),
+                6.0 / 2.,
+                7.5 / 2.,
+                0.5,
+                0.5,
+            );
+            produce_nested(
+                &mut pdf,
+                format!("{}-KIN", name).into(),
+                6.5 / 2.,
+                7.5 / 2.,
                 0.5,
                 0.5,
             );
@@ -967,6 +1010,31 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render.hline(5.5, Some(4.), Some(4.5));
     render.hline(6.5, Some(4.), Some(4.5));
     render.hline(7., Some(4.), Some(4.5));
+
+    // imagination/memory mapped to senses visuospatial,verbal, (chemical goes as intuition of states(own/social), h as
+    // kinestetic/motor imagination.
+    //
+    // there is way more to add somehow: episodic/semantic/conditioned, association goes into
+    // episodic I assume, different layers involved
+
+    render.sm_center_text("o", 5.0 + 0.25, 8.0 - 0.25 - 0.125);
+    render.sm_center_text("s", 5.5 + 0.25, 8.0 - 0.25 - 0.125);
+    render.sm_center_text("c", 6.0 + 0.25, 8.0 - 0.25 - 0.125);
+    render.sm_center_text("h", 6.5 + 0.25, 8.0 - 0.25 - 0.125);
+
+    render.hline(7.5, Some(5.0), Some(7.0));
+    render.vline(5.0, Some(8.), Some(7.5));
+    render.vline(5.5, Some(8.), Some(7.5));
+    render.vline(6.5, Some(8.), Some(7.5));
+    render.vline(7.0, Some(8.), Some(7.5));
+
+    // no use yet?
+    //
+    //render.vline(7.5, Some(5.), Some(7.));
+    //render.hline(5., Some(8.), Some(7.5));
+    //render.hline(5.5, Some(8.), Some(7.5));
+    //render.hline(6.5, Some(8.), Some(7.5));
+    //render.hline(7., Some(8.), Some(7.5));
 }
 
 // big grid has faster transition from my faculties page
