@@ -10,7 +10,11 @@
 # git worktree add -B gh-pages public origin/gh-pages
 
 task :default do
-  system 'cargo build --release'
+  got = system 'cargo build --release'
+  unless got
+    puts 'Failed'
+    exit 0
+  end
   system 'wasm-pack build'
 
   Dir.chdir 'www' do

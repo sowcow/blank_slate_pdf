@@ -79,3 +79,22 @@ window.make123 = (event) => {
 
 	downloadBlob(got, name, 'application/octet-stream');
 }
+
+window.makeWIP = (event) => {
+	event.preventDefault()
+	event.stopPropagation()
+
+	let data = Object.fromEntries(new FormData(event.target).entries())
+  let submitter = event.submitter
+  let type = ''
+  if (submitter && submitter.name) {
+    data[submitter.name] = submitter.value
+    type = '-' + submitter.value
+  }
+	let got = wasm.create_wip(data).payload
+
+  let name = 'WIP.pdf'
+  if (data.title) name = `${data.title}-WIP${type}.pdf`
+
+	downloadBlob(got, name, 'application/octet-stream');
+}

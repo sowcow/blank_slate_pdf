@@ -16,10 +16,15 @@ serde = { version = "1.0.160", features = ["derive"] }
 serde-wasm-bindgen = "0.6.3"
 serde_bytes = "0.11.9"
 # verison that supports making links between pages:
-printpdf = { git = "https://github.com/chipsenkbeil/printpdf" }
+printpdf = { git = "https://github.com/chipsenkbeil/printpdf", features = [
+  "embedded_images"
+] }
 chrono = "0.4"
 rand = "0.8"  # Use the latest compatible version
 getrandom = { version = "0.2", features = ["js", "wasm-bindgen"] }
+image = { version = "0.25.6", optional = true, default-features = false, features = [
+    "png"
+] }
 
 
 # The `console_error_panic_hook` crate provides better debugging of panics by

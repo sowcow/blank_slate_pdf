@@ -405,6 +405,12 @@ impl<'a, T: Clone> Render<'a, T> {
     }
 
     pub fn circle_omg(&self, x: f32, y: f32, r: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color);
+        current_layer.set_outline_thickness(self.thick);
+
         let dr = self.x(1.);
         let r = dr * r;
 

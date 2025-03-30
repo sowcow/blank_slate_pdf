@@ -1,3 +1,5 @@
+#![allow(warnings)]
+
 use printpdf::*;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -492,7 +494,7 @@ pub fn create_balance_log(given: JsValue) -> JsValue {
 
     render_faculties(&mut page, render);
 
-    for x in 2..=100 {
+    for x in 2..=30 {
         let mut page = pdf.add_page(None);
         let mut render = Render::new(&pdf, page.clone(), grid.clone());
         let grid_color = "ffbf00";
@@ -851,8 +853,41 @@ fn render_hal(page: &mut Page<Option<String>>, mut render: Render<PageData>) {
     render.circle_omg(6., y, 1.);
 }
 
+// shitty in old version used by fork, duplicates image data in pdf
+fn add_states_image(doc: &PdfDocumentReference, shit: (PdfPageIndex, PdfLayerIndex), x: Mm, y: Mm) {
+    use image_crate::codecs::png::PngDecoder;
+    use printpdf::*;
+    use std::fs::File;
+    use std::io::BufWriter;
+    use std::io::Cursor;
+
+    let image_bytes = include_bytes!("../ruby/ready.png");
+    let mut reader = Cursor::new(image_bytes.as_ref());
+    let decoder = PngDecoder::new(&mut reader).unwrap();
+
+    let image = Image::try_from(decoder).unwrap();
+
+    let rotation_center_x = Px((image.image.width.0 as f32 / 2.0) as usize);
+    let rotation_center_y = Px((image.image.height.0 as f32 / 2.0) as usize);
+
+    let current_layer = doc.get_page(shit.0).get_layer(shit.1);
+
+    image.add_to_layer(
+        current_layer.clone(),
+        ImageTransform {
+            translate_x: Some(x),
+            translate_y: Some(y),
+            ..Default::default()
+        },
+    );
+}
+
 fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData>) {
     let w = render.grid.w;
+
+    let x = render.mm(render.x(0.0));
+    let y = render.mm(render.y(0.0));
+    add_states_image(&render.pdf.doc, (page.page, page.layer), x, y);
 
     render.line(0., 4., render.grid.w, 4.);
     render.line(0., 8., render.grid.w, 8.);
@@ -878,13 +913,13 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render_quadrant(10., 6.);
     render_quadrant(6., 10.);
 
-    render.line(0., 0.5, 4., 0.5);
-    render.line(0., 1., 4., 1.);
-    render.line(0., 1.5, 4., 1.5);
-    render.line(0., 2., 4., 2.);
-    render.line(0., 2.5, 4., 2.5);
-    render.line(0., 3., 4., 3.);
-    render.line(0., 3.5, 4., 3.5);
+    //render.line(0., 0.5, 4., 0.5);
+    //render.line(0., 1., 4., 1.);
+    //render.line(0., 1.5, 4., 1.5);
+    //render.line(0., 2., 4., 2.);
+    //render.line(0., 2.5, 4., 2.5);
+    //render.line(0., 3., 4., 3.);
+    //render.line(0., 3.5, 4., 3.5);
 
     render.line(9., 0.5, w, 0.5);
     render.line(8., 1., w, 1.);
@@ -925,9 +960,10 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     //render.line_color_hex(&input.grid_color);
     //render.font_color_hex(&input.font_color);
     //render.thickness(parse_thickness(&input.line_thickness));
-    render.circle_omg(2., 2., 2.);
-    render.circle_omg(2., 3., 0.5);
-    render.half_circle(2., 1., 0.5);
+
+    //render.circle_omg(2., 2., 2.);
+    //render.circle_omg(2., 3., 0.5);
+    //render.half_circle(2., 1., 0.5);
 
     render.line(8., 13., 8., 15.);
     render.line(9., 15., 9., 8.);
@@ -1027,7 +1063,6 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render.vline(5.5, Some(8.), Some(7.5));
     render.vline(6.5, Some(8.), Some(7.5));
     render.vline(7.0, Some(8.), Some(7.5));
-
     // no use yet?
     //
     //render.vline(7.5, Some(5.), Some(7.));
@@ -1429,4 +1464,253 @@ fn render_123_columns(
     render.vline(8., None, Some(15.));
     render.hline(14., None, None);
     render.hline(15., None, None);
+}
+
+#[wasm_bindgen]
+pub fn create_wip(given: JsValue) -> JsValue {
+    use serde_wasm_bindgen::from_value;
+    let input: Input123 = from_value(given.clone()).unwrap();
+
+    let data: PageData = None;
+
+    let mut pdf = PDF::new(&input.title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    let mut page = pdf.page(0);
+    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    let count_consecutive = 11;
+    let x = 0.;
+    let xx = 2. / (count_consecutive as f32 + 1.) * (x as f32 + 1.);
+    render.line(xx, 16., xx, 16. - 0.1);
+
+    render_wip_header(&mut page, render, &input, Some(0), None, None);
+
+    let mut menu: Vec<(Page<PageData>, Area)> = vec![];
+    let row_index = 0;
+    let size = 2.;
+    menu.push((
+        page.clone(),
+        Area::xywh((row_index as f32) * 2., 16. - size, size, size),
+    ));
+
+    for row_index in 0..6 {
+        let start = if row_index == 0 {
+            1 // having root page already
+        } else {
+            0
+        };
+        for x in start..count_consecutive {
+            let mut page = pdf.add_page(None);
+            let mut render = Render::new(&pdf, page.clone(), grid.clone());
+            render_wip_header(
+                &mut page,
+                render.clone(),
+                &input,
+                Some(row_index),
+                None,
+                None,
+            );
+
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+
+            let xx = 2. / (count_consecutive as f32 + 1.) * (x as f32 + 1.) + row_index as f32 * 2.;
+            render.line(xx, 16., xx, 16. - 0.1);
+
+            if x == 0 {
+                menu.push((
+                    page.clone(),
+                    Area::xywh((row_index as f32) * 2., 16. - size, size, size),
+                ));
+            }
+        }
+    }
+
+    let count_consecutive = 12;
+    for x in 0..count_consecutive {
+        let mut page = pdf.add_page(None);
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render_wip_header(&mut page, render.clone(), &input, None, Some(x), None);
+
+        let size = 1.;
+        menu.push((
+            page.clone(),
+            Area::xywh((x as f32) * size, 14. - size, size, size),
+        ));
+    }
+
+    for x in 0..count_consecutive {
+        let mut page = pdf.add_page(None);
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render_wip_header(&mut page, render.clone(), &input, None, None, Some(x));
+
+        let size = 1.;
+        menu.push((
+            page.clone(),
+            Area::xywh((x as f32) * size, 13. - size, size, size),
+        ));
+    }
+
+    // after all pages are there,
+    // render header and navigation for all pages
+    //
+    for page in pdf.pages.iter() {
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        let data = page.data.clone();
+        let title = if let Some(subheader) = data {
+            if input.title == "" {
+                format!("{}", subheader)
+            } else {
+                format!("{} - {}", &input.title, subheader)
+            }
+        } else {
+            input.title.clone()
+        };
+        render.header(&title);
+
+        for (page, door) in &menu {
+            render.link(&page, door.clone());
+        }
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+fn render_wip_header(
+    page: &mut Page<Option<String>>,
+    mut render: Render<PageData>,
+    input: &Input123,
+    focus1: Option<usize>, // focus on first row at the top
+    focus2: Option<usize>,
+    focus3: Option<usize>,
+) {
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    // just same grid to have - simple and fine for 90 pages total
+    for i in 0..=11 {
+        render.hline(i as f32, None, None);
+        //render.hline(i as f32 + 0.5, None, None);
+    }
+
+    render.hline(14., None, None);
+    render.hline(13., None, None);
+    render.hline(12., None, None);
+
+    for i in 1..=11 {
+        render.vline(i as f32, Some(12.), Some(14.));
+    }
+    render.vline(2., Some(14.), None);
+    render.vline(4., Some(14.), None);
+    render.vline(6., Some(14.), None);
+    render.vline(8., Some(14.), None);
+    render.vline(10., Some(14.), None);
+
+    render.line_color_hex("000000");
+    render.thickness(2.);
+
+    let mr = 0.125; // main-r
+    render.circle_omg(11., 15., mr);
+
+    render.vline(5. - mr, Some(15. - mr), Some(15. + mr));
+    render.vline(5. + mr, Some(15. - mr), Some(15. + mr));
+    render.hline(15. - mr, Some(5. - mr), Some(5. + mr));
+    render.hline(15. + mr, Some(5. - mr), Some(5. + mr));
+
+    render.vline(9. - mr / 2., Some(15. - mr), Some(15. + mr));
+    render.vline(9. + mr / 2., Some(15. - mr), Some(15. + mr));
+
+    let x = 1.;
+    let y = 15.;
+
+    let tr = mr * 1.33; // triangle radius, arbitrary
+
+    use std::f32::consts::PI;
+
+    let angle1 = PI / 3. * 2. - PI / 6.;
+    let dx1 = angle1.cos() * tr;
+    let dy1 = angle1.sin() * tr;
+
+    let angle2 = PI / 3. * 4. - PI / 6.;
+    let dx2 = angle2.cos() * tr;
+    let dy2 = angle2.sin() * tr;
+
+    let angle3 = PI / 3. * 6. - PI / 6.;
+    let dx3 = angle3.cos() * tr;
+    let dy3 = angle3.sin() * tr;
+
+    render.line(x + dx2, y + dy2, x + dx1, y + dy1);
+    render.line(x + dx3, y + dy3, x + dx1, y + dy1);
+
+    let angle1 = PI / 3. * 2. - PI / 6. - PI / 2.;
+    let dx1 = angle1.cos() * tr;
+    let dy1 = angle1.sin() * tr;
+
+    let angle2 = PI / 3. * 4. - PI / 6. - PI / 2.;
+    let dx2 = angle2.cos() * tr;
+    let dy2 = angle2.sin() * tr;
+
+    let angle3 = PI / 3. * 6. - PI / 6. - PI / 2.;
+    let dx3 = angle3.cos() * tr;
+    let dy3 = angle3.sin() * tr;
+
+    let x = 3.;
+    let y = 15.;
+    render.line(x + dx2, y + dy2, x + dx1, y + dy1);
+    render.line(x + dx3, y + dy3, x + dx1, y + dy1);
+
+    let angle1 = PI / 3. * 2. - PI / 6. + PI;
+    let dx1 = angle1.cos() * tr;
+    let dy1 = angle1.sin() * tr;
+
+    let angle2 = PI / 3. * 4. - PI / 6. + PI;
+    let dx2 = angle2.cos() * tr;
+    let dy2 = angle2.sin() * tr;
+
+    let angle3 = PI / 3. * 6. - PI / 6. + PI;
+    let dx3 = angle3.cos() * tr;
+    let dy3 = angle3.sin() * tr;
+
+    let shift = 0.05;
+    let x = 7. - shift;
+    let y = 15.;
+    render.line(x + dx2, y + dy2, x + dx1, y + dy1);
+    render.line(x + dx3, y + dy3, x + dx1, y + dy1);
+
+    let x = 7. + shift;
+    render.line(x + dx2, y + dy2, x + dx1, y + dy1);
+    render.line(x + dx3, y + dy3, x + dx1, y + dy1);
+
+    // current page focus marker on the top menu
+
+    // top-most row has item selected
+    if let Some(dx) = focus1 {
+        let x = (dx as f32) * 2. + 1.;
+        let mr = 0.125 * 2.; // main-r
+        render.circle_omg(x, 15., mr);
+    }
+
+    if let Some(dx) = focus2 {
+        let x = dx as f32 + 0.5;
+        let r = 0.125 / 5.;
+        render.circle_omg(x, 13.5, r); // seems filled
+    }
+
+    if let Some(dx) = focus3 {
+        let x = dx as f32 + 0.5;
+        let rr = 0.125;
+        render.vline(x, Some(12.5 - rr), Some(12.5 + rr));
+        render.hline(12.5, Some(x - rr), Some(x + rr));
+    }
 }
