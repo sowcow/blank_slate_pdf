@@ -26,7 +26,6 @@ use setup::*;
 
 //unused:
 //- bezier
-//- dash patters
 //- TOC/bookmark
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -930,14 +929,26 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render.line(9., 3.5, w, 3.5);
 
     let dy = 8.;
+
     //render.line(0., dy + 0.5, 4., dy + 0.5);
     render.line(0., dy + 1., 4., dy + 1.);
+
+    let doc = &render.pdf.doc;
+    let current_layer = doc.get_page(render.page.page).get_layer(render.page.layer);
+
+    let mut dash_pattern = LineDashPattern::default();
+    dash_pattern.dash_1 = Some(5); // Length of dash
+    dash_pattern.gap_1 = Some(5); // Length of gap
+    current_layer.set_line_dash_pattern(dash_pattern);
+
     //render.line(0., dy + 1.5, 4., dy + 1.5);
     render.line(0., dy + 2., 4., dy + 2.);
     //render.line(0., dy + 2.5, 4., dy + 2.5);
     render.line(0., dy + 3., 4., dy + 3.);
     //render.line(0., dy + 3.5, 4., dy + 3.5);
     render.line(0., dy + 4.0, 4., dy + 4.0);
+
+    current_layer.set_line_dash_pattern(LineDashPattern::default());
 
     //render.line(8., dy + 0.5, w, dy + 0.5);
     render.line(8., dy + 1., w, dy + 1.);
@@ -950,12 +961,22 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
 
     let dy = 12.;
     //render.line(0., dy + 0.5, w, dy + 0.5);
-    render.line(0., dy + 1.0, w, dy + 1.0);
-    //render.line(0., dy + 1.5, w, dy + 1.5);
-    render.line(0., dy + 2.0, w, dy + 2.0);
-    //render.line(0., dy + 2.5, w, dy + 2.5);
-    render.line(0., dy + 3.0, w, dy + 3.0);
+    render.line(4., dy + 1.0, w, dy + 1.0);
+    render.line(8., dy + 2.0, w, dy + 2.0);
+    render.line(8., dy + 3.0, w, dy + 3.0);
     //render.line(0., dy + 3.5, w, dy + 3.5);
+
+    current_layer.set_line_dash_pattern(dash_pattern);
+
+    render.line(0., dy + 1.0, 4., dy + 1.0);
+    render.line(0., dy + 2.0, 4.27, dy + 2.0);
+
+    //render.line(0., dy + 1.5, w, dy + 1.5);
+    //render.line(0., dy + 2.0, w, dy + 2.0);
+    ////render.line(0., dy + 2.5, w, dy + 2.5);
+
+    current_layer.set_line_dash_pattern(LineDashPattern::default());
+    render.line(0., dy + 3.0, 4., dy + 3.0);
 
     //render.line_color_hex(&input.grid_color);
     //render.font_color_hex(&input.font_color);
@@ -1063,7 +1084,12 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render.vline(5.5, Some(8.), Some(7.5));
     render.vline(6.5, Some(8.), Some(7.5));
     render.vline(7.0, Some(8.), Some(7.5));
-    // no use yet?
+
+    render.circle_omg(6., 15., 2.);
+    render.circle_omg(6., 14., 1.);
+    render.circle_omg(6., 13.5, 0.5);
+
+    // no use yet? (right side of think - interesting, maybe temporal aspect)
     //
     //render.vline(7.5, Some(5.), Some(7.));
     //render.hline(5., Some(8.), Some(7.5));
