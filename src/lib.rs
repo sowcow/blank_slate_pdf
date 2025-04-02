@@ -54,6 +54,7 @@ struct Input {
     empty_pages: Option<String>,
     square: Option<String>,
     hal: Option<String>,
+    sink: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -116,6 +117,7 @@ pub fn create(given: JsValue) -> JsValue {
         empty: Option<bool>,
         square: Option<bool>,
         hal: Option<bool>,
+        sink: Option<bool>,
     }
     let mut plan: Vec<Planned> = vec![];
 
@@ -161,6 +163,12 @@ pub fn create(given: JsValue) -> JsValue {
     if input.arrows.is_some() {
         plan.push(Planned {
             arrows: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.sink.is_some() {
+        plan.push(Planned {
+            sink: Some(true),
             ..Default::default()
         });
     }
@@ -211,6 +219,14 @@ pub fn create(given: JsValue) -> JsValue {
 
                     let mut page = page.clone();
                     render_hal(&mut page, render);
+                } else if planned.sink.is_some() {
+                    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                    render.line_color_hex(&input.grid_color);
+                    render.font_color_hex(&input.font_color);
+                    render.thickness(parse_thickness(&input.line_thickness));
+
+                    let mut page = page.clone();
+                    render_sink(&mut page, render);
                 } else if planned.target.is_some() {
                     render_single_target(&pdf, page.clone(), grid.clone(), &input);
                 } else if planned.arrows.is_some() {
@@ -534,6 +550,7 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
         timetable: None,
         square: None,
         hal: None,
+        sink: None,
     };
 
     let count_consecutive = 23;
@@ -850,6 +867,19 @@ fn render_hal(page: &mut Page<Option<String>>, mut render: Render<PageData>) {
     render.circle_omg(6., y, 3.);
     render.circle_omg(6., y, 2.);
     render.circle_omg(6., y, 1.);
+}
+
+fn render_sink(page: &mut Page<Option<String>>, mut render: Render<PageData>) {
+    for i in 1..=15 {
+        render.hline(i as f32, None, None);
+    }
+
+    let d = 5.5;
+    render.line(0., 16., d, 16. - d);
+    render.line(12., 16., 12. - d, 16. - d);
+
+    render.line(d, 16. - d, d, 0.);
+    render.line(12. - d, 16. - d, 12. - d, 0.);
 }
 
 // shitty in old version used by fork, duplicates image data in pdf
@@ -1249,6 +1279,7 @@ pub fn create_123_detail(given: JsValue) -> JsValue {
         timetable: None,
         square: None,
         hal: None,
+        sink: None,
     };
 
     let count_consecutive = 23;
