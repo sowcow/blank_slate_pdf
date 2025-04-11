@@ -1119,6 +1119,9 @@ fn render_faculties(page: &mut Page<Option<String>>, mut render: Render<PageData
     render.circle_omg(6., 14., 1.);
     render.circle_omg(6., 13.5, 0.5);
 
+    render.vline(10., Some(8.0), Some(10.0));
+    render.vline(11., Some(8.0), Some(10.0));
+
     // no use yet? (right side of think - interesting, maybe temporal aspect)
     //
     //render.vline(7.5, Some(5.), Some(7.));
