@@ -12,6 +12,7 @@ use wasm_bindgen::prelude::*;
 
 mod area;
 mod grid;
+mod new_render;
 mod page;
 mod pdf;
 mod render;
@@ -19,6 +20,7 @@ mod setup;
 
 use area::*;
 use grid::*;
+use new_render::*;
 use page::*;
 use pdf::*;
 use render::*;
@@ -1773,4 +1775,207 @@ fn render_wip_header(
         render.vline(x, Some(12.5 - rr), Some(12.5 + rr));
         render.hline(12.5, Some(x - rr), Some(x + rr));
     }
+}
+
+#[wasm_bindgen]
+pub fn create_four(given: JsValue) -> JsValue {
+    use serde_wasm_bindgen::from_value;
+    let input: Input123 = from_value(given).unwrap();
+
+    let data: PageData = None;
+    let title = input.title.clone();
+
+    let mut pdf = PDF::new(&title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    // main alpha page is existing root page ("-" page)
+    let mut page = pdf.page(0);
+    let alpha_page = page.clone();
+
+    // shitty fix, actually styles should apply separately
+    let shit_input = Input {
+        arrows: None,
+        grid_color: input.grid_color.clone().into(), // into by macro idea
+        font_color: input.font_color.clone().into(),
+        line_thickness: input.line_thickness.clone().into(),
+        renamings: "".into(),
+        title: input.title.clone().into(),
+        balance: None,
+        empty_pages: None,
+        target: None,
+        timetable: None,
+        square: None,
+        hal: None,
+        sink: None,
+    };
+
+    let count_consecutive = 23;
+    render_alpha(&pdf, page.clone(), grid.clone(), &shit_input);
+    render_tick(
+        &pdf,
+        page.clone(),
+        grid.clone(),
+        &shit_input,
+        1. / (count_consecutive as f32 + 1.),
+    );
+    // consecutive alpha pages
+    for i in 2..=count_consecutive {
+        let page = pdf.add_page(None);
+        render_alpha(&pdf, page.clone(), grid.clone(), &shit_input);
+        render_tick(
+            &pdf,
+            page,
+            grid.clone(),
+            &shit_input,
+            i as f32 / (count_consecutive as f32 + 1.),
+        );
+    }
+
+    let mut whole_page = pdf.add_page(None); // whole: three levels of 123 decomposition on one page
+    let mut render = Render::new(&pdf, whole_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    render_four(whole_page.clone(), &mut pdf, &input, grid.clone());
+
+    // after all pages are there,
+    // render header and navigation for all pages
+    //
+    for page in pdf.pages.iter() {
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        let data = page.data.clone();
+        let title = if let Some(subheader) = data {
+            if input.title == "" {
+                format!("{}", subheader)
+            } else {
+                format!("{} - {}", &input.title, subheader)
+            }
+        } else {
+            input.title.clone()
+        };
+        render.header(&title);
+        render.header_link(
+            &alpha_page,
+            "-",
+            Area::xywh(12. - 1.5, 16., -1.5, -1. + 0.02),
+        );
+        render.header_link(&whole_page, "+", Area::xywh(12., 16., -1.5, -1. + 0.02));
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+fn render_four(
+    page: Page<Option<String>>,
+    pdf: &mut PDF<Option<String>>,
+    input: &Input123,
+    grid: Grid,
+) {
+    use new_render::*;
+
+    line_color_hex(pdf, &page, &input.grid_color);
+    font_color_hex(pdf, &page, &input.font_color);
+    thickness(pdf, &page, parse_thickness(&input.line_thickness));
+
+    let mid = 6.;
+
+    vline(pdf, &page, mid - 0.5, Some(0.), Some(12.));
+    vline(pdf, &page, mid + 0.5, Some(0.), Some(12.));
+
+    vline(pdf, &page, mid - 1.5, Some(1.), Some(2.));
+    vline(pdf, &page, mid + 1.5, Some(1.), Some(2.));
+    vline(pdf, &page, mid - 1.5, Some(1. + 3.), Some(2. + 3.));
+    vline(pdf, &page, mid + 1.5, Some(1. + 3.), Some(2. + 3.));
+    vline(pdf, &page, mid - 1.5, Some(1. + 6.), Some(2. + 6.));
+    vline(pdf, &page, mid + 1.5, Some(1. + 6.), Some(2. + 6.));
+    vline(pdf, &page, mid - 1.5, Some(1. + 9.), Some(2. + 9.));
+    vline(pdf, &page, mid + 1.5, Some(1. + 9.), Some(2. + 9.));
+
+    circle(pdf, &page, 5.5 + 0.5, 1.5, 0.5);
+    circle(pdf, &page, 5.5 + 0.5, 1.5 + 3., 0.5);
+    circle(pdf, &page, 5.5 + 0.5, 1.5 + 6., 0.5);
+    circle(pdf, &page, 5.5 + 0.5, 1.5 + 9., 0.5);
+
+    circle(pdf, &page, 5.5 + 0.5, 1.5 + 9., 4.0);
+    circle(pdf, &page, 5.5 + 0.5, 1.5 + 9., 3.0);
+
+    let mut produce_nested = |pdf: &mut PDF<PageData>,
+                              whole_page: &Page<PageData>,
+                              subheader: String,
+                              x: f32,
+                              y: f32,
+                              sizex: f32,
+                              sizey: f32| {
+        let count_consecutive = 11;
+        let mut pages = vec![];
+        for i in 1..=count_consecutive {
+            let page = pdf.add_page(Some(subheader.clone()));
+            pages.push(page.clone());
+            line_color_hex(pdf, &page, &input.grid_color);
+            font_color_hex(pdf, &page, &input.font_color);
+            thickness(pdf, &page, parse_thickness(&input.line_thickness));
+            have_big_grid(pdf, &page);
+            have_tick(pdf, &page, i, count_consecutive); // as f32 / (count_consecutive as f32 + 1.));
+        }
+        let page = &pages[0];
+
+        let door = Area::xywh(x, y, sizex, sizey);
+        link(pdf, &whole_page, door.clone(), &page);
+    };
+
+    let mut produce_four =
+        |pdf: &mut PDF<PageData>, whole_page: &Page<PageData>, category: &str, x: f32, y: f32| {
+            let dx = 0.;
+            let dy = -1.;
+            let name = "0";
+            let title: String = format!("{}.{}", category, name).into();
+            produce_nested(pdf, &page, title.clone(), x + dx, y + dy, 1., 1.);
+
+            let dx = 1.;
+            let dy = 0.;
+            let name = "1";
+            let title: String = format!("{}.{}", category, name).into();
+            produce_nested(pdf, &page, title.clone(), x + dx, y + dy, 1., 1.);
+
+            let dx = 0.;
+            let dy = 1.;
+            let name = "2";
+            let title: String = format!("{}.{}", category, name).into();
+            produce_nested(pdf, &page, title.clone(), x + dx, y + dy, 1., 1.);
+
+            let dx = -1.;
+            let dy = 0.;
+            let name = "3";
+            let title: String = format!("{}.{}", category, name).into();
+            produce_nested(pdf, &page, title.clone(), x + dx, y + dy, 1., 1.);
+        };
+
+    //Ⅰ 	Ⅱ 	Ⅲ 	Ⅳ
+    //wxyz has terminality - has a point
+    center_text(pdf, &page, "Z", 5.5 + 0.5, 10.0 + 0.5 - 0.125);
+    center_text(pdf, &page, "Y", 5.5 + 0.5, 7.0 + 0.5 - 0.125);
+    center_text(pdf, &page, "X", 5.5 + 0.5, 4.0 + 0.5 - 0.125);
+    center_text(pdf, &page, "W", 5.5 + 0.5, 1.0 + 0.5 - 0.125);
+    produce_four(pdf, &page, "W", 5.5, 1.);
+    produce_four(pdf, &page, "X", 5.5, 4.);
+    produce_four(pdf, &page, "Y", 5.5, 7.);
+    produce_four(pdf, &page, "Z", 5.5, 10.);
+
+    hline(pdf, &page, 1., None, None);
+    hline(pdf, &page, 2., None, None);
+    hline(pdf, &page, 3., None, None);
+    hline(pdf, &page, 4., None, None);
+    hline(pdf, &page, 5., None, None);
+    hline(pdf, &page, 6., None, None);
+    hline(pdf, &page, 7., None, None);
+    hline(pdf, &page, 8., None, None);
+    hline(pdf, &page, 9., None, None);
+    hline(pdf, &page, 10., None, None);
+    hline(pdf, &page, 11., None, None);
+    hline(pdf, &page, 12., None, None);
 }

@@ -4,6 +4,7 @@ pub struct PDF<T: Clone> {
     pub setup: Setup,
     pub pages: Vec<Page<T>>, // root page is already there after init
     pub doc: PdfDocumentReference,
+    pub grid: Grid,
 }
 
 impl<T: Clone> PDF<T> {
@@ -31,10 +32,34 @@ impl<T: Clone> PDF<T> {
             layer: layer,
             data: root_data,
         };
+        let grid = Grid::new(12., 16.);
         PDF {
             setup: setup,
             pages: vec![root],
             doc: doc,
+            grid: grid,
         }
+    }
+
+    pub fn mm(&self, value: f32) -> Mm {
+        Mm(self.setup.mm(value))
+    }
+
+    pub fn xx(&self, value: f32) -> Mm {
+        self.mm(self.x(value))
+    }
+
+    pub fn yy(&self, value: f32) -> Mm {
+        self.mm(self.y(value))
+    }
+
+    pub fn x(&self, value: f32) -> f32 {
+        let cell_w = self.setup.width as f32 / self.grid.w;
+        value * cell_w
+    }
+
+    pub fn y(&self, value: f32) -> f32 {
+        let cell_h = self.setup.height as f32 / self.grid.h;
+        value * cell_h
     }
 }

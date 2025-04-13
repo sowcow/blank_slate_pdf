@@ -9,6 +9,12 @@
 
 		<h1>Blank Slate PDF</h1>
 
+    <p>
+      There is permanenent revolution of different work in progress or random pdf ideas laying around.
+      Default abstract pdf is produced by clicking "Make" button with optionally setting "Header" text field first.
+      More monthly calendar-like version would be produced by unchecking "Empty pages", selecting any one or two of other options and then pressing "Make".
+    </p>
+
 		<h2>Battery.pdf</h2>
 
 		<form onsubmit="window.makePDF(event)">
@@ -159,10 +165,58 @@
       <button type="submit" name="action" value="columns_log">Make 3-columns log</button>
     </form>
 
+		<h2>Four.pdf</h2>
+
+    <p>
+      Decomposition into four.
+      And four sequential levels of these.
+    </p>
+
+    <form onsubmit="window.makeFour(event)">
+			<label style='display: block'>
+				Header
+				<input
+          name='title'
+          value=""
+          placeholder="Header of every page"
+          type="text"
+        />
+			</label>
+			<label style='display: block'>
+				Line thickness
+				<input
+						name='line_thickness'
+						value="0.5"
+						placeholder="0.5 / 1 / 2"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Background grid color
+				<input
+						name='grid_color'
+						value="ffbf00"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Font color
+				<input
+						name='font_color'
+						value="000000"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+      <button type="submit" name="action">Make Four</button>
+    </form>
+
+
 		<h2>WIP.pdf</h2>
 
     <p>
-      Own WIP thing.
+      WIP idea.
       Decyphering key is not included.
     </p>
 

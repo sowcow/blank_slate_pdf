@@ -1,4 +1,12 @@
-# * new * Balance.pdf
+# Overall
+
+Permanent revolution of random pdf ideas (written with trashy non-ideomatic Rust code).
+
+# * new * Four.pdf
+
+Main template (-+) with four levels of decomposition into four aspects (abstract it is).
+
+# Balance.pdf
 
 Abstract PDFs with human faculties.
 The idea is that humans perform five core actions, and roughly speaking, there are five corresponding faculties.

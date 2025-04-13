@@ -98,3 +98,22 @@ window.makeWIP = (event) => {
 
 	downloadBlob(got, name, 'application/octet-stream');
 }
+
+window.makeFour = (event) => {
+	event.preventDefault()
+	event.stopPropagation()
+
+	let data = Object.fromEntries(new FormData(event.target).entries())
+  let submitter = event.submitter
+  let type = ''
+  if (submitter && submitter.name) {
+    data[submitter.name] = submitter.value
+    type = '-' + submitter.value
+  }
+	let got = wasm.create_four(data).payload
+
+  let name = 'Four.pdf'
+  if (data.title) name = `${data.title}-four${type}.pdf`
+
+	downloadBlob(got, name, 'application/octet-stream');
+}
