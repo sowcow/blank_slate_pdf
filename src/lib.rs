@@ -53,6 +53,7 @@ struct Input {
     target: Option<String>,
     timetable: Option<String>,
     balance: Option<String>,
+    five: Option<String>,
     empty_pages: Option<String>,
     square: Option<String>,
     hal: Option<String>,
@@ -114,6 +115,7 @@ pub fn create(given: JsValue) -> JsValue {
     struct Planned {
         timetable: Option<bool>,
         balance: Option<bool>,
+        five: Option<bool>,
         target: Option<bool>,
         arrows: Option<bool>,
         empty: Option<bool>,
@@ -141,6 +143,12 @@ pub fn create(given: JsValue) -> JsValue {
     if input.balance.is_some() {
         plan.push(Planned {
             balance: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.five.is_some() {
+        plan.push(Planned {
+            five: Some(true),
             ..Default::default()
         });
     }
@@ -205,6 +213,8 @@ pub fn create(given: JsValue) -> JsValue {
                     render.thickness(parse_thickness(&input.line_thickness));
                     let mut page = page.clone();
                     render_faculties(&mut page, render);
+                } else if planned.five.is_some() {
+                    render_five(page.clone(), &mut pdf, &input, grid.clone());
                 } else if planned.square.is_some() {
                     let mut render = Render::new(&pdf, page.clone(), grid.clone());
                     render.line_color_hex(&input.grid_color);
@@ -553,6 +563,7 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
         square: None,
         hal: None,
         sink: None,
+        five: None,
     };
 
     let count_consecutive = 23;
@@ -1285,6 +1296,7 @@ pub fn create_123_detail(given: JsValue) -> JsValue {
         square: None,
         hal: None,
         sink: None,
+        five: None,
     };
 
     let count_consecutive = 23;
@@ -1807,6 +1819,7 @@ pub fn create_four(given: JsValue) -> JsValue {
         square: None,
         hal: None,
         sink: None,
+        five: None,
     };
 
     let count_consecutive = 23;
@@ -1978,4 +1991,84 @@ fn render_four(
     hline(pdf, &page, 10., None, None);
     hline(pdf, &page, 11., None, None);
     hline(pdf, &page, 12., None, None);
+}
+
+fn render_five(
+    page: Page<Option<String>>,
+    pdf: &mut PDF<Option<String>>,
+    input: &Input,
+    grid: Grid,
+) {
+    use new_render::*;
+
+    line_color_hex(pdf, &page, &input.grid_color);
+    font_color_hex(pdf, &page, &input.font_color);
+    thickness(pdf, &page, parse_thickness(&input.line_thickness));
+
+    let mut produce_nested =
+        |pdf: &mut PDF<PageData>, page: &Page<PageData>, dx: f32, dy: f32, size: f32| {
+            let part_size = size / 3.;
+
+            hline(pdf, &page, 1. * part_size, Some(dx), Some(dx + size));
+            hline(pdf, &page, 2. * part_size, Some(dx), Some(dx + part_size));
+            hline(pdf, &page, 3. * part_size, Some(dx), Some(dx + size));
+
+            vline(pdf, &page, dx + 0. * part_size, Some(dy), Some(dy + size));
+            vline(pdf, &page, dx + 1. * part_size, Some(dy), Some(dy + size));
+            vline(
+                pdf,
+                &page,
+                dx + 2. * part_size,
+                Some(dy + 2. * part_size),
+                Some(dy + size),
+            );
+
+            let step = part_size / 4.;
+            vline(
+                pdf,
+                &page,
+                -step + dx + 2. * part_size,
+                Some(dy + 2. * part_size + step),
+                Some(dy + size - step),
+            );
+            vline(
+                pdf,
+                &page,
+                3. * -step + dx + 2. * part_size,
+                Some(dy + 2. * part_size + step),
+                Some(dy + size - step),
+            );
+
+            hline(
+                pdf,
+                &page,
+                dy + 2. * part_size + step,
+                Some(-step + dx + 2. * part_size),
+                Some(3. * -step + dx + 2. * part_size),
+            );
+
+            hline(
+                pdf,
+                &page,
+                dy + size - step,
+                Some(-step + dx + 2. * part_size),
+                Some(3. * -step + dx + 2. * part_size),
+            );
+        };
+
+    produce_nested(pdf, &page, 0., 4., 12.);
+    produce_nested(pdf, &page, 0. * 3., 1., 3.);
+    produce_nested(pdf, &page, 1. * 3., 1., 3.);
+    produce_nested(pdf, &page, 2. * 3., 1., 3.);
+    produce_nested(pdf, &page, 3. * 3., 1., 3.);
+
+    vline(pdf, &page, 3., None, Some(1.));
+    vline(pdf, &page, 6., None, Some(1.));
+    vline(pdf, &page, 9., None, Some(1.));
+
+    center_text(pdf, &page, "think", 2., 14. - 0.125);
+    center_text(pdf, &page, "express", 4. + 2., 14. - 0.125);
+    center_text(pdf, &page, "roll", 8. + 2., 14. - 0.125);
+    center_text(pdf, &page, "scan", 2., 10. - 0.125);
+    center_text(pdf, &page, "move", 2., 6. - 0.125);
 }

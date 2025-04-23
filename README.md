@@ -2,11 +2,19 @@
 
 Permanent revolution of random pdf ideas (written with trashy non-ideomatic Rust code).
 
-# * new * Four.pdf
+# * new * Five.pdf
+
+Another exciting try at a human faculties-based abstract pdf.
+It's bare-bones and more in line with the spirit of the project.
+More things go implicit; for example, kinds of movement or thinking merge with the corners of squares.
+
+# Four.pdf
 
 Main template (-+) with four levels of decomposition into four aspects (abstract it is).
 
 # Balance.pdf
+
+(previous idea)
 
 Abstract PDFs with human faculties.
 The idea is that humans perform five core actions, and roughly speaking, there are five corresponding faculties.
