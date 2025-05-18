@@ -2102,24 +2102,30 @@ fn render_plus(
         |pdf: &mut PDF<PageData>, page: &Page<PageData>, dx: f32, dy: f32, size: f32| {
             let part_size = size / 3.;
 
+            // whole thing border
+            hline(pdf, &page, dy + 0. * part_size, Some(dx), Some(dx + size));
+            //hline(pdf, &page, dy + 3. * part_size, Some(dx), Some(dx + size));
+            //vline(pdf, &page, dx + 0. * part_size, Some(dy), Some(dy + size));
+            vline(pdf, &page, dx + 3. * part_size, Some(dy), Some(dy + size));
+
             // structure
             hline(pdf, &page, dy + 1. * part_size, Some(dx), Some(dx + size));
             hline(pdf, &page, dy + 2. * part_size, Some(dx), Some(dx + size));
             // border
-            hline(
-                pdf,
-                &page,
-                dy + 0. * part_size,
-                Some(dx + 1. * part_size),
-                Some(dx + 2. * part_size),
-            );
-            hline(
-                pdf,
-                &page,
-                dy + 3. * part_size,
-                Some(dx + 1. * part_size),
-                Some(dx + 2. * part_size),
-            );
+            //hline(
+            //    pdf,
+            //    &page,
+            //    dy + 0. * part_size,
+            //    Some(dx + 1. * part_size),
+            //    Some(dx + 2. * part_size),
+            //);
+            //hline(
+            //    pdf,
+            //    &page,
+            //    dy + 3. * part_size,
+            //    Some(dx + 1. * part_size),
+            //    Some(dx + 2. * part_size),
+            //);
 
             vline(pdf, &page, dx + 1. * part_size, Some(dy), Some(dy + size));
             vline(pdf, &page, dx + 2. * part_size, Some(dy), Some(dy + size));
@@ -2164,6 +2170,63 @@ fn render_plus(
                 Some(dx + 1. * part_size),
                 Some(dx + 1. * part_size + step),
             );
+
+            // insides
+            hline(
+                pdf,
+                &page,
+                dy + part_size + 1. * step,
+                Some(dx + 0. * part_size),
+                Some(dx + 1. * part_size),
+            );
+            hline(
+                pdf,
+                &page,
+                dy + part_size + 2. * step,
+                Some(dx + 0. * part_size),
+                Some(dx + 1. * part_size),
+            );
+            vline(
+                pdf,
+                &page,
+                dx + 2.5 * part_size,
+                Some(dy + 1. * part_size),
+                Some(dy + 2. * part_size),
+            );
+            let a = (dx + 1.5 * part_size, dy + 1.0 * part_size);
+            let b = (dx + 1.5 * part_size, dy + 2.0 * part_size);
+            let c = (dx + 1.0 * part_size, dy + 1.5 * part_size);
+            let d = (dx + 2.0 * part_size, dy + 1.5 * part_size);
+            line(pdf, &page, a.0, a.1, Some(c.0), Some(c.1));
+            line(pdf, &page, b.0, b.1, Some(c.0), Some(c.1));
+            line(pdf, &page, b.0, b.1, Some(d.0), Some(d.1));
+            line(pdf, &page, a.0, a.1, Some(d.0), Some(d.1));
+            circle(pdf, &page, a.0, dy + 0.5 * part_size, part_size / 2.);
+
+            let ps = vec![
+                (0. * part_size, 0. * part_size),
+                (2. * part_size, 0. * part_size),
+                (0. * part_size, 2. * part_size),
+                (2. * part_size, 2. * part_size),
+            ];
+            for p in ps {
+                line(
+                    pdf,
+                    &page,
+                    p.0 + dx,
+                    p.1 + dy,
+                    Some(p.0 + dx + part_size),
+                    Some(p.1 + dy + part_size),
+                );
+                line(
+                    pdf,
+                    &page,
+                    p.0 + dx,
+                    p.1 + dy + part_size,
+                    Some(p.0 + dx + part_size),
+                    Some(p.1 + dy),
+                );
+            }
         };
 
     produce_nested(pdf, &page, 0., 4., 12.);
