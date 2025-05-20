@@ -117,3 +117,22 @@ window.makeFour = (event) => {
 
 	downloadBlob(got, name, 'application/octet-stream');
 }
+
+window.makeMaze = (event) => {
+	event.preventDefault()
+	event.stopPropagation()
+
+	let data = Object.fromEntries(new FormData(event.target).entries())
+  let submitter = event.submitter
+  let type = ''
+  if (submitter && submitter.name) {
+    data[submitter.name] = submitter.value
+    type = '-' + submitter.value
+  }
+	let got = wasm.create_maze(data).payload
+
+  let name = 'Maze.pdf'
+  if (data.title) name = `${data.title}${type}.pdf`
+
+	downloadBlob(got, name, 'application/octet-stream');
+}

@@ -2226,6 +2226,13 @@ fn render_plus(
                     Some(p.0 + dx + part_size),
                     Some(p.1 + dy),
                 );
+                hline(
+                    pdf,
+                    &page,
+                    dy + p.1 + part_size / 2.,
+                    Some(dx + p.0),
+                    Some(dx + p.0 + part_size),
+                );
             }
         };
 
@@ -2235,4 +2242,242 @@ fn render_plus(
     produce_nested(pdf, &page, 1. * 3., 1., 3.);
     produce_nested(pdf, &page, 2. * 3., 1., 3.);
     produce_nested(pdf, &page, 3. * 3., 1., 3.);
+}
+
+#[wasm_bindgen]
+pub fn create_maze(given: JsValue) -> JsValue {
+    let data: PageData = None;
+    let title = "Maze";
+
+    let mut pdf = PDF::new(&title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    let mut page = pdf.page(0);
+    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+    let grid_color = "ffbf00";
+    let font_color = "000000";
+    render.line_color_hex(grid_color);
+    render.font_color_hex(font_color);
+    render.thickness(0.5);
+
+    use serde_wasm_bindgen::from_value;
+    let input: Input123 = from_value(given).unwrap();
+
+    let data: PageData = None;
+    let mut pdf = PDF::new(&input.title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    render_maze(page.clone(), &mut pdf, &input, grid.clone());
+
+    for x in 2..=100 {
+        let mut page = pdf.add_page(None);
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        let grid_color = "ffbf00";
+        let font_color = "000000";
+        render.line_color_hex(grid_color);
+        render.font_color_hex(font_color);
+        render.thickness(0.5);
+
+        render_maze(page.clone(), &mut pdf, &input, grid.clone());
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+fn render_maze(
+    page: Page<Option<String>>,
+    pdf: &mut PDF<Option<String>>,
+    input: &Input123,
+    grid: Grid,
+) {
+    use new_render::*;
+
+    line_color_hex(pdf, &page, &input.grid_color);
+    font_color_hex(pdf, &page, &input.font_color);
+    thickness(pdf, &page, parse_thickness(&input.line_thickness));
+
+    let mut produce_nested =
+        |pdf: &mut PDF<PageData>, page: &Page<PageData>, dx: f32, dy: f32, size: f32| {
+            let part_size = size / 3.;
+
+            // whole thing border
+            //hline(pdf, &page, dy + 0. * part_size, Some(dx), Some(dx + size));
+            //hline(pdf, &page, dy + 3. * part_size, Some(dx), Some(dx + size));
+            //vline(pdf, &page, dx + 0. * part_size, Some(dy), Some(dy + size));
+            //vline(pdf, &page, dx + 3. * part_size, Some(dy), Some(dy + size));
+
+            // structure
+            //hline(pdf, &page, dy + 1. * part_size, Some(dx), Some(dx + size));
+            //hline(pdf, &page, dy + 2. * part_size, Some(dx), Some(dx + size));
+            // border
+            //hline(
+            //    pdf,
+            //    &page,
+            //    dy + 0. * part_size,
+            //    Some(dx + 1. * part_size),
+            //    Some(dx + 2. * part_size),
+            //);
+            //hline(
+            //    pdf,
+            //    &page,
+            //    dy + 3. * part_size,
+            //    Some(dx + 1. * part_size),
+            //    Some(dx + 2. * part_size),
+            //);
+
+            //vline(pdf, &page, dx + 1. * part_size, Some(dy), Some(dy + size));
+            //vline(pdf, &page, dx + 2. * part_size, Some(dy), Some(dy + size));
+            //vline(
+            //    pdf,
+            //    &page,
+            //    dx + 0. * part_size,
+            //    Some(dy + 1. * part_size),
+            //    Some(dy + 2. * part_size),
+            //);
+            //vline(
+            //    pdf,
+            //    &page,
+            //    dx + 3. * part_size,
+            //    Some(dy + 1. * part_size),
+            //    Some(dy + 2. * part_size),
+            //);
+
+            // under vertical
+            hline(
+                pdf,
+                &page,
+                dy + part_size,
+                Some(dx + 2. * part_size),
+                Some(dx + 3. * part_size),
+            );
+
+            // square
+            hline(
+                pdf,
+                &page,
+                dy + 2. * part_size,
+                Some(dx + 1. * part_size),
+                Some(dx + 2. * part_size),
+            );
+            hline(
+                pdf,
+                &page,
+                dy + 3. * part_size,
+                Some(dx + 1. * part_size),
+                Some(dx + 2. * part_size),
+            );
+            vline(
+                pdf,
+                &page,
+                dx + 1. * part_size,
+                Some(dy + 2. * part_size),
+                Some(dy + 3. * part_size),
+            );
+            vline(
+                pdf,
+                &page,
+                dx + 2. * part_size,
+                Some(dy + 2. * part_size),
+                Some(dy + 3. * part_size),
+            );
+
+            let step = part_size / 3.;
+            let dxx = dx + 1. * part_size;
+            let dyy = dy;
+
+            vline(pdf, &page, dxx + step, Some(dy), Some(dy + part_size));
+            vline(
+                pdf,
+                &page,
+                dxx + 2. * step,
+                Some(dy + part_size),
+                Some(dy + part_size - step),
+            );
+            hline(
+                pdf,
+                &page,
+                dyy + part_size - step,
+                Some(dx + 1. * part_size),
+                Some(dx + 2. * part_size),
+            );
+            hline(
+                pdf,
+                &page,
+                dyy + part_size - 2. * step,
+                Some(dx + 1. * part_size),
+                Some(dx + 1. * part_size + step),
+            );
+
+            // insides
+            hline(
+                pdf,
+                &page,
+                dy + part_size + 1. * step,
+                Some(dx + 0. * part_size),
+                Some(dx + 1. * part_size),
+            );
+            hline(
+                pdf,
+                &page,
+                dy + part_size + 2. * step,
+                Some(dx + 0. * part_size),
+                Some(dx + 1. * part_size),
+            );
+            vline(
+                pdf,
+                &page,
+                dx + 2.5 * part_size,
+                Some(dy + 1. * part_size),
+                Some(dy + 2. * part_size),
+            );
+            let a = (dx + 1.5 * part_size, dy + 1.0 * part_size);
+            let b = (dx + 1.5 * part_size, dy + 2.0 * part_size);
+            let c = (dx + 1.0 * part_size, dy + 1.5 * part_size);
+            let d = (dx + 2.0 * part_size, dy + 1.5 * part_size);
+            line(pdf, &page, a.0, a.1, Some(c.0), Some(c.1));
+            line(pdf, &page, b.0, b.1, Some(c.0), Some(c.1));
+            line(pdf, &page, b.0, b.1, Some(d.0), Some(d.1));
+            line(pdf, &page, a.0, a.1, Some(d.0), Some(d.1));
+            circle(pdf, &page, a.0, dy + 0.5 * part_size, part_size / 2.);
+
+            let ps = vec![
+                (0. * part_size, 0. * part_size),
+                (2. * part_size, 0. * part_size),
+                (0. * part_size, 2. * part_size),
+                (2. * part_size, 2. * part_size),
+            ];
+            for p in ps {
+                line(
+                    pdf,
+                    &page,
+                    p.0 + dx,
+                    p.1 + dy,
+                    Some(p.0 + dx + part_size),
+                    Some(p.1 + dy + part_size),
+                );
+                line(
+                    pdf,
+                    &page,
+                    p.0 + dx,
+                    p.1 + dy + part_size,
+                    Some(p.0 + dx + part_size),
+                    Some(p.1 + dy),
+                );
+                hline(
+                    pdf,
+                    &page,
+                    dy + p.1 + part_size / 2.,
+                    Some(dx + p.0),
+                    Some(dx + p.0 + part_size),
+                );
+            }
+        };
+
+    for i in 0..=2 {
+        produce_nested(pdf, &page, 0. * 4., 2. + (i as f32) * 4., 4.);
+        produce_nested(pdf, &page, 1. * 4., 2. + (i as f32) * 4., 4.);
+        produce_nested(pdf, &page, 2. * 4., 2. + (i as f32) * 4., 4.);
+    }
 }
