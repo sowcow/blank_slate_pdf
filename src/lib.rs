@@ -2302,53 +2302,25 @@ fn render_maze(
         |pdf: &mut PDF<PageData>, page: &Page<PageData>, dx: f32, dy: f32, size: f32| {
             let part_size = size / 3.;
 
-            // whole thing border
-            //hline(pdf, &page, dy + 0. * part_size, Some(dx), Some(dx + size));
-            //hline(pdf, &page, dy + 3. * part_size, Some(dx), Some(dx + size));
-            //vline(pdf, &page, dx + 0. * part_size, Some(dy), Some(dy + size));
-            //vline(pdf, &page, dx + 3. * part_size, Some(dy), Some(dy + size));
+            use rand::rngs::OsRng;
+            use rand::seq::SliceRandom; // or StdRng with a seed
 
-            // structure
-            //hline(pdf, &page, dy + 1. * part_size, Some(dx), Some(dx + size));
-            //hline(pdf, &page, dy + 2. * part_size, Some(dx), Some(dx + size));
-            // border
-            //hline(
-            //    pdf,
-            //    &page,
-            //    dy + 0. * part_size,
-            //    Some(dx + 1. * part_size),
-            //    Some(dx + 2. * part_size),
-            //);
-            //hline(
-            //    pdf,
-            //    &page,
-            //    dy + 3. * part_size,
-            //    Some(dx + 1. * part_size),
-            //    Some(dx + 2. * part_size),
-            //);
+            let mut values = [0., 1., 2.];
+            values.shuffle(&mut OsRng); // or StdRng::from_entropy()
+            let [square_order, circle_order, angled_order] = values;
 
-            //vline(pdf, &page, dx + 1. * part_size, Some(dy), Some(dy + size));
-            //vline(pdf, &page, dx + 2. * part_size, Some(dy), Some(dy + size));
-            //vline(
-            //    pdf,
-            //    &page,
-            //    dx + 0. * part_size,
-            //    Some(dy + 1. * part_size),
-            //    Some(dy + 2. * part_size),
-            //);
-            //vline(
-            //    pdf,
-            //    &page,
-            //    dx + 3. * part_size,
-            //    Some(dy + 1. * part_size),
-            //    Some(dy + 2. * part_size),
-            //);
-
-            // under vertical
+            // perpendicular
+            vline(
+                pdf,
+                &page,
+                dx + 2.5 * part_size,
+                Some(dy + 1. * part_size),
+                Some(dy + 2. * part_size),
+            );
             hline(
                 pdf,
                 &page,
-                dy + part_size,
+                dy + 1.5 * part_size,
                 Some(dx + 2. * part_size),
                 Some(dx + 3. * part_size),
             );
@@ -2357,14 +2329,14 @@ fn render_maze(
             hline(
                 pdf,
                 &page,
-                dy + 2. * part_size,
+                dy + square_order * part_size,
                 Some(dx + 1. * part_size),
                 Some(dx + 2. * part_size),
             );
             hline(
                 pdf,
                 &page,
-                dy + 3. * part_size,
+                dy + (square_order + 1.) * part_size,
                 Some(dx + 1. * part_size),
                 Some(dx + 2. * part_size),
             );
@@ -2372,112 +2344,129 @@ fn render_maze(
                 pdf,
                 &page,
                 dx + 1. * part_size,
-                Some(dy + 2. * part_size),
-                Some(dy + 3. * part_size),
+                Some(dy + square_order * part_size),
+                Some(dy + (square_order + 1.) * part_size),
             );
             vline(
                 pdf,
                 &page,
                 dx + 2. * part_size,
-                Some(dy + 2. * part_size),
-                Some(dy + 3. * part_size),
+                Some(dy + square_order * part_size),
+                Some(dy + (square_order + 1.) * part_size),
             );
 
             let step = part_size / 3.;
             let dxx = dx + 1. * part_size;
             let dyy = dy;
 
-            vline(pdf, &page, dxx + step, Some(dy), Some(dy + part_size));
-            vline(
+            //vline(pdf, &page, dxx + step, Some(dy), Some(dy + part_size));
+            //vline(
+            //    pdf,
+            //    &page,
+            //    dxx + 2. * step,
+            //    Some(dy + part_size),
+            //    Some(dy + part_size - step),
+            //);
+            //hline(
+            //    pdf,
+            //    &page,
+            //    dyy + part_size - step,
+            //    Some(dx + 1. * part_size),
+            //    Some(dx + 2. * part_size),
+            //);
+            //hline(
+            //    pdf,
+            //    &page,
+            //    dyy + part_size - 2. * step,
+            //    Some(dx + 1. * part_size),
+            //    Some(dx + 1. * part_size + step),
+            //);
+            //
+            // circle + insides
+            //let a = (dx + 1.5 * part_size, dy + 1.0 * part_size);
+            circle(
                 pdf,
                 &page,
-                dxx + 2. * step,
-                Some(dy + part_size),
-                Some(dy + part_size - step),
-            );
-            hline(
-                pdf,
-                &page,
-                dyy + part_size - step,
-                Some(dx + 1. * part_size),
-                Some(dx + 2. * part_size),
-            );
-            hline(
-                pdf,
-                &page,
-                dyy + part_size - 2. * step,
-                Some(dx + 1. * part_size),
-                Some(dx + 1. * part_size + step),
+                dx + 1.5 * part_size,
+                dy + (circle_order + 0.5) * part_size,
+                part_size / 2.,
             );
 
-            // insides
-            hline(
-                pdf,
-                &page,
-                dy + part_size + 1. * step,
-                Some(dx + 0. * part_size),
-                Some(dx + 1. * part_size),
-            );
-            hline(
-                pdf,
-                &page,
-                dy + part_size + 2. * step,
-                Some(dx + 0. * part_size),
-                Some(dx + 1. * part_size),
-            );
-            vline(
-                pdf,
-                &page,
-                dx + 2.5 * part_size,
-                Some(dy + 1. * part_size),
-                Some(dy + 2. * part_size),
-            );
-            let a = (dx + 1.5 * part_size, dy + 1.0 * part_size);
-            let b = (dx + 1.5 * part_size, dy + 2.0 * part_size);
-            let c = (dx + 1.0 * part_size, dy + 1.5 * part_size);
-            let d = (dx + 2.0 * part_size, dy + 1.5 * part_size);
+            // angled shape
+            let a = (dx + 1.5 * part_size, dy + angled_order * part_size);
+            let b = (dx + 1.5 * part_size, dy + (angled_order + 1.0) * part_size);
+            let c = (dx + 1.0 * part_size, dy + (angled_order + 0.5) * part_size);
+            let d = (dx + 2.0 * part_size, dy + (angled_order + 0.5) * part_size);
             line(pdf, &page, a.0, a.1, Some(c.0), Some(c.1));
             line(pdf, &page, b.0, b.1, Some(c.0), Some(c.1));
             line(pdf, &page, b.0, b.1, Some(d.0), Some(d.1));
             line(pdf, &page, a.0, a.1, Some(d.0), Some(d.1));
-            circle(pdf, &page, a.0, dy + 0.5 * part_size, part_size / 2.);
 
-            let ps = vec![
-                (0. * part_size, 0. * part_size),
-                (2. * part_size, 0. * part_size),
-                (0. * part_size, 2. * part_size),
-                (2. * part_size, 2. * part_size),
-            ];
-            for p in ps {
-                line(
-                    pdf,
-                    &page,
-                    p.0 + dx,
-                    p.1 + dy,
-                    Some(p.0 + dx + part_size),
-                    Some(p.1 + dy + part_size),
-                );
-                line(
-                    pdf,
-                    &page,
-                    p.0 + dx,
-                    p.1 + dy + part_size,
-                    Some(p.0 + dx + part_size),
-                    Some(p.1 + dy),
-                );
-                hline(
-                    pdf,
-                    &page,
-                    dy + p.1 + part_size / 2.,
-                    Some(dx + p.0),
-                    Some(dx + p.0 + part_size),
-                );
-            }
+            // parallels
+            hline(
+                pdf,
+                &page,
+                dy + part_size + 1.5 * step,
+                Some(dx + 0. * part_size),
+                Some(dx + 1. * part_size),
+            );
+            //hline(
+            //    pdf,
+            //    &page,
+            //    dy + part_size + 1. * step,
+            //    Some(dx + 0. * part_size),
+            //    Some(dx + 1. * part_size),
+            //);
+            //hline(
+            //    pdf,
+            //    &page,
+            //    dy + part_size + 2. * step,
+            //    Some(dx + 0. * part_size),
+            //    Some(dx + 1. * part_size),
+            //);
+
+            //let ps = vec![
+            //    (0. * part_size, 0. * part_size),
+            //    (2. * part_size, 0. * part_size),
+            //    (0. * part_size, 2. * part_size),
+            //    (2. * part_size, 2. * part_size),
+            //];
+            //for p in ps {
+            //    line(
+            //        pdf,
+            //        &page,
+            //        p.0 + dx,
+            //        p.1 + dy,
+            //        Some(p.0 + dx + part_size),
+            //        Some(p.1 + dy + part_size),
+            //    );
+            //    line(
+            //        pdf,
+            //        &page,
+            //        p.0 + dx,
+            //        p.1 + dy + part_size,
+            //        Some(p.0 + dx + part_size),
+            //        Some(p.1 + dy),
+            //    );
+            //    hline(
+            //        pdf,
+            //        &page,
+            //        dy + p.1 + part_size / 2.,
+            //        Some(dx + p.0),
+            //        Some(dx + p.0 + part_size),
+            //    );
+            //}
         };
 
-    for i in 0..=2 {
-        produce_nested(pdf, &page, 0. * 4., 2. + (i as f32) * 4., 4.);
-        produce_nested(pdf, &page, 1. * 4., 2. + (i as f32) * 4., 4.);
-        produce_nested(pdf, &page, 2. * 4., 2. + (i as f32) * 4., 4.);
+    for ax in -3..=3 {
+        for ay in -3..=3 {
+            let x = ax * 2 + ay;
+            let y = ax - 2 * ay; // reverse y but it's indifferent
+
+            let size = 2.;
+            let wtf_size = 3. * size;
+
+            produce_nested(pdf, &page, (x as f32) * size, (y as f32) * size, wtf_size);
+        }
     }
 }
