@@ -31,6 +31,7 @@ window.makePDF = (event) => {
 	let got = wasm.create(data).payload
 
   let name = 'Battery.pdf'
+  if (data.figure) name = 'Figure.pdf'
   if (data.arrows) name = 'Arrows.pdf'
   if (data.title) name = `${data.title}.pdf`
 

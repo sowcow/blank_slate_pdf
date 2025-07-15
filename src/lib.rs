@@ -55,6 +55,7 @@ struct Input {
     balance: Option<String>,
     five: Option<String>,
     plus: Option<String>,
+    figure: Option<String>,
     empty_pages: Option<String>,
     square: Option<String>,
     hal: Option<String>,
@@ -118,6 +119,7 @@ pub fn create(given: JsValue) -> JsValue {
         balance: Option<bool>,
         five: Option<bool>,
         plus: Option<bool>,
+        figure: Option<bool>,
         target: Option<bool>,
         arrows: Option<bool>,
         empty: Option<bool>,
@@ -157,6 +159,12 @@ pub fn create(given: JsValue) -> JsValue {
     if input.plus.is_some() {
         plan.push(Planned {
             plus: Some(true),
+            ..Default::default()
+        });
+    }
+    if input.figure.is_some() {
+        plan.push(Planned {
+            figure: Some(true),
             ..Default::default()
         });
     }
@@ -223,6 +231,8 @@ pub fn create(given: JsValue) -> JsValue {
                     render_faculties(&mut page, render);
                 } else if planned.five.is_some() {
                     render_five(page.clone(), &mut pdf, &input, grid.clone());
+                } else if planned.figure.is_some() {
+                    render_figure(page.clone(), &mut pdf, &input, grid.clone());
                 } else if planned.plus.is_some() {
                     render_plus(page.clone(), &mut pdf, &input, grid.clone());
                 } else if planned.square.is_some() {
@@ -575,6 +585,7 @@ pub fn create_balance_detail(given: JsValue) -> JsValue {
         sink: None,
         five: None,
         plus: None,
+        figure: None,
     };
 
     let count_consecutive = 23;
@@ -1309,6 +1320,7 @@ pub fn create_123_detail(given: JsValue) -> JsValue {
         sink: None,
         five: None,
         plus: None,
+        figure: None,
     };
 
     let count_consecutive = 23;
@@ -1833,6 +1845,7 @@ pub fn create_four(given: JsValue) -> JsValue {
         sink: None,
         five: None,
         plus: None,
+        figure: None,
     };
 
     let count_consecutive = 23;
@@ -2468,5 +2481,63 @@ fn render_maze(
 
             produce_nested(pdf, &page, (x as f32) * size, (y as f32) * size, wtf_size);
         }
+    }
+}
+
+fn render_figure(
+    page: Page<Option<String>>,
+    pdf: &mut PDF<Option<String>>,
+    input: &Input,
+    grid: Grid,
+) {
+    use new_render::*;
+
+    line_color_hex(pdf, &page, &input.grid_color);
+    font_color_hex(pdf, &page, &input.font_color);
+    thickness(pdf, &page, parse_thickness(&input.line_thickness));
+
+    let part_size = 12. / 3.;
+
+    let r = part_size / 2.;
+    circle(pdf, &page, 0. + r, 15. - part_size - r, r);
+
+    let dy = 15. - part_size;
+    let a = (1.5 * part_size, dy + 0.0 * part_size);
+    let b = (1.5 * part_size, dy + 1.0 * part_size);
+    let c = (1.0 * part_size, dy + 0.5 * part_size);
+    let d = (2.0 * part_size, dy + 0.5 * part_size);
+    line(pdf, &page, a.0, a.1, Some(c.0), Some(c.1));
+    line(pdf, &page, b.0, b.1, Some(c.0), Some(c.1));
+    line(pdf, &page, b.0, b.1, Some(d.0), Some(d.1));
+    line(pdf, &page, a.0, a.1, Some(d.0), Some(d.1));
+
+    let dy = 15. - 2. * part_size;
+    let a = (part_size, dy + 0.0 * part_size);
+    let b = (part_size, dy + 1.0 * part_size);
+    let c = (2.0 * part_size, dy + 0. * part_size);
+    let d = (2.0 * part_size, dy + 1. * part_size);
+    line(pdf, &page, a.0, a.1, Some(c.0), Some(c.1));
+    line(pdf, &page, b.0, b.1, Some(c.0), Some(c.1));
+    line(pdf, &page, b.0, b.1, Some(d.0), Some(d.1));
+    line(pdf, &page, a.0, a.1, Some(d.0), Some(d.1));
+
+    let height = part_size;
+    let side = 2. / (3. as f32).sqrt() * part_size;
+    line(pdf, &page, part_size * 2.5, 15. - part_size,
+        Some(part_size * 2.5 - side / 2.), Some(15. - part_size * 2.)
+        );
+    line(pdf, &page, part_size * 2.5, 15. - part_size,
+        Some(part_size * 2.5 + side / 2.), Some(15. - part_size * 2.)
+        );
+    line(pdf, &page,
+        part_size * 2.5 - side / 2.,
+        15. - part_size * 2.,
+        Some(part_size * 2.5 + side / 2.),
+        Some(15. - part_size * 2.),
+        );
+
+    for yy in 1..=7 {
+        let y = yy as f32;
+        line(pdf, &page, 0., y, Some(12.), Some(y));
     }
 }
