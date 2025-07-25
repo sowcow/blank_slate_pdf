@@ -159,6 +159,14 @@ impl<'a, T: Clone> Render<'a, T> {
         current_layer.use_text(text, size, x, y, &font);
     }
 
+    // quickie
+    pub fn rect(&self, x1: f32, y1: f32, x2: f32, y2: f32) {
+        self.line(x1, y1, x1, y2);
+        self.line(x1, y2, x2, y2);
+        self.line(x2, y2, x2, y1);
+        self.line(x2, y1, x1, y1);
+    }
+
     pub fn line(&self, x1: f32, y1: f32, x2: f32, y2: f32) {
         let doc = &self.pdf.doc;
         let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
@@ -167,6 +175,28 @@ impl<'a, T: Clone> Render<'a, T> {
             (Point::new(self.mm(self.x(x1)), self.mm(self.y(y1))), false),
             (Point::new(self.mm(self.x(x2)), self.mm(self.y(y2))), false),
         ];
+
+        let line1 = Line {
+            points,
+            is_closed: false,
+        };
+
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color);
+        current_layer.set_outline_thickness(self.thick);
+        current_layer.add_line(line1);
+    }
+
+    pub fn poly(&self, xs: Vec<(f32, f32)>) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+
+        let points: Vec<(Point, bool)> = xs.into_iter()
+        .map(|(x, y)| 
+            (Point::new(self.mm(self.x(x)), self.mm(self.y(y))),
+            false)
+            )
+        .collect();
 
         let line1 = Line {
             points,
@@ -540,6 +570,27 @@ impl<'a, T: Clone> Render<'a, T> {
         let y1: f32 = y1.unwrap_or(0.);
         let y2: f32 = y2.unwrap_or(self.grid.h);
         self.line(x, y1, x, y2);
+    }
+
+    // pagination tick-marks
+    pub fn tick(&self, index: usize, count: usize) {
+        self.apply_style();
+        let ratio = (index as f32) / (count as f32 + 1.);
+        let x = ratio * self.grid.w;
+        self.line(x, self.grid.h, x, self.grid.h - 0.1);
+    }
+
+    pub fn apply_style(&self) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color);
+        current_layer.set_outline_thickness(self.thick);
+
+        let color = self.font_color.clone();
+        current_layer.set_fill_color(color); // will see if separate for drawing and fonts is
+                                             // needed
     }
 }
 

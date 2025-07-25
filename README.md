@@ -2,7 +2,11 @@
 
 Permanent revolution of random pdf ideas (written with trashy non-ideomatic Rust code).
 
-# * new * Five.pdf
+# * new * Teeth.pdf
+
+Unhinged todo list inspired by After Hours.
+
+# Five.pdf
 
 Another exciting try at a human faculties-based abstract pdf.
 It's bare-bones and more in line with the spirit of the project.
