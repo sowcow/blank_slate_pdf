@@ -9,11 +9,67 @@
 
 		<h1>Blank Slate PDF</h1>
 
-    <p>
+    <pre>
       There is permanenent revolution of different work in progress or random pdf ideas laying around.
-      Default abstract pdf is produced by clicking "Make" button with optionally setting "Header" text field first.
+
+      First goes the most recent After Hours inspired todo list - Teeth.pdf; next goes abstract pdf I was experimenting the most with - Battery.pdf.
+
+      For the unhinged abstract and questionable todo list just press the "Make Teeth" button below, usage info is near the button.
+
+      The more bland abstract pdf is under Battery.pdf header. It's produced by clicking "Make Battery" button with optionally setting "Header" text field first.
       More monthly calendar-like version would be produced by unchecking "Empty pages", selecting any one of other options and then pressing "Make".
-    </p>
+    </pre>
+
+		<h2>Teeth.pdf</h2>
+
+    <form onsubmit="window.makeTeeth(event)">
+      <button type="submit" name="action">Make Teeth</button>
+      <br />
+      <br />
+      <pre>
+      Teeth.pdf is inspired by After Hours and has a room for The Shining too.
+      Main "+" view is a monthly grid with further daily todo lists. "#" view is a maze - place for catchall pages for unrelated ideas, they can be stored in further Δ pages. "-" view starts from the first page of the PDF, it is for higher level content like conception of usage of the PDF, or possibly for review-type notes accumulation, it's the only multi-page entry.
+
+      Below are the settings for Make Teeth; I have gray colored lines by default for Remarkable2, use any hex color code if RM-PRO is the target device, like orange is used for other PDFs below.
+      </pre>
+
+			<label style='display: block'>
+				Header
+				<input
+          name='title'
+          value=""
+          placeholder="Header of every page"
+          type="text"
+        />
+			</label>
+			<label style='display: block'>
+				Line thickness
+				<input
+						name='line_thickness'
+						value="0.5"
+						placeholder="0.5 / 1 / 2"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Background grid color
+				<input
+						name='grid_color'
+						value="444444"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Font color
+				<input
+						name='font_color'
+						value="000000"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+    </form>
 
 		<h2>Battery.pdf</h2>
 
@@ -105,7 +161,7 @@
         <input type="checkbox" name="empty_pages" value="empty_pages" checked="checked">
         Empty pages (a set of empty pages, by unchecking this you can have instead ability to navigate between selected things above just by turning pages)
       </label>
-			<button type="submit">Make</button>
+			<button type="submit">Make Battery</button>
 		</form>
 
 		<h2>Balance.pdf</h2>
