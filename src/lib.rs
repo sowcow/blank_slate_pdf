@@ -2779,22 +2779,22 @@ pub fn create_teeth(given: JsValue) -> JsValue {
         render.line_color_hex(&input.grid_color);
         render.font_color_hex(&input.font_color);
         render.thickness(parse_thickness(&input.line_thickness));
-        // render.circle_omg(12., 0., 2.);
-        render.circle_omg(10., 0., 2.);
-        // render.circle_omg(8., 0., 2.);
-        // render.circle_omg(6., 0., 2.);
-        // render.circle_omg(4., 0., 2.);
-        render.circle_omg(2., 0., 2.);
-        // render.circle_omg(0., 0., 2.);
+        // // render.circle_omg(12., 0., 2.);
+        // render.circle_omg(10., 0., 2.);
+        // // render.circle_omg(8., 0., 2.);
+        // // render.circle_omg(6., 0., 2.);
+        // // render.circle_omg(4., 0., 2.);
+        // render.circle_omg(2., 0., 2.);
+        // // render.circle_omg(0., 0., 2.);
 
         render.poly(vec![
-            (0., 6.),
-            (4., 6.),
+            (0., 4.),
+            (4., 4.),
             (4., 16.),
         ]);
         render.poly(vec![
-            (12. - 0., 6.),
-            (12. - 4., 6.),
+            (12. - 0., 4.),
+            (12. - 4., 4.),
             (12. - 4., 16.),
         ]);
     }
