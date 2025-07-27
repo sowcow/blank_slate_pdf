@@ -2787,15 +2787,29 @@ pub fn create_teeth(given: JsValue) -> JsValue {
         // render.circle_omg(2., 0., 2.);
         // // render.circle_omg(0., 0., 2.);
 
+        let high_y = 5.;
+        let low_y = 1.;
+
         render.poly(vec![
-            (0., 4.),
-            (4., 4.),
+            (0., high_y),
+            (4., high_y),
             (4., 16.),
         ]);
         render.poly(vec![
-            (12. - 0., 4.),
-            (12. - 4., 4.),
+            (12. - 0., high_y),
+            (12. - 4., high_y),
             (12. - 4., 16.),
+        ]);
+
+        render.poly(vec![
+            (0., low_y),
+            (4., low_y),
+            (4., 0.),
+        ]);
+        render.poly(vec![
+            (12. - 0., low_y),
+            (12. - 4., low_y),
+            (12. - 4., 0.),
         ]);
     }
 
