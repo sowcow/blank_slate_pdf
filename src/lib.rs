@@ -2711,9 +2711,9 @@ pub fn create_teeth(given: JsValue) -> JsValue {
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
 
-    let zigzag = |y_low| {
+    let zigzag = |y_low, odd| {
         let y_high = y_low + 1.;
-        vec![
+        let mut xs = vec![
             (1., y_high),
             (2., y_high),
             (2., y_low),
@@ -2734,17 +2734,31 @@ pub fn create_teeth(given: JsValue) -> JsValue {
             (10., y_high),
             (10., y_low),
             (11., y_low),
-            (11., y_high),
-        ]
+            // (11., y_high),
+        ];
+        if odd {
+            xs.remove(0);
+            xs.remove(0);
+            xs.push((11., y_high));
+            xs.push((12., y_high));
+            xs.iter_mut().for_each(|x|
+                x.0 = x.0 - 1.
+            );
+            xs.reverse();
+        }
+
+        xs
     };
 
-    render.poly(zigzag(13.0));
-    render.poly(zigzag(11.0));
-    render.poly(zigzag(9.0));
-    render.poly(zigzag(7.0));
-    render.poly(zigzag(5.0));
-    render.poly(zigzag(3.0));
-    render.poly(zigzag(1.0));
+    let mut poly = vec![];
+    poly.append(&mut zigzag(13.0, false));
+    poly.append(&mut zigzag(11.0, true));
+    poly.append(&mut zigzag(9.0, false));
+    poly.append(&mut zigzag(7.0, true));
+    poly.append(&mut zigzag(5.0, false));
+    poly.append(&mut zigzag(3.0, true));
+    poly.append(&mut zigzag(1.0, false));
+    render.poly(poly);
 
     let mut places: Vec<(f32, f32)> = vec![];
 
