@@ -149,7 +149,7 @@ window.makeTeeth = (event) => {
     data[submitter.name] = submitter.value
     type = '-' + submitter.value
   }
-	let got = wasm.create_teeth(data).payload
+	let got = wasm.make_teeth(data).payload
 
   let name = 'Teeth.pdf'
   if (data.title) name = `${data.title}${type}.pdf`

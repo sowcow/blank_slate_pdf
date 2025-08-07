@@ -1,5 +1,7 @@
 #![allow(warnings)]
 
+// extern crate web_sys;
+
 use printpdf::*;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -70,6 +72,18 @@ struct Input123 {
     grid_color: String,
     font_color: String,
 }
+
+#[derive(Deserialize, Serialize)]
+struct InputTeeth {
+    teeth_pages: Option<String>,
+    hal_pages: Option<String>,
+    action: String,
+    title: String,
+    line_thickness: String,
+    grid_color: String,
+    font_color: String,
+}
+// t { teeth_pages: "on", title: "", line_thickness: "0.5", grid_color: "444444", font_color: "000000", action: "" }
 
 type PageData = Option<String>;
 
@@ -2543,7 +2557,7 @@ fn render_figure(
 }
 
 #[wasm_bindgen]
-pub fn create_teeth(given: JsValue) -> JsValue {
+pub fn make_teeth(given: JsValue) -> JsValue {
     let data: PageData = None;
     let title = "Teeth";
 
@@ -2551,7 +2565,7 @@ pub fn create_teeth(given: JsValue) -> JsValue {
     let grid = Grid::new(12., 16.);
 
     use serde_wasm_bindgen::from_value;
-    let input: Input123 = from_value(given).unwrap();
+    let input: InputTeeth = from_value(given).unwrap();
 
     let mut page = pdf.page(0);
     let mut render = Render::new(&pdf, page.clone(), grid.clone());
@@ -2622,84 +2636,265 @@ pub fn create_teeth(given: JsValue) -> JsValue {
         for xx in 0..6 {
             let number = xx + yy * 6 + 1;
             let subheader = number.to_string();
-            let page = pdf.add_page(Some(subheader));
+            let mut first_item_page: Option<Page<Option<String>>> = None;
 
-            // todo-list page
-            let mut render = Render::new(&pdf, page.clone(), grid.clone());
-            render.line_color_hex(&input.grid_color);
-            render.font_color_hex(&input.font_color);
-            render.thickness(parse_thickness(&input.line_thickness));
+            if input.teeth_pages.is_none() && input.hal_pages.is_none() { panic!("alaaaarm!"); }
 
-            // omg it is, just keeping the space, can use any side as start now
-            // render.circle_omg(6., 0., 2.);
-            // render.circle_omg(2., 0., 2.);
-            // render.circle_omg(10., 0., 2.);
+            if (input.teeth_pages.is_some()) {
+                let page = pdf.add_page(Some(subheader.clone()));
+                first_item_page = Some(page.clone());
 
-            let tooth_depth = 2.;
-            let tooth_gap = 4.;
+                // todo-list page
+                let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                render.line_color_hex(&input.grid_color);
+                render.font_color_hex(&input.font_color);
+                render.thickness(parse_thickness(&input.line_thickness));
 
-            let step = 2.; // hardcoded in ↓ too
-            for ay in vec![2., 4., 6., 8., 10., 12., 14.] {
-                let ay = ay + 1.; // to center? then shark has both ends...
+                // omg it is, just keeping the space, can use any side as start now
+                // render.circle_omg(6., 0., 2.);
+                // render.circle_omg(2., 0., 2.);
+                // render.circle_omg(10., 0., 2.);
 
-                if ay == 3. {
-                    render.line(0., ay, tooth_gap, ay);
-                    render.line(12., ay, 12. - tooth_gap, ay);
+                let tooth_depth = 2.;
+                let tooth_gap = 4.;
+
+                let step = 2.; // hardcoded in ↓ too
+                for ay in vec![2., 4., 6., 8., 10., 12., 14.] {
+                    let ay = ay + 1.; // to center? then shark has both ends...
+
+                    if ay == 3. {
+                        render.line(0., ay, tooth_gap, ay);
+                        render.line(12., ay, 12. - tooth_gap, ay);
+                    }
+
+                    // todo-square
+                    render.rect(1., ay + 1., 2., ay + 2.);
+
+
+                    // let items = vec![0.5, 1., 1.5];
+                    let items = vec![0.25, 0.5, 0.75, 1., 1.25, 1.5];
+                    use rand::seq::SliceRandom;
+                    use rand::thread_rng;
+                    use rand::Rng;
+                    use wasm_bindgen::prelude::*;
+                    let mut rng = thread_rng();
+                    let dy = items.choose(&mut rng).unwrap();
+                    render.line(tooth_gap, ay, tooth_gap - tooth_depth, ay + dy);
+                    render.line(tooth_gap - tooth_depth, ay + dy, tooth_gap, ay + step);
+
+                    // let dy = items.choose(&mut rng).unwrap();
+                    render.line(12. - tooth_gap, ay, 12. - tooth_gap + tooth_depth, ay + dy);
+                    render.line(12. - tooth_gap + tooth_depth, ay + dy, 12. - tooth_gap, ay + step);
+                }
+            }
+            if (input.hal_pages.is_some()) {
+                let page = pdf.add_page(Some(subheader.clone()));
+                if first_item_page.is_none() {
+                    first_item_page = Some(page.clone());
                 }
 
-                // todo-square
-                render.rect(1., ay + 1., 2., ay + 2.);
+                // hal-review page
+                let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                render.line_color_hex(&input.grid_color);
+                render.font_color_hex(&input.font_color);
+                render.thickness(parse_thickness(&input.line_thickness));
 
+                // let dx = 0;
+                // let dy = 0;
 
-                // let items = vec![0.5, 1., 1.5];
-                let items = vec![0.25, 0.5, 0.75, 1., 1.25, 1.5];
-                use rand::seq::SliceRandom;
-                use rand::thread_rng;
-                use rand::Rng;
-                use wasm_bindgen::prelude::*;
-                let mut rng = thread_rng();
-                let dy = items.choose(&mut rng).unwrap();
-                render.line(tooth_gap, ay, tooth_gap - tooth_depth, ay + dy);
-                render.line(tooth_gap - tooth_depth, ay + dy, tooth_gap, ay + step);
+                for y in 1..=(render.grid.h - 1.) as usize {
+                    if y != 7 && y != 8 && y != 1 && y != 2 {
+                        render.line(0., y as f32, render.grid.w, y as f32);
+                    } else if y == 7 || y == 8 {
+                        render.line(3., y as f32, render.grid.w - 3., y as f32);
+                    } else if y == 1 || y == 2 {
+                        render.line(0., y as f32, 3., y as f32);
+                        render.line(12. - 0., y as f32, 12. - 3., y as f32);
+                    }
+                }
+                render.line(3., 0., 3., render.grid.h - 1.);
+                render.line(12. - 3., 0., 12. - 3., render.grid.h - 1.);
 
-                // let dy = items.choose(&mut rng).unwrap();
-                render.line(12. - tooth_gap, ay, 12. - tooth_gap + tooth_depth, ay + dy);
-                render.line(12. - tooth_gap + tooth_depth, ay + dy, 12. - tooth_gap, ay + step);
+                for x in vec![1. ,2., 12. - 1., 12. - 2.] {
+                    for y0 in vec![0. ,9.] {
+                        render.line(x, y0 + 0., x, y0 + 6.);
+                    }
+                }
+
+                render.line(1.5, 6., 1.5, 9.);
+                render.line(12. - 1.5, 6., 12. - 1.5, 9.);
+                render.line(0., 7.5, 3., 7.5);
+                render.line(12. - 0., 7.5, 12. - 3., 7.5);
+
+                render.line(3. + 1.5, 0., 3. + 1.5, 3.);
+                render.line(4.5 + 1.5, 0., 4.5 + 1.5, 3.);
+                render.line(6. + 1.5, 0., 6. + 1.5, 3.);
+
+                render.line(3., 1.5, 12. - 3., 1.5);
+
+                render.circle_omg(6., 3., 3.);
+
+                let icons = |dx: f32, dy: f32| {
+                    let r_span = 0.66 / 2.;
+                    // render.circle_omg(dx + 1.5, dy + 1.5, r_span);
+
+                    let triangle = |center_x, center_y, r_span| {
+                        // Calculate points for equilateral triangle
+                        // Angle between points is 120 degrees (2π/3 radians)
+                        let angle_offset = std::f32::consts::PI / 2.0; // Start from top point
+                        
+                        // Point 1 (top)
+                        let x1 = center_x + r_span * angle_offset.cos();
+                        let y1 = center_y + r_span * angle_offset.sin();
+                        
+                        // Point 2 (bottom right)
+                        let x2 = center_x + r_span * (angle_offset + 2.0 * std::f32::consts::PI / 3.0).cos();
+                        let y2 = center_y + r_span * (angle_offset + 2.0 * std::f32::consts::PI / 3.0).sin();
+                        
+                        // Point 3 (bottom left)
+                        let x3 = center_x + r_span * (angle_offset + 4.0 * std::f32::consts::PI / 3.0).cos();
+                        let y3 = center_y + r_span * (angle_offset + 4.0 * std::f32::consts::PI / 3.0).sin();
+
+                        let ys = 0.;
+                        // let y_shift_1: f32 = r_span * (std::f32::consts::PI / 2.0).sin();
+                        // let y_shift_2: f32 = r_span * (std::f32::consts::PI / 3.0).sin();
+                        // let ys = (y_shift_1 - y_shift_2).round().abs() * 10.;
+                        
+                        // Draw the triangle
+                        render.line(x1, y1 - ys, x2, y2 - ys);
+                        render.line(x2, y2 - ys, x3, y3 - ys);
+                        render.line(x3, y3 - ys, x1, y1 - ys);
+                    };
+                    let inverse_triangle = |center_x, center_y, r_span| {
+                        // Calculate points for equilateral triangle
+                        // Angle between points is 120 degrees (2π/3 radians)
+                        let angle_offset = 3. * std::f32::consts::PI / 2.0;
+                        
+                        // Point 1 (bottom)
+                        let x1 = center_x + r_span * angle_offset.cos();
+                        let y1 = center_y + r_span * angle_offset.sin();
+                        
+                        // Point 2
+                        let x2 = center_x + r_span * (angle_offset + 2.0 * std::f32::consts::PI / 3.0).cos();
+                        let y2 = center_y + r_span * (angle_offset + 2.0 * std::f32::consts::PI / 3.0).sin();
+                        
+                        // Point 3
+                        let x3 = center_x + r_span * (angle_offset + 4.0 * std::f32::consts::PI / 3.0).cos();
+                        let y3 = center_y + r_span * (angle_offset + 4.0 * std::f32::consts::PI / 3.0).sin();
+
+                        let half_x = (x2 + x3) / 2.;
+                        
+                        // Draw the triangle
+                        render.line(x1, y1, x2, y2);
+                        // render.line(x2, y2, x3, y3);
+                        render.line(x2, y2, half_x, y3);
+                        render.line(x3, y3, x1, y1);
+                    };
+
+                    let center_x = dx + 1.5;
+                    let center_y = dy + 1.5;
+                    render.circle_omg(center_x, center_y, r_span);
+                    triangle(center_x, center_y, r_span);
+
+                    triangle(dx + 2.5, dy + 3. + 2.5, r_span);
+                    inverse_triangle(dx + 1.5, dy + 3. + 2.5, r_span);
+
+                    let cx = dx + 2.5;
+                    let cy = dy + 3.5;
+                    let span = r_span / 2.;
+                    render.line(cx - span, cy, cx + span, cy);
+                    render.line(cx, cy - span, cx, cy + span);
+
+                    // #
+                    let cx = dx + 1.5;
+                    let cy = dy + 4.5;
+                    let shift = r_span / 3.;
+                    let span = r_span / 3. * 2.;
+                    render.line(cx - span, cy - shift, cx + span, cy - shift);
+                    render.line(cx - span, cy + shift, cx + span, cy + shift);
+                    render.line(cx - shift, cy - span, cx - shift, cy + span);
+                    render.line(cx + shift, cy - span, cx + shift, cy + span);
+
+                    // square
+                    let span = r_span / 2.;
+                    let cx = dx + 1.5;
+                    let cy = dy + 3.5;
+                    let x1 = cx - span;
+                    let x2 = cx + span;
+                    let y1 = cy - span;
+                    let y2 = cy + span;
+                    render.line(x1, y1, x2, y1);
+                    render.line(x1, y1, x1, y2);
+                    render.line(x2, y2, x1, y2);
+                    render.line(x2, y2, x2, y1);
+
+                    // x
+                    let span = r_span / 2.;
+                    let cx = dx + 2.5;
+                    let cy = dy + 4.5;
+                    let x1 = cx - span;
+                    let x2 = cx + span;
+                    let y1 = cy - span;
+                    let y2 = cy + span;
+                    render.line(x1, y1, x2, y2);
+                    render.line(x2, y1, x1, y2);
+
+                    // square with circle
+                    let span = r_span / 2.;
+                    let cx = dx + 2.5;
+                    let cy = dy + 1.5;
+                    let x1 = cx - span;
+                    let x2 = cx + span;
+                    let y1 = cy - span;
+                    let y2 = cy + span;
+                    render.line(x1, y1, x2, y1);
+                    render.line(x1, y1, x1, y2);
+                    render.line(x2, y2, x1, y2);
+                    render.line(x2, y2, x2, y1);
+                    render.circle_omg(cx, cy, span * 0.8);
+                };
+
+                icons(0., 0.);
+                icons(9., 0.);
+                icons(0., 9.);
+                icons(9., 9.);
             }
 
-            // link from grid into the entry
-            let mut render = Render::new(&pdf, plus_page.clone(), grid.clone());
-            render.line_color_hex(&input.grid_color);
-            render.font_color_hex(&input.font_color);
-            render.thickness(parse_thickness(&input.line_thickness));
+            if let Some(first_item_page) = first_item_page {
+                // link from grid into the entry
+                let mut render = Render::new(&pdf, plus_page.clone(), grid.clone());
+                render.line_color_hex(&input.grid_color);
+                render.font_color_hex(&input.font_color);
+                render.thickness(parse_thickness(&input.line_thickness));
 
-            let size = 2.;
-            let x = xx as f32;
-            let y = yy as f32;
-            let door = Area::xywh(x * size, 13. - y * size, size, size);
-            render.link(&page, door.clone());
+                let size = 2.;
+                let x = xx as f32;
+                let y = yy as f32;
+                let door = Area::xywh(x * size, 13. - y * size, size, size);
+                render.link(&first_item_page, door.clone());
 
-            let tooth = 0.66 * 0.5 * size;
-            let area = door;
-            let odd_number = number & 1 != 0;
-            let odd_x = xx & 1 != 0;
-            let odd_y = yy & 1 != 0;
+                let tooth = 0.66 * 0.5 * size;
+                let area = door;
+                let odd_number = number & 1 != 0;
+                let odd_x = xx & 1 != 0;
+                let odd_y = yy & 1 != 0;
 
-            let saw_ltr = (odd_y && odd_number) || (!odd_y && !odd_number);
+                let saw_ltr = (odd_y && odd_number) || (!odd_y && !odd_number);
 
-            if saw_ltr {
-                render.line(area.x1, area.y1, area.x1 + tooth, (area.y2 + area.y1) / 2.);
-                render.line(area.x1, area.y2, area.x1 + tooth, (area.y2 + area.y1) / 2.);
-                render.line(area.x2, area.y1, area.x2 - tooth, (area.y2 + area.y1) / 2.);
-                render.line(area.x2, area.y2, area.x2 - tooth, (area.y2 + area.y1) / 2.);
-            } else {
-                render.line(area.x1, area.y1, (area.x1 + area.x2) / 2., area.y1 + tooth);
-                render.line(area.x2, area.y1, (area.x1 + area.x2) / 2., area.y1 + tooth);
-                render.line(area.x1, area.y2, (area.x1 + area.x2) / 2., area.y2 - tooth);
-                render.line(area.x2, area.y2, (area.x1 + area.x2) / 2., area.y2 - tooth);
+                if saw_ltr {
+                    render.line(area.x1, area.y1, area.x1 + tooth, (area.y2 + area.y1) / 2.);
+                    render.line(area.x1, area.y2, area.x1 + tooth, (area.y2 + area.y1) / 2.);
+                    render.line(area.x2, area.y1, area.x2 - tooth, (area.y2 + area.y1) / 2.);
+                    render.line(area.x2, area.y2, area.x2 - tooth, (area.y2 + area.y1) / 2.);
+                } else {
+                    render.line(area.x1, area.y1, (area.x1 + area.x2) / 2., area.y1 + tooth);
+                    render.line(area.x2, area.y1, (area.x1 + area.x2) / 2., area.y1 + tooth);
+                    render.line(area.x1, area.y2, (area.x1 + area.x2) / 2., area.y2 - tooth);
+                    render.line(area.x2, area.y2, (area.x1 + area.x2) / 2., area.y2 - tooth);
+                }
+
+                render.corner_text(&first_item_page.data.clone().unwrap(), area.x2, area.y1);
             }
-
-            render.corner_text(&page.data.clone().unwrap(), area.x2, area.y1);
         }
     }
 

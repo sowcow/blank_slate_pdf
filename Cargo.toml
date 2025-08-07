@@ -25,6 +25,7 @@ getrandom = { version = "0.2", features = ["js", "wasm-bindgen"] }
 image = { version = "0.25.6", optional = true, default-features = false, features = [
     "png"
 ] }
+# web-sys = { version = "0.3.77", features = ["console"] }
 
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
