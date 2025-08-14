@@ -2791,10 +2791,10 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                         render.line(x3, y3, x1, y1);
                     };
 
-                    let center_x = dx + 1.5;
-                    let center_y = dy + 1.5;
-                    render.circle_omg(center_x, center_y, r_span);
-                    triangle(center_x, center_y, r_span);
+                    // let center_x = dx + 1.5;
+                    // let center_y = dy + 1.5;
+                    // render.circle_omg(center_x, center_y, r_span);
+                    // triangle(center_x, center_y, r_span);
 
                     triangle(dx + 2.5, dy + 3. + 2.5, r_span);
                     inverse_triangle(dx + 1.5, dy + 3. + 2.5, r_span);
@@ -2805,15 +2805,15 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                     render.line(cx - span, cy, cx + span, cy);
                     render.line(cx, cy - span, cx, cy + span);
 
-                    // #
-                    let cx = dx + 1.5;
-                    let cy = dy + 4.5;
-                    let shift = r_span / 3.;
-                    let span = r_span / 3. * 2.;
-                    render.line(cx - span, cy - shift, cx + span, cy - shift);
-                    render.line(cx - span, cy + shift, cx + span, cy + shift);
-                    render.line(cx - shift, cy - span, cx - shift, cy + span);
-                    render.line(cx + shift, cy - span, cx + shift, cy + span);
+                    // # / =
+                    // let cx = dx + 1.5;
+                    // let cy = dy + 4.5;
+                    // let shift = r_span / 3.;
+                    // let span = r_span / 3. * 2.;
+                    // render.line(cx - span, cy - shift, cx + span, cy - shift);
+                    // render.line(cx - span, cy + shift, cx + span, cy + shift);
+                    // render.line(cx - shift, cy - span, cx - shift, cy + span);
+                    // render.line(cx + shift, cy - span, cx + shift, cy + span);
 
                     // square
                     let span = r_span / 2.;
@@ -2839,19 +2839,101 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                     render.line(x1, y1, x2, y2);
                     render.line(x2, y1, x1, y2);
 
-                    // square with circle
+                    // // square with circle
+                    // let span = r_span / 2.;
+                    // let cx = dx + 2.5;
+                    // let cy = dy + 1.5;
+                    // let x1 = cx - span;
+                    // let x2 = cx + span;
+                    // let y1 = cy - span;
+                    // let y2 = cy + span;
+                    // render.line(x1, y1, x2, y1);
+                    // render.line(x1, y1, x1, y2);
+                    // render.line(x2, y2, x1, y2);
+                    // render.line(x2, y2, x2, y1);
+                    // render.circle_omg(cx, cy, span * 0.8);
+
                     let span = r_span / 2.;
+                    let cx = dx + 0.5;
+                    let cy = dy + 5.5;
+                    let x1 = cx - span;
+                    let y1 = cy - span;
+                    render.draw_tilde(x1, y1+span, span*2., span*2.);
+
+                    let spanx = r_span * 0.66; // / 2.;i * 1.33;
+                    let spany = r_span / 2.;
+                    let cx = dx + 0.5;
+                    let cy = dy + 4.5;
+                    // render.draw_spiral(cx, cy, 0., 0., span, span, 3., Some(0.), Some(true));
+                    // render.draw_spiral(cx, cy, 0., 0., span, span, 2., Some(0.), Some(true));
+                    // render.draw_spiral(cx, cy, 0., 0., span, span, 1., Some(0.), Some(true));
+                    render.draw_spiral(cx, cy, 0., 0., spanx, span, 1.5, Some(0.), Some(true));
+
+                    let spanx = r_span * 0.5;
+                    let spany = r_span * 0.66;
+                    let cx = dx + 0.5;
+                    let cy = dy + 3.5;
+                    render.draw_gate(cx, cy, spanx, spany);
+
+                    let cx = dx + 1.5;
+                    let cy = dy + 2.5;
+                    render.circle_omg(cx, cy, span);
+                    render.line(cx, cy - span, cx, cy + span);
+
+                    let cx = dx + 0.5;
+                    let cy = dy + 2.5;
+                    render.circle_omg(cx, cy, span);
+                    render.line(cx - span, cy, cx + span, cy);
+
+                    let cx = dx + 0.5;
+                    let cy = dy + 1.5;
+                    render.circle_omg(cx, cy, span);
+                    render.line(cx - span, cy, cx + span, cy);
+                    render.line(cx, cy - span, cx, cy + span);
+
+                    let cx = dx + 0.5;
+                    let cy = dy + 0.5;
+                    render.circle_omg(cx, cy, span);
+                    let delta = span * 0.25;
+                    render.line(cx - span, cy - delta, cx + span, cy - delta);
+                    render.line(cx - span, cy + delta, cx + span, cy + delta);
+
+                    // cog / atlas
+                    let cx = dx + 1.5;
+                    let cy = dy + 0.5;
+                    render.circle_omg(cx, cy, span);
+                    // render.square(cx, cy, span * 0.66);
+                    // render.square(cx, cy, span * 0.8);
+                    // render.square(cx, cy, span * 0.9);
+                    render.square(cx, cy, span * 0.85);
+
+                    let cx = dx + 1.5;
+                    let cy = dy + 1.5;
+                    render.circle_omg(cx, cy, span);
+                    render.circle_omg(cx, cy, span * 0.5);
+
+                    let cx = dx + 2.5;
+                    let cy = dy + 2.5;
+                    render.diamond(cx, cy, span * 0.85);
+                    let s = span * 0.33;
+                    render.line(cx - s, cy, cx + s, cy);
+                    render.line(cx, cy - s, cx, cy + s);
+
                     let cx = dx + 2.5;
                     let cy = dy + 1.5;
-                    let x1 = cx - span;
-                    let x2 = cx + span;
-                    let y1 = cy - span;
-                    let y2 = cy + span;
-                    render.line(x1, y1, x2, y1);
-                    render.line(x1, y1, x1, y2);
-                    render.line(x2, y2, x1, y2);
-                    render.line(x2, y2, x2, y1);
-                    render.circle_omg(cx, cy, span * 0.8);
+                    render.diamond(cx, cy, span * 0.85);
+                    let delta = span * 0.50;
+                    let s = span * 0.7;
+                    render.line(cx - delta, cy - s, cx - delta, cy + s);
+                    render.line(cx + delta, cy - s, cx + delta, cy + s);
+
+                    let cx = dx + 2.5;
+                    let cy = dy + 0.5;
+                    render.diamond(cx, cy, span * 0.85);
+                    // let s = span * 0.7;
+                    let s = span * 0.6;
+                    render.line(cx - s, cy - s, cx + s, cy + s);
+                    render.line(cx - s, cy + s, cx + s, cy - s);
                 };
 
                 icons(0., 0.);

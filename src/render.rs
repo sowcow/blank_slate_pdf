@@ -3,6 +3,7 @@ use crate::grid::*;
 use crate::page::*;
 use crate::pdf::*;
 use printpdf::*;
+use printpdf::path::{PaintMode, WindingOrder};
 
 #[derive(Clone)]
 pub struct Render<'a, T: Clone> {
@@ -12,6 +13,30 @@ pub struct Render<'a, T: Clone> {
     pub thick: f32,
     pub line_color: Color,
     pub font_color: Color,
+}
+
+pub fn rotate_point(
+    point: (f32, f32),
+    center: (f32, f32),
+    angle_degrees: f32
+) -> (f32, f32) {
+    // Convert angle to radians
+    let angle = angle_degrees.to_radians();
+    let (sin_angle, cos_angle) = angle.sin_cos();
+    
+    // Translate point back to origin
+    let translated_x = point.0 - center.0;
+    let translated_y = point.1 - center.1;
+    
+    // Rotate point
+    let rotated_x = translated_x * cos_angle - translated_y * sin_angle;
+    let rotated_y = translated_x * sin_angle + translated_y * cos_angle;
+    
+    // Translate point back
+    (
+        rotated_x + center.0,
+        rotated_y + center.1
+    )
 }
 
 fn parse_color(given: &str) -> Color {
@@ -167,6 +192,100 @@ impl<'a, T: Clone> Render<'a, T> {
         self.line(x2, y1, x1, y1);
     }
 
+    pub fn draw_gate(&self, cx: f32, cy: f32, spanx: f32, spany: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        
+        let mut xs: Vec<(Point, bool)> = vec![];
+        let mut vertex = |xs: &mut Vec<(Point, bool)>, x, y| {
+            xs.push(
+                (
+                    Point::new(self.mm(self.x(x)), self.mm(self.y(y))), false)
+                 
+            );
+        };
+
+        let mut bend = |xs: &mut Vec<(Point, bool)>, x, y| {
+            xs.last_mut().unwrap().1 = true;
+            xs.push(
+                (
+                    Point::new(self.mm(self.x(x)), self.mm(self.y(y))), true)
+                 
+            );
+            xs.push(
+                (
+                    Point::new(self.mm(self.x(x)), self.mm(self.y(y))), false)
+                 
+            );
+        };
+
+        let mut bend2 = |xs: &mut Vec<(Point, bool)>, x, y, x2, y2| {
+            xs.last_mut().unwrap().1 = true;
+            xs.push(
+                (
+                    Point::new(self.mm(self.x(x)), self.mm(self.y(y))), true)
+                 
+            );
+            xs.push(
+                (
+                    Point::new(self.mm(self.x(x2)), self.mm(self.y(y2))), false)
+                 
+            );
+        };
+
+        vertex(&mut xs, cx - spanx, cy - spany);
+        bend2(&mut xs,
+            cx - spanx, cy + spanx,
+            cx - spanx, cy + spany,
+        );
+        vertex(&mut xs, cx, cy + spany);
+        bend2(&mut xs,
+            cx + spanx, cy + spany,
+            cx + spanx, cy + spanx,
+        );
+        vertex(&mut xs, cx + spanx, cy - spany);
+        
+        let curve = Line {
+            points: xs,
+            is_closed: false,
+        };
+       
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color);
+        current_layer.set_outline_thickness(self.thick);
+        current_layer.add_line(curve);
+    }
+
+    pub fn draw_tilde(&self, x_start: f32, y_start: f32, width: f32, height: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        
+        // Control points to create a smooth "~" shape
+        let cp1x = x_start + width * 0.66;
+        let cp1y = y_start + height;
+        let cp2x = x_start + width * 0.33;
+        let cp2y = y_start - height;
+        let x_end = x_start + width;
+        
+        let points = vec![
+            (Point::new(self.mm(self.x(x_start)), self.mm(self.y(y_start))
+            ), true), // next point is control point
+            (Point::new(self.mm(self.x(cp1x)), self.mm(self.y(cp1y))), true), // next point is control point
+            (Point::new(self.mm(self.x(cp2x)), self.mm(self.y(cp2y))), false),
+            (Point::new(self.mm(self.x(x_end)), self.mm(self.y(y_start))), false),
+        ];
+        
+        let curve = Line {
+            points,
+            is_closed: false,
+        };
+       
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color);
+        current_layer.set_outline_thickness(self.thick);
+        current_layer.add_line(curve);
+    }
+
     pub fn line(&self, x1: f32, y1: f32, x2: f32, y2: f32) {
         let doc = &self.pdf.doc;
         let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
@@ -185,6 +304,68 @@ impl<'a, T: Clone> Render<'a, T> {
         current_layer.set_outline_color(color);
         current_layer.set_outline_thickness(self.thick);
         current_layer.add_line(line1);
+    }
+
+    pub fn draw_spiral(
+        &self,
+        x_center: f32,
+        y_center: f32,
+        start_radius_x: f32,  // Starting X radius
+        start_radius_y: f32,  // Starting Y radius
+        end_radius_x: f32,    // Ending X radius
+        end_radius_y: f32,    // Ending Y radius
+        loops: f32,           // Number of loops (can be fractional)
+        start_angle: Option<f32>,  // Starting angle in radians (default: 0.0)
+        clockwise: Option<bool>,   // Direction (default: true = clockwise)
+    ) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+        
+        // Set default values if not provided
+        let start_angle = start_angle.unwrap_or(0.0);
+        let clockwise = clockwise.unwrap_or(true);
+        
+        // Calculate total angular distance
+        let total_angle = 2.0 * std::f32::consts::PI * loops;
+        let direction = if clockwise { -1.0 } else { 1.0 };  // PDF coordinate system is Y-down
+        
+        // Determine number of points (8 points per loop minimum)
+        let points_per_loop = 100.0;  // Resolution
+        let num_points = (loops * points_per_loop).ceil() as usize;
+        let mut points = Vec::with_capacity(num_points);
+        
+        // Generate spiral points
+        for i in 0..num_points {
+            let t = i as f32 / (num_points - 1) as f32;
+            let angle = start_angle + direction * t * total_angle;
+            
+            // Calculate current radii (linear interpolation)
+            let current_radius_x = start_radius_x + t * (end_radius_x - start_radius_x);
+            let current_radius_y = start_radius_y + t * (end_radius_y - start_radius_y);
+            
+            // Calculate spiral point (parametric equations)
+            let x = x_center + current_radius_x * angle.cos();
+            let y = y_center + current_radius_y * angle.sin();
+            
+            // Convert to PDF coordinates
+            let point = Point::new(
+                self.mm(self.x(x)),
+                self.mm(self.y(y))
+            );
+            points.push((point, false));  // All points are path vertices
+        }
+        
+        // Create path object
+        let spiral = Line {
+            points,
+            is_closed: false,
+        };
+        
+        // Apply styling and add to layer
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color);
+        current_layer.set_outline_thickness(self.thick);
+        current_layer.add_line(spiral);
     }
 
     pub fn poly(&self, xs: Vec<(f32, f32)>) {
@@ -419,7 +600,6 @@ impl<'a, T: Clone> Render<'a, T> {
         let y = self.mm(self.y(y));
         let r = self.mm(r);
 
-        use printpdf::path::{PaintMode, WindingOrder};
         use printpdf::*;
 
         let doc = &self.pdf.doc;
@@ -432,6 +612,30 @@ impl<'a, T: Clone> Render<'a, T> {
             winding_order: WindingOrder::EvenOdd,
         };
         current_layer.add_polygon(line);
+    }
+
+    pub fn square(&self, x: f32, y: f32, r: f32) {
+        self.rect(x - r, y - r, x + r, y + r);
+    }
+
+    pub fn diamond(&self, x: f32, y: f32, r: f32) {
+        let angle = 0.25 * std::f32::consts::PI;
+        let center = (x, y);
+        let mut a = (x - r, y - r);
+        let mut b = (x - r, y + r);
+        let mut c = (x + r, y + r);
+        let mut d = (x + r, y - r);
+
+        let deg = 45.;
+        a = rotate_point(a, center, deg);
+        b = rotate_point(b, center, deg);
+        c = rotate_point(c, center, deg);
+        d = rotate_point(d, center, deg);
+
+        self.line(a.0, a.1, b.0, b.1);
+        self.line(c.0, c.1, b.0, b.1);
+        self.line(c.0, c.1, d.0, d.1);
+        self.line(a.0, a.1, d.0, d.1);
     }
 
     pub fn circle_omg(&self, x: f32, y: f32, r: f32) {
