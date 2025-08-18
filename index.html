@@ -40,26 +40,50 @@
 
       Below are the settings for Make Teeth;
       there is an option to have cryptic review pages (Space Odyssey inspired);
+
+      Sandworm PDF:
+      If "+" page is used like a monthly calendar then you have one Sandworm per day.
+      Inside of the Sandworm you have very limited space for todo list, day focus or similar content.
+      Outside of it there is clockface with 12 squares to do time planning or accounting.
+      Whether to slay the Sandworm at the end of the day or to feed maidens into it is the discretion of the user.
+
       I have gray colored lines by default for Remarkable2,
       use any hex color code if RM-PRO is the target device,
       like orange is used for other PDFs below.
+
+      If multiple options are selected then they are accessible by turning the page.
       </pre>
 
+      <ul>
+	      <li>
 			<label style='display: block'>
-				Teeth pages (todo list)
 				<input
 						name='teeth_pages'
-						checked="checked"
 						type="checkbox"
 						/>
+				Teeth pages (todo list)
 			</label>
+	      </li>
+	      <li>
 			<label style='display: block'>
-				HAL pages (review)
+				<input
+						name='sandworm_pages'
+						type="checkbox"
+						checked="checked"
+						/>
+				Sandworm pages (time planning or accounting + todo or whatever inside) <b>← new default</b>
+			</label>
+	      </li>
+	      <li>
+			<label style='display: block'>
 				<input
 						name='hal_pages'
 						type="checkbox"
 						/>
+				HAL pages (cryptic review or anything)
 			</label>
+	      </li>
+	      </ul>
 
 			<label style='display: block'>
 				Header
