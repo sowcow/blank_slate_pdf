@@ -77,6 +77,7 @@ struct Input123 {
 struct InputTeeth {
     teeth_pages: Option<String>,
     hal_pages: Option<String>,
+    sandworm_pages: Option<String>,
     action: String,
     title: String,
     line_thickness: String,
@@ -1606,8 +1607,8 @@ pub fn create_wip(given: JsValue) -> JsValue {
     let row_index = 0;
     let size = 2.;
     menu.push((
-        page.clone(),
-        Area::xywh((row_index as f32) * 2., 16. - size, size, size),
+            page.clone(),
+            Area::xywh((row_index as f32) * 2., 16. - size, size, size),
     ));
 
     for row_index in 0..6 {
@@ -1637,8 +1638,8 @@ pub fn create_wip(given: JsValue) -> JsValue {
 
             if x == 0 {
                 menu.push((
-                    page.clone(),
-                    Area::xywh((row_index as f32) * 2., 16. - size, size, size),
+                        page.clone(),
+                        Area::xywh((row_index as f32) * 2., 16. - size, size, size),
                 ));
             }
         }
@@ -1652,8 +1653,8 @@ pub fn create_wip(given: JsValue) -> JsValue {
 
         let size = 1.;
         menu.push((
-            page.clone(),
-            Area::xywh((x as f32) * size, 14. - size, size, size),
+                page.clone(),
+                Area::xywh((x as f32) * size, 14. - size, size, size),
         ));
     }
 
@@ -1664,8 +1665,8 @@ pub fn create_wip(given: JsValue) -> JsValue {
 
         let size = 1.;
         menu.push((
-            page.clone(),
-            Area::xywh((x as f32) * size, 13. - size, size, size),
+                page.clone(),
+                Area::xywh((x as f32) * size, 13. - size, size, size),
         ));
     }
 
@@ -1958,12 +1959,12 @@ fn render_four(
     circle(pdf, &page, 5.5 + 0.5, 1.5 + 9., 3.0);
 
     let mut produce_nested = |pdf: &mut PDF<PageData>,
-                              whole_page: &Page<PageData>,
-                              subheader: String,
-                              x: f32,
-                              y: f32,
-                              sizex: f32,
-                              sizey: f32| {
+    whole_page: &Page<PageData>,
+    subheader: String,
+    x: f32,
+    y: f32,
+    sizex: f32,
+    sizey: f32| {
         let count_consecutive = 11;
         let mut pages = vec![];
         for i in 1..=count_consecutive {
@@ -2539,16 +2540,16 @@ fn render_figure(
     let side = 2. / (3. as f32).sqrt() * part_size;
     line(pdf, &page, part_size * 2.5, 15. - part_size,
         Some(part_size * 2.5 - side / 2.), Some(15. - part_size * 2.)
-        );
+    );
     line(pdf, &page, part_size * 2.5, 15. - part_size,
         Some(part_size * 2.5 + side / 2.), Some(15. - part_size * 2.)
-        );
+    );
     line(pdf, &page,
         part_size * 2.5 - side / 2.,
         15. - part_size * 2.,
         Some(part_size * 2.5 + side / 2.),
         Some(15. - part_size * 2.),
-        );
+    );
 
     for yy in 1..=7 {
         let y = yy as f32;
@@ -2638,7 +2639,7 @@ pub fn make_teeth(given: JsValue) -> JsValue {
             let subheader = number.to_string();
             let mut first_item_page: Option<Page<Option<String>>> = None;
 
-            if input.teeth_pages.is_none() && input.hal_pages.is_none() { panic!("alaaaarm!"); }
+            if input.teeth_pages.is_none() && input.hal_pages.is_none() && input.sandworm_pages.is_none() { panic!("alaaaarm!"); }
 
             if (input.teeth_pages.is_some()) {
                 let page = pdf.add_page(Some(subheader.clone()));
@@ -2742,15 +2743,15 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                         // Calculate points for equilateral triangle
                         // Angle between points is 120 degrees (2π/3 radians)
                         let angle_offset = std::f32::consts::PI / 2.0; // Start from top point
-                        
+
                         // Point 1 (top)
                         let x1 = center_x + r_span * angle_offset.cos();
                         let y1 = center_y + r_span * angle_offset.sin();
-                        
+
                         // Point 2 (bottom right)
                         let x2 = center_x + r_span * (angle_offset + 2.0 * std::f32::consts::PI / 3.0).cos();
                         let y2 = center_y + r_span * (angle_offset + 2.0 * std::f32::consts::PI / 3.0).sin();
-                        
+
                         // Point 3 (bottom left)
                         let x3 = center_x + r_span * (angle_offset + 4.0 * std::f32::consts::PI / 3.0).cos();
                         let y3 = center_y + r_span * (angle_offset + 4.0 * std::f32::consts::PI / 3.0).sin();
@@ -2759,7 +2760,7 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                         // let y_shift_1: f32 = r_span * (std::f32::consts::PI / 2.0).sin();
                         // let y_shift_2: f32 = r_span * (std::f32::consts::PI / 3.0).sin();
                         // let ys = (y_shift_1 - y_shift_2).round().abs() * 10.;
-                        
+
                         // Draw the triangle
                         render.line(x1, y1 - ys, x2, y2 - ys);
                         render.line(x2, y2 - ys, x3, y3 - ys);
@@ -2769,21 +2770,21 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                         // Calculate points for equilateral triangle
                         // Angle between points is 120 degrees (2π/3 radians)
                         let angle_offset = 3. * std::f32::consts::PI / 2.0;
-                        
+
                         // Point 1 (bottom)
                         let x1 = center_x + r_span * angle_offset.cos();
                         let y1 = center_y + r_span * angle_offset.sin();
-                        
+
                         // Point 2
                         let x2 = center_x + r_span * (angle_offset + 2.0 * std::f32::consts::PI / 3.0).cos();
                         let y2 = center_y + r_span * (angle_offset + 2.0 * std::f32::consts::PI / 3.0).sin();
-                        
+
                         // Point 3
                         let x3 = center_x + r_span * (angle_offset + 4.0 * std::f32::consts::PI / 3.0).cos();
                         let y3 = center_y + r_span * (angle_offset + 4.0 * std::f32::consts::PI / 3.0).sin();
 
                         let half_x = (x2 + x3) / 2.;
-                        
+
                         // Draw the triangle
                         render.line(x1, y1, x2, y2);
                         // render.line(x2, y2, x3, y3);
@@ -2940,6 +2941,86 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                 icons(9., 0.);
                 icons(0., 9.);
                 icons(9., 9.);
+            }
+            if (input.sandworm_pages.is_some()) {
+                let page = pdf.add_page(Some(subheader.clone()));
+                if first_item_page.is_none() {
+                    first_item_page = Some(page.clone());
+                }
+                let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                render.line_color_hex(&input.grid_color);
+                render.font_color_hex(&input.font_color);
+                render.thickness(parse_thickness(&input.line_thickness));
+
+                let worm = |midx: f32, midy: f32, radius: f32| {
+                    let side = radius * 2.;
+                    let part_size = side / 4.;
+                    // let mid_size = part_size * 2.;
+
+                    // inside worm part goes first
+                    let x0 = midx - radius;
+                    let y0 = midy - radius;
+                    let x1 = midx + radius;
+                    let y1 = midy + radius;
+
+                    render.line(midx - part_size, midy - part_size, midx + part_size, midy + part_size);
+                    render.line(midx - part_size, midy + part_size, midx + part_size, midy - part_size);
+                    render.line(midx, midy - part_size, midx, midy + part_size);
+
+                    let lines_inside = 8;
+                    let step = (part_size * 2.) / lines_inside as f32;
+                    for i in 0..=16 {
+                        let y = y0 + i as f32 * step;
+                        render.line(x0, y, x1, y);
+                        // render.line(x0 + part_size, y, x1 - part_size, y);
+                    }
+                    render.draw_worm_teeth(midx, midy, part_size*1.4142, 0.);
+
+                    render.square(midx, midy, radius);
+                    // render.square(midx, midy, radius / 2.);
+
+
+                    let x = x0 + part_size;
+                    render.line(x, y0, x, y0 + part_size);
+                    render.line(x, y1, x, y1 - part_size);
+                    let x = x0 + 2. * part_size;
+                    render.line(x, y0, x, y0 + part_size);
+                    render.line(x, y1, x, y1 - part_size);
+                    let x = x0 + 3. * part_size;
+                    render.line(x, y0, x, y0 + part_size);
+                    render.line(x, y1, x, y1 - part_size);
+
+                    let y = y0 + part_size;
+                    render.line(x0, y, x0 + part_size, y);
+                    render.line(x1, y, x1 - part_size, y);
+                    let y = y0 + 2. * part_size;
+                    render.line(x0, y, x0 + part_size, y);
+                    render.line(x1, y, x1 - part_size, y);
+                    let y = y0 + 3. * part_size;
+                    render.line(x0, y, x0 + part_size, y);
+                    render.line(x1, y, x1 - part_size, y);
+
+                    let cx = 1.;
+                    let cy = 1.;
+                    // render.line_text("I", cx + 2. - 0.05, cy - 2.);
+                    render.line_start_text("6", 3., 2.);
+                    render.line_start_text("7", 0., 2.);
+                    render.line_start_text("8", 0., 5.);
+                    render.line_start_text("9", 0., 8.);
+                    render.line_start_text("10", 0., 11.);
+                    let pad = 0.05;
+                    render.line_text("5", 9. - pad, 2.);
+                    render.line_text("4", 12. - pad, 2.);
+                    render.line_text("3", 12. - pad, 5.);
+                    render.line_text("2", 12. - pad, 8.);
+                    render.line_text("1", 12. - pad, 11.);
+
+                    render.line_start_text("11", 3., 14. - 0.35);
+                    render.line_text("12", 9. - pad, 14. - 0.35);
+                };
+
+                worm(6., 8., 6.);
+
             }
 
             if let Some(first_item_page) = first_item_page {

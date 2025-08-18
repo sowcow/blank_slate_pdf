@@ -4,7 +4,7 @@ Permanent revolution of random pdf ideas (written with trashy non-ideomatic Rust
 
 # * new * Teeth.pdf
 
-Unhinged todo list inspired by After Hours, The Shining, and Space Odyssey.
+Unhinged todo list inspired by After Hours, The Shining, Space Odyssey, and ~Dune.
 
 # Five.pdf
 
