@@ -2688,6 +2688,86 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                     render.line(12. - tooth_gap + tooth_depth, ay + dy, 12. - tooth_gap, ay + step);
                 }
             }
+            if (input.sandworm_pages.is_some()) {
+                let page = pdf.add_page(Some(subheader.clone()));
+                if first_item_page.is_none() {
+                    first_item_page = Some(page.clone());
+                }
+                let mut render = Render::new(&pdf, page.clone(), grid.clone());
+                render.line_color_hex(&input.grid_color);
+                render.font_color_hex(&input.font_color);
+                render.thickness(parse_thickness(&input.line_thickness));
+
+                let worm = |midx: f32, midy: f32, radius: f32| {
+                    let side = radius * 2.;
+                    let part_size = side / 4.;
+                    // let mid_size = part_size * 2.;
+
+                    // inside worm part goes first
+                    let x0 = midx - radius;
+                    let y0 = midy - radius;
+                    let x1 = midx + radius;
+                    let y1 = midy + radius;
+
+                    render.line(midx - part_size, midy - part_size, midx + part_size, midy + part_size);
+                    render.line(midx - part_size, midy + part_size, midx + part_size, midy - part_size);
+                    render.line(midx, midy - part_size, midx, midy + part_size);
+
+                    let lines_inside = 8;
+                    let step = (part_size * 2.) / lines_inside as f32;
+                    for i in 0..=16 {
+                        let y = y0 + i as f32 * step;
+                        render.line(x0, y, x1, y);
+                        // render.line(x0 + part_size, y, x1 - part_size, y);
+                    }
+                    render.draw_worm_teeth(midx, midy, part_size*1.4142, 0.);
+
+                    render.square(midx, midy, radius);
+                    // render.square(midx, midy, radius / 2.);
+
+
+                    let x = x0 + part_size;
+                    render.line(x, y0, x, y0 + part_size);
+                    render.line(x, y1, x, y1 - part_size);
+                    let x = x0 + 2. * part_size;
+                    render.line(x, y0, x, y0 + part_size);
+                    render.line(x, y1, x, y1 - part_size);
+                    let x = x0 + 3. * part_size;
+                    render.line(x, y0, x, y0 + part_size);
+                    render.line(x, y1, x, y1 - part_size);
+
+                    let y = y0 + part_size;
+                    render.line(x0, y, x0 + part_size, y);
+                    render.line(x1, y, x1 - part_size, y);
+                    let y = y0 + 2. * part_size;
+                    render.line(x0, y, x0 + part_size, y);
+                    render.line(x1, y, x1 - part_size, y);
+                    let y = y0 + 3. * part_size;
+                    render.line(x0, y, x0 + part_size, y);
+                    render.line(x1, y, x1 - part_size, y);
+
+                    let cx = 1.;
+                    let cy = 1.;
+                    // render.line_text("I", cx + 2. - 0.05, cy - 2.);
+                    render.line_start_text("6", 3., 2.);
+                    render.line_start_text("7", 0., 2.);
+                    render.line_start_text("8", 0., 5.);
+                    render.line_start_text("9", 0., 8.);
+                    render.line_start_text("10", 0., 11.);
+                    let pad = 0.05;
+                    render.line_text("5", 9. - pad, 2.);
+                    render.line_text("4", 12. - pad, 2.);
+                    render.line_text("3", 12. - pad, 5.);
+                    render.line_text("2", 12. - pad, 8.);
+                    render.line_text("1", 12. - pad, 11.);
+
+                    render.line_start_text("11", 3., 14. - 0.35);
+                    render.line_text("12", 9. - pad, 14. - 0.35);
+                };
+
+                worm(6., 8., 6.);
+
+            }
             if (input.hal_pages.is_some()) {
                 let page = pdf.add_page(Some(subheader.clone()));
                 if first_item_page.is_none() {
@@ -2941,86 +3021,6 @@ pub fn make_teeth(given: JsValue) -> JsValue {
                 icons(9., 0.);
                 icons(0., 9.);
                 icons(9., 9.);
-            }
-            if (input.sandworm_pages.is_some()) {
-                let page = pdf.add_page(Some(subheader.clone()));
-                if first_item_page.is_none() {
-                    first_item_page = Some(page.clone());
-                }
-                let mut render = Render::new(&pdf, page.clone(), grid.clone());
-                render.line_color_hex(&input.grid_color);
-                render.font_color_hex(&input.font_color);
-                render.thickness(parse_thickness(&input.line_thickness));
-
-                let worm = |midx: f32, midy: f32, radius: f32| {
-                    let side = radius * 2.;
-                    let part_size = side / 4.;
-                    // let mid_size = part_size * 2.;
-
-                    // inside worm part goes first
-                    let x0 = midx - radius;
-                    let y0 = midy - radius;
-                    let x1 = midx + radius;
-                    let y1 = midy + radius;
-
-                    render.line(midx - part_size, midy - part_size, midx + part_size, midy + part_size);
-                    render.line(midx - part_size, midy + part_size, midx + part_size, midy - part_size);
-                    render.line(midx, midy - part_size, midx, midy + part_size);
-
-                    let lines_inside = 8;
-                    let step = (part_size * 2.) / lines_inside as f32;
-                    for i in 0..=16 {
-                        let y = y0 + i as f32 * step;
-                        render.line(x0, y, x1, y);
-                        // render.line(x0 + part_size, y, x1 - part_size, y);
-                    }
-                    render.draw_worm_teeth(midx, midy, part_size*1.4142, 0.);
-
-                    render.square(midx, midy, radius);
-                    // render.square(midx, midy, radius / 2.);
-
-
-                    let x = x0 + part_size;
-                    render.line(x, y0, x, y0 + part_size);
-                    render.line(x, y1, x, y1 - part_size);
-                    let x = x0 + 2. * part_size;
-                    render.line(x, y0, x, y0 + part_size);
-                    render.line(x, y1, x, y1 - part_size);
-                    let x = x0 + 3. * part_size;
-                    render.line(x, y0, x, y0 + part_size);
-                    render.line(x, y1, x, y1 - part_size);
-
-                    let y = y0 + part_size;
-                    render.line(x0, y, x0 + part_size, y);
-                    render.line(x1, y, x1 - part_size, y);
-                    let y = y0 + 2. * part_size;
-                    render.line(x0, y, x0 + part_size, y);
-                    render.line(x1, y, x1 - part_size, y);
-                    let y = y0 + 3. * part_size;
-                    render.line(x0, y, x0 + part_size, y);
-                    render.line(x1, y, x1 - part_size, y);
-
-                    let cx = 1.;
-                    let cy = 1.;
-                    // render.line_text("I", cx + 2. - 0.05, cy - 2.);
-                    render.line_start_text("6", 3., 2.);
-                    render.line_start_text("7", 0., 2.);
-                    render.line_start_text("8", 0., 5.);
-                    render.line_start_text("9", 0., 8.);
-                    render.line_start_text("10", 0., 11.);
-                    let pad = 0.05;
-                    render.line_text("5", 9. - pad, 2.);
-                    render.line_text("4", 12. - pad, 2.);
-                    render.line_text("3", 12. - pad, 5.);
-                    render.line_text("2", 12. - pad, 8.);
-                    render.line_text("1", 12. - pad, 11.);
-
-                    render.line_start_text("11", 3., 14. - 0.35);
-                    render.line_text("12", 9. - pad, 14. - 0.35);
-                };
-
-                worm(6., 8., 6.);
-
             }
 
             if let Some(first_item_page) = first_item_page {
