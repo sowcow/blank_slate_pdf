@@ -3243,3 +3243,212 @@ pub fn make_teeth(given: JsValue) -> JsValue {
     let m = Message { payload: bytes };
     serde_wasm_bindgen::to_value(&m).unwrap()
 }
+
+
+
+#[wasm_bindgen]
+pub fn make_radar(given: JsValue) -> JsValue {
+    let data: PageData = None;
+    let title = "Teeth";
+
+    let mut pdf = PDF::new(&title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    use serde_wasm_bindgen::from_value;
+    let input: Input123 = from_value(given).unwrap();
+
+    let max_depth = 7; // count of steps user can do before page with no further navigation
+    
+    let render_page = |mut render: Render<Option<String>>, path: &str| {
+        for y in 1..=(render.grid.h - 1.) as usize {
+            render.line(0., y as f32, render.grid.w, y as f32);
+            render.line(0., -0.5 + y as f32, render.grid.w, -0.5 + y as f32);
+        }
+        for x in 1..=(render.grid.w) as usize {
+            render.line(x as f32, 0., x as f32, render.grid.h - 1.);
+            render.line(x as f32 - 0.5, 0., x as f32 - 0.5, render.grid.h - 1.);
+        }
+
+        let x0 = 6.;
+        let y0 = 0.5;
+        let scale = 6.;
+        render.thickness(2.);
+        render.circle_omg(x0, y0, scale);
+
+        use std::f32::consts::PI;
+        let mut point: (f32, f32) = (0., 0.);
+        let mut trace: Vec<(f32, f32)> = vec![];
+        trace.push(point.clone());
+        for (index, ch) in path.chars().enumerate() {
+            let mut angle = PI / 2.; // could be top if it didn't lie
+            let mut step = 0.;
+            match ch {
+                'l' => {
+                    angle += PI / 4.;
+                    step = 1. / max_depth as f32;
+                }
+                'r' => {
+                    angle -= PI / 4.;
+                    step = 1. / max_depth as f32;
+                }
+                'u' => {
+                    step = 1. / max_depth as f32;
+                }
+                _ => { panic!("alaaaaaaaaaaam!"); }
+            }
+            let dx = step * angle.cos();
+            let dy = step * angle.sin();
+            point.0 += dx;
+            point.1 += dy;
+            trace.push(point.clone());
+        }
+
+        let mut prev: Option<(f32, f32)> = None;
+        trace.iter().for_each(|p|{
+            if let Some(got_prev) = prev {
+                render.line(x0 + got_prev.0 * scale, y0 + got_prev.1 * scale, x0 + p.0 * scale, y0 + p.1 * scale);
+                render.circle_omg(x0 + p.0 * scale, y0 + p.1 * scale, 0.03);
+            } else {
+                render.circle_omg(x0 + p.0 * scale, y0 + p.1 * scale, 0.03);
+            }
+            prev = Some(p.clone());
+        });
+
+        let count = path.chars().count();
+        render.thickness(4.); //parse_thickness(&input.line_thickness));
+        let x = x0 + point.0 * scale;
+        let y = y0 + point.1 * scale;
+        if count == max_depth {
+            let r = 0.25;
+            render.circle_omg(x, y, r);
+            render.circle_omg(x, y, r * 1.5);
+            render.circle_omg(x, y, r * 2.);
+            render.circle_omg(x, y, r * 2.5);
+            render.circle_omg(x, y, r * 3.);
+        } else {
+            let r = 0.125;
+            render.square(x, y, r);
+        }
+    };
+
+    let mut page = pdf.page(0);
+    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+    render_page(render, "");
+
+    let mut paths = generate_radar_combinations(max_depth);
+    use rand::rngs::OsRng;
+    use rand::seq::SliceRandom; // or StdRng with a seed
+    paths.shuffle(&mut OsRng); // or StdRng::from_entropy()
+
+    use std::collections::HashMap;
+    let mut hash: HashMap<String, Page<Option<String>>> = HashMap::new();
+    hash.insert("".into(), page);
+    paths.iter().for_each(|path| {
+        let page = pdf.add_page(Some(path.into()));
+        // let page = pdf.add_page(None);
+        hash.insert(path.into(), page.clone());
+
+        let mut render = Render::new(&pdf, page, grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+        render_page(render, &path);
+    });
+
+    paths.iter().for_each(|path| {
+        let page: Page<Option<String>> = hash.get(path).unwrap().clone();
+        let parent_path = &path[..path.len() - 1];
+        let parent: Page<Option<String>> = hash.get(parent_path).unwrap().clone();
+        let step = path.chars().last().unwrap();
+
+        let mut render = Render::new(&pdf, parent.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+
+        match step {
+            'l' => {
+                render.header_link(
+                    &page,
+                    "<",
+                    Area::xywh(5., 16., -2., -1. + 0.02),
+                );
+            }
+            'u' => {
+                render.header_link(
+                    &page,
+                    "|",
+                    Area::xywh(5., 16., 2., -1. + 0.02),
+                );
+            }
+            'r' => {
+                render.header_link(
+                    &page,
+                    ">",
+                    Area::xywh(7., 16., 2., -1. + 0.02),
+                );
+            }
+
+                _ => { panic!("alaaaaaaaaaaam!"); }
+        }
+    });
+
+    for page in pdf.pages.iter() {
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+        let data = page.data.clone();
+        let title = input.title.clone();
+
+        render.header(&title);
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+// l u r - directions
+static RADAR_MOVE_OPTIONS: [&str; 3] = ["l", "u", "r"];
+
+fn generate_radar_combinations(max_len: usize) -> Vec<String> {
+    let mut combinations = Vec::new();
+    
+    // Pre-allocate capacity to reduce reallocations
+    let total_combinations = (3usize.pow(max_len as u32 + 1) - 3) / 2;
+    combinations.reserve(total_combinations);
+    
+    // Start with base combinations
+    let mut current = RADAR_MOVE_OPTIONS.iter()
+        .map(|&s| s.to_string())
+        .collect::<Vec<_>>();
+    
+    combinations.extend(current.clone());
+    
+    // Build up combinations iteratively
+    for _ in 1..max_len {
+        let mut next = Vec::new();
+        for combo in current {
+            for &option in RADAR_MOVE_OPTIONS.iter() {
+                let mut new_combo = combo.clone();
+                // new_combo.push(' ');
+                new_combo.push_str(option);
+                next.push(new_combo);
+            }
+        }
+        combinations.extend(next.clone());
+        current = next;
+    }
+    
+    combinations
+}
+
+// fn distance(p1: (f32, f32), p2: (f32, f32)) -> f32 {
+//     let dx = p1.0 - p2.0;
+//     let dy = p1.1 - p2.1;
+//     (dx * dx + dy * dy).sqrt()
+// }

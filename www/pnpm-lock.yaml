@@ -10,7 +10,7 @@ importers:
     dependencies:
       wasm-game-of-life:
         specifier: file:../pkg
-        version: blank_slate_battery@file:../pkg
+        version: pkg@file:../pkg
     devDependencies:
       copy-webpack-plugin:
         specifier: ^12.0.2
@@ -291,9 +291,6 @@ packages:
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
-
-  blank_slate_battery@file:../pkg:
-    resolution: {directory: ../pkg, type: directory}
 
   body-parser@1.20.3:
     resolution: {integrity: sha512-7rAxByjUMqQ3/bHJy7D6OGXvx/MMc4IqBn/X0fcM1QUcAItpZrBEYhWGem+tzXH90c+G01ypMcYJBO9Y30203g==}
@@ -927,6 +924,9 @@ packages:
   pkg-dir@4.2.0:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
+
+  pkg@file:../pkg:
+    resolution: {directory: ../pkg, type: directory}
 
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
@@ -1599,8 +1599,6 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  blank_slate_battery@file:../pkg: {}
-
   body-parser@1.20.3:
     dependencies:
       bytes: 3.1.2
@@ -2193,6 +2191,8 @@ snapshots:
   pkg-dir@4.2.0:
     dependencies:
       find-up: 4.1.0
+
+  pkg@file:../pkg: {}
 
   process-nextick-args@2.0.1: {}
 

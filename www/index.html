@@ -23,6 +23,53 @@
       selecting any one of other options and then pressing "Make".
     </pre>
 
+		<h2>Radar.pdf</h2>
+<form onsubmit="window.makeRadar(event)">
+      <button type="submit" name="action">Make Radar</button>
+      <br />
+      <br />
+      <pre>
+      ...INFO...
+      </pre>
+
+			<label style='display: block'>
+				Header
+				<input
+          name='title'
+          value=""
+          placeholder="Header of every page"
+          type="text"
+        />
+			</label>
+			<label style='display: block'>
+				Line thickness
+				<input
+						name='line_thickness'
+						value="0.5"
+						placeholder="0.5 / 1 / 2"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Background grid color
+				<input
+						name='grid_color'
+						value="444444"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Font color
+				<input
+						name='font_color'
+						value="000000"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+    </form>
+
 		<h2>Teeth.pdf</h2>
 
     <form onsubmit="window.makeTeeth(event)">
