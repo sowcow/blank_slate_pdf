@@ -3249,7 +3249,7 @@ pub fn make_teeth(given: JsValue) -> JsValue {
 #[wasm_bindgen]
 pub fn make_radar(given: JsValue) -> JsValue {
     let data: PageData = None;
-    let title = "Teeth";
+    let title = "Radar";
 
     let mut pdf = PDF::new(&title, Setup::rm_pro(), data);
     let grid = Grid::new(12., 16.);
@@ -3452,3 +3452,419 @@ fn generate_radar_combinations(max_len: usize) -> Vec<String> {
 //     let dy = p1.1 - p2.1;
 //     (dx * dx + dy * dy).sqrt()
 // }
+
+#[wasm_bindgen]
+pub fn make_rolls(given: JsValue) -> JsValue {
+    let data: PageData = None;
+    let title = "Rolls";
+
+    use serde_wasm_bindgen::from_value;
+    let input: Input123 = from_value(given).unwrap();
+
+    let data: PageData = None;
+    let mut pdf = PDF::new(&title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    // front page belongs to "-" pages
+    let root = pdf.page(0);
+    let page = root.clone();
+    let minus_page = root.clone();
+    let count_consecutive = 23;
+
+    let mut render = Render::new(&pdf, page, grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+    render.tick(1, count_consecutive);
+
+    for y in 1..=(render.grid.h - 1.) as usize {
+        render.line(0., y as f32, render.grid.w, y as f32);
+    }
+
+    for i in 2..=count_consecutive {
+        let page = pdf.add_page(None);
+        let mut render = Render::new(&pdf, page, grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+        render.tick(i, count_consecutive);
+
+        for y in 1..=(render.grid.h - 1.) as usize {
+            render.line(0., y as f32, render.grid.w, y as f32);
+        }
+    }
+
+    // + page
+    let page = pdf.add_page(None);
+    let plus_page = page.clone();
+    let mut render = Render::new(&pdf, page, grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    let mut min_y = grid.h;
+    let mut max_y = 0.;
+    for i in 0..=6 {
+        let y = grid.h - 1. - (i as f32) * 2.;
+        if y > max_y {
+            max_y = y
+        }
+        if y < min_y {
+            min_y = y
+        }
+        render.line(0., y, render.grid.w, y);
+    }
+    for i in 1..=5 {
+        let x = (i as f32) * 2.;
+        render.line(x, min_y, x, max_y);
+    }
+
+    // + nested pages generation
+    let mut pages_24: Vec<Page<Option<String>>> = vec![];
+    for yy in 0..6 {
+        for xx in 0..6 {
+            let number = xx + yy * 6 + 1;
+            let subheader = number.to_string();
+
+            let page = pdf.add_page(Some(subheader.clone()));
+            pages_24.push(page.clone());
+            let first_item_page = page.clone();
+
+            // hours 24 squares mostly
+            let mut render = Render::new(&pdf, page.clone(), grid.clone());
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+
+            render_24(render.clone());
+
+            for y in vec![1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 10.5, 11., 11.5, 12., 12.5] {
+                render.line(2., y, 12. - 2., y);
+            }
+
+            // link from grid into the entry
+            let mut render = Render::new(&pdf, plus_page.clone(), grid.clone());
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+
+            let size = 2.;
+            let x = xx as f32;
+            let y = yy as f32;
+            let door = Area::xywh(x * size, 13. - y * size, size, size);
+            render.link(&first_item_page, door.clone());
+            let area = door;
+
+            render.corner_text(&first_item_page.data.clone().unwrap(), area.x2, area.y1);
+        }
+    }
+
+    // nested hour pages
+    let mut cells: Vec<(f32, f32, String)> = vec![];
+    cells.push((0., 1., "6".into()));
+    cells.push((0., 3., "7".into()));
+    cells.push((0., 5., "8".into()));
+    cells.push((0., 7., "9".into()));
+    cells.push((0., 9., "10".into()));
+    cells.push((0., 11., "11".into()));
+    cells.push((0., 13., "12".into()));
+
+    cells.push((2., 13., "13".into()));
+    cells.push((4., 13., "14".into()));
+    cells.push((6., 13., "15".into()));
+    cells.push((8., 13., "16".into()));
+    cells.push((10., 13., "17".into()));
+
+    cells.push((10., 11., "18".into()));
+    cells.push((10., 9., "19".into()));
+    cells.push((10., 7., "20".into()));
+    cells.push((10., 5., "21".into()));
+    cells.push((10., 3., "22".into()));
+    cells.push((10., 1., "23".into()));
+
+    let mut hour_pages: Vec<Page<Option<String>>> = vec![];
+
+    for page in pages_24 {
+        for (x, y, text) in &cells {
+            let data = page.data.clone().map(|x| format!("{} >> {}", x, text));
+            let hour_page = pdf.add_page(data);
+            hour_pages.push(hour_page.clone());
+
+            let mut render = Render::new(&pdf, hour_page.clone(), grid.clone());
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+            render_24(render.clone());
+            for y in vec![1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 10.5, 11., 11.5, 12., 12.5] {
+                render.line(2., y, 12. - 2., y);
+            }
+            for x in vec![2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5] {
+                render.line(x, 1., x, 15. - 2.);
+            }
+
+            for r in vec![1., 0.9, 0.5, 0.75] {
+                render.circle_omg(*x + 0.4, *y + 1., 0.3 * r);
+            }
+
+            let door = Area::xywh(1., 15., 5., 1.);
+            render.link(&page, door.clone());
+
+            // parent has link
+            let mut render = Render::new(&pdf, page.clone(), grid.clone());
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+            let door = Area::xywh(*x, *y, 2., 2.);
+            render.link(&hour_page, door.clone());
+        }
+    }
+
+    for page in &hour_pages {
+        let header = page.data.clone().unwrap();
+        let pos = header.find(">>").unwrap();
+        let template = format!("{} ", &header[..pos + 2]);
+
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+
+        for (x, y, text) in &cells {
+            let query = format!("{}{}", template, text);
+            let cell_page = hour_pages.iter().find(|x| x.data.clone().unwrap() == query).unwrap();
+            let door = Area::xywh(*x, *y, 2., 2.);
+            render.link(&cell_page, door.clone());
+        }
+    }
+
+    // (scratchpad) maze pages part
+
+    let page = pdf.add_page(None);
+    let maze_page = page.clone();
+
+    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    let mut places: Vec<(f32, f32)> = vec![];
+
+    for xx in 1..=10 {
+        for yy in 1..=13 {
+            let x = xx as f32 + 0.5;
+            let y = yy as f32 + 0.5;
+            places.push((x, y));
+            let side = 0.5;
+
+            render.circle_omg(x, y, side);
+        }
+    }
+
+    let mut pages: Vec<Page<Option<String>>> = vec![];
+
+    for (xx, yy) in &places {
+        let page = pdf.add_page(None);
+        pages.push(page.clone());
+    }
+
+    let mut render = Render::new(&pdf, maze_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    use rand::rngs::OsRng;
+    use rand::seq::SliceRandom;
+    places.shuffle(&mut OsRng);
+    // maze is not for multi-page nonsense
+
+    for i in 0..places.len() {
+        let place = places[i];
+        let page = pages[i].clone();
+
+        let size = 1.;
+        let x = place.0 - size / 2.;
+        let y = place.1 - size / 2.;
+        let door = Area::xywh(x * size, y * size, size, size);
+        render.link(&page, door.clone());
+    }
+
+    let triangle_page = pdf.add_page(None);
+
+    let mut render = Render::new(&pdf, triangle_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    render.tick(1, 3);
+    render_triangle_page(render, 0, 10);
+
+    let next_triangle_page = pdf.add_page(None);
+    let mut render = Render::new(&pdf, next_triangle_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+    render.tick(2, 3);
+    render_triangle_page(render, 10, 10);
+
+    let next_triangle_page = pdf.add_page(None);
+    let mut render = Render::new(&pdf, next_triangle_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+    render.tick(3, 3);
+    render_triangle_page(render, 20, 10);
+
+    // after all pages are there,
+    // render header and navigation for all pages
+    //
+    for page in pdf.pages.iter() {
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+        let data = page.data.clone();
+        let title = if let Some(subheader) = data {
+            if input.title == "" {
+                format!("{}", subheader)
+            } else {
+                format!("{} - {}", &input.title, subheader)
+            }
+        } else {
+            input.title.clone()
+        };
+        render.header(&title);
+
+        render.header_link(
+            &maze_page,
+            // "#",
+            "",
+            Area::xywh(12. - 1.5*3., 16., -1.5, -1. + 0.02),
+        );
+        render.thickness(1.5);
+        render.line_color_hex(&input.font_color);
+        render.circle_omg(
+          8.25 - 1.5, 15.5, 0.15
+        );
+        render.header_link(
+            &minus_page,
+            "-",
+            Area::xywh(12. - 1.5 * 2., 16., -1.5, -1. + 0.02),
+        );
+        render.header_link(&plus_page, "+", Area::xywh(12. - 1.5, 16., -1.5, -1. + 0.02));
+
+        let x = 8.25 + 3.;
+        let y = 15.5 - 0.025;
+
+        let side = 0.33;
+        let height = (3.0_f32).sqrt() * side / 2.0;
+        let radius = height * (2.0 / 3.0);
+        let a = (x, y + radius);
+        let b = (x - side / 2.0, y - radius / 2.0);
+        let c = (x + side / 2.0, y - radius / 2.0);
+        render.closed_poly(
+            vec![
+                a, b, c, a
+            ]
+        );
+        render.header_link(
+            &triangle_page,
+            "",
+            Area::xywh(12., 16., -1.5, -1. + 0.02),
+        );
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+fn render_triangle_page(render: Render<Option<String>>, value: usize, count: usize) {
+    use std::f32::consts::PI;
+    let base_angle = PI / 6.;
+    let step = 0.5;
+    let point = (6., 8.);
+    let mut located: Vec<((f32, f32), usize)> = vec![];
+    located.push((point, value));
+
+    for v in (value+1)..=(value+count) {
+        let options: Vec<(f32, f32)> = located.iter().filter(|(p,vv)|
+            *vv == v - 1
+        ).flat_map(|(p,_)|
+            (0..=5).map(move |i| {
+                let angle = base_angle + PI / 3. * i as f32;
+                let x = p.0 + angle.cos() * step;
+                let y = p.1 + angle.sin() * step;
+                (x, y)
+            })
+        ).collect();
+        options.into_iter().for_each(|p| {
+            if located.iter().find(|(pp,vv)|
+                (pp.0 - p.0).abs() < step / 10. && (pp.1 - p.1).abs() < step / 10.
+            ).is_none() {
+                located.push((p, v));
+            }
+        });
+        // reduce to not override already known within step/10 distance by x and y
+    }
+
+    located.iter().for_each(|(p, value)|{
+        render.sm_center_text(&format!("{}", value), p.0, p.1);
+    });
+}
+fn render_24(render: Render<Option<String>>) {
+    render.line(2., 1., 2., 15.);
+    render.line(12. - 2., 1., 12. - 2., 15.);
+
+    render.line(0., 1., 12., 1.);
+    render.line(0., 15., 12., 15.);
+    render.line(0., 13., 12., 13.);
+
+    for y in vec![3, 5, 7, 9, 11] {
+        render.line(0., y as f32, 2., y as f32);
+        render.line(12. - 0., y as f32, 12. - 2., y as f32);
+    }
+
+    for x in vec![4, 6, 8] {
+        render.line(x as f32, 13., x as f32, 15.);
+    }
+
+    let shift = -0.5;
+    for x in vec![2, 4, 6, 8, 10] {
+        render.line(x as f32, 0., shift + x as f32, 0.5);
+        render.line(shift + x as f32, 0.5, x as f32, 1.);
+    }
+
+    let dx = -0.25;
+    render.center_text("5", 1., 0.5 - 0.125);
+    render.center_text("4", dx + 2. + 1., 0.5 - 0.125);
+    render.center_text("3", dx + 4. + 1., 0.5 - 0.125);
+    render.center_text("2", dx + 6. + 1., 0.5 - 0.125);
+    render.center_text("1", dx + 8. + 1., 0.5 - 0.125);
+    render.center_text("24", 10. + 1., 0.5 - 0.125);
+
+    let mut cells: Vec<(f32, f32, String)> = vec![];
+    cells.push((0., 1., "6".into()));
+    cells.push((0., 3., "7".into()));
+    cells.push((0., 5., "8".into()));
+    cells.push((0., 7., "9".into()));
+    cells.push((0., 9., "10".into()));
+    cells.push((0., 11., "11".into()));
+    cells.push((0., 13., "12".into()));
+
+    cells.push((2., 13., "13".into()));
+    cells.push((4., 13., "14".into()));
+    cells.push((6., 13., "15".into()));
+    cells.push((8., 13., "16".into()));
+    cells.push((10., 13., "17".into()));
+
+    cells.push((10., 11., "18".into()));
+    cells.push((10., 9., "19".into()));
+    cells.push((10., 7., "20".into()));
+    cells.push((10., 5., "21".into()));
+    cells.push((10., 3., "22".into()));
+    cells.push((10., 1., "23".into()));
+
+    for (x, y, text) in cells {
+        render.center_text(&text, x + 1., y + 1. - 0.125);
+    }
+}

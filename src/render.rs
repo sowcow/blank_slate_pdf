@@ -517,6 +517,28 @@ impl<'a, T: Clone> Render<'a, T> {
         current_layer.add_line(line1);
     }
 
+    pub fn closed_poly(&self, xs: Vec<(f32, f32)>) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+
+        let points: Vec<(Point, bool)> = xs.into_iter()
+        .map(|(x, y)| 
+            (Point::new(self.mm(self.x(x)), self.mm(self.y(y))),
+            false)
+            )
+        .collect();
+
+        let line1 = Line {
+            points,
+            is_closed: true,
+        };
+
+        let color = self.line_color.clone();
+        current_layer.set_outline_color(color);
+        current_layer.set_outline_thickness(self.thick);
+        current_layer.add_line(line1);
+    }
+
     pub fn archer_target(&self, x1: f32, y1: f32, r1: f32) {
         use printpdf::path::{PaintMode, WindingOrder};
         use printpdf::*;
