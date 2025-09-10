@@ -3695,24 +3695,26 @@ pub fn make_rolls(given: JsValue) -> JsValue {
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
 
-    render.tick(1, 3);
-    render_triangle_page(render, 0, 10);
+    render_plain_triangle_page(render);
 
-    let next_triangle_page = pdf.add_page(None);
-    let mut render = Render::new(&pdf, next_triangle_page.clone(), grid.clone());
-    render.line_color_hex(&input.grid_color);
-    render.font_color_hex(&input.font_color);
-    render.thickness(parse_thickness(&input.line_thickness));
-    render.tick(2, 3);
-    render_triangle_page(render, 10, 10);
-
-    let next_triangle_page = pdf.add_page(None);
-    let mut render = Render::new(&pdf, next_triangle_page.clone(), grid.clone());
-    render.line_color_hex(&input.grid_color);
-    render.font_color_hex(&input.font_color);
-    render.thickness(parse_thickness(&input.line_thickness));
-    render.tick(3, 3);
-    render_triangle_page(render, 20, 10);
+    // render.tick(1, 3);
+    // render_triangle_page(render, 0, 10);
+    //
+    // let next_triangle_page = pdf.add_page(None);
+    // let mut render = Render::new(&pdf, next_triangle_page.clone(), grid.clone());
+    // render.line_color_hex(&input.grid_color);
+    // render.font_color_hex(&input.font_color);
+    // render.thickness(parse_thickness(&input.line_thickness));
+    // render.tick(2, 3);
+    // render_triangle_page(render, 10, 10);
+    //
+    // let next_triangle_page = pdf.add_page(None);
+    // let mut render = Render::new(&pdf, next_triangle_page.clone(), grid.clone());
+    // render.line_color_hex(&input.grid_color);
+    // render.font_color_hex(&input.font_color);
+    // render.thickness(parse_thickness(&input.line_thickness));
+    // render.tick(3, 3);
+    // render_triangle_page(render, 20, 10);
 
     // after all pages are there,
     // render header and navigation for all pages
@@ -3776,6 +3778,33 @@ pub fn make_rolls(given: JsValue) -> JsValue {
     let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
     let m = Message { payload: bytes };
     serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+// connectivity between days loops, after the day to the next
+fn render_plain_triangle_page(render: Render<Option<String>>) {
+    let y_items = 1..=30; // simplicity may work, or can add more for symmetry of numbers later
+    let yStart = 14.;
+    let yRange = -13.; // minus for direction? vector...
+    // x spread to be dynamic on levels but can be static before/early
+    let xStart = 6.;
+    let xRange = 10.;
+
+    let xStep = 10. / 30.;
+    let yStep = -13. / 30.;
+
+    for (index, xCount) in y_items.enumerate() {
+        let xStart = xStart - (xCount as f32 * xStep) / 2.;
+        for i in 0..xCount {
+            // let r = 0.2;
+            let r = 0.17;
+            let x = xStart + xStep * i as f32 + r;
+            let y = yStart + yStep * index as f32 - r;
+            render.circle_omg(x, y, r);
+            if i as f32 == (xCount as f32 / 2.).floor() {
+                render.sm_center_text(&format!("{}", index + 1), x, y - r*0.7);
+            }
+        }
+    }
 }
 
 fn render_triangle_page(render: Render<Option<String>>, value: usize, count: usize) {
