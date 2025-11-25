@@ -23,6 +23,65 @@
       selecting any one of other options and then pressing "Make".
     </pre>
 
+		<h2>RUE.pdf</h2>
+
+    <form onsubmit="window.makeRue(event)">
+      <button type="submit" name="action">Make RUE</button>
+      <br />
+      <br />
+      <pre>
+      Abstract PDF idea with a ternary plot to test.
+      There is one* ternary plot page per PDF.
+      The idea is one can group todo items of the day into three categories, for example recovery, utilization, and expansion, and then having categories plotted for summary at the end of the month.
+      Use ternary plot page by writing days as numbers at right coordinates, producing summary for later review.
+      Circle pages can be used as a short-term scratchpad.
+      "-" sequence of pages can be more long-term content or catchall for later use.
+      "+" pages are for days of month, implied is that they will have todo items in three groups, so count of done items will go into the summary plot by using numbers as coordinates.
+      Actually there should be multiple ternary plot pages because sum of coordinate values is a fixed number and every ternary plot supports only one such number.
+      Therefore there are multiple plots, some days will go into different depending on the overall count of items done.
+      I have only plots for even numbers from 10 and below - overall on three pages.
+
+      <!-- The plot in it's current form must have a limit for number of items it can handle -->
+      </pre>
+
+			<label style='display: block'>
+				Header
+				<input
+          name='title'
+          value=""
+          placeholder="Header of every page"
+          type="text"
+        />
+			</label>
+			<label style='display: block'>
+				Line thickness
+				<input
+						name='line_thickness'
+						value="0.5"
+						placeholder="0.5 / 1 / 2"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Background grid color
+				<input
+						name='grid_color'
+						value="444444"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+				Font color
+				<input
+						name='font_color'
+						value="000000"
+						placeholder="hex rgb format, black is 000000, white is ffffff"
+						type="text"
+						/>
+			</label>
+    </form>
+
 		<h2>Rolls.pdf</h2>
 
     <form onsubmit="window.makeRolls(event)">
