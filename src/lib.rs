@@ -28,6 +28,8 @@ use pdf::*;
 use render::*;
 use setup::*;
 
+use std::f32::consts::PI;
+
 //unused:
 //- bezier
 //- TOC/bookmark
@@ -3696,6 +3698,7 @@ pub fn make_rolls(given: JsValue) -> JsValue {
     render.thickness(parse_thickness(&input.line_thickness));
 
     render_plain_triangle_page(render);
+    // render_ternary_plot_page(render);
 
     // render.tick(1, 3);
     // render_triangle_page(render, 0, 10);
@@ -3780,6 +3783,365 @@ pub fn make_rolls(given: JsValue) -> JsValue {
     serde_wasm_bindgen::to_value(&m).unwrap()
 }
 
+#[wasm_bindgen]
+pub fn make_rue(given: JsValue) -> JsValue {
+    let data: PageData = None;
+    let title = "RUE";
+
+    use serde_wasm_bindgen::from_value;
+    let input: Input123 = from_value(given).unwrap();
+
+    let data: PageData = None;
+    let mut pdf = PDF::new(&title, Setup::rm_pro(), data);
+    let grid = Grid::new(12., 16.);
+
+    // front page belongs to "-" pages
+    let root = pdf.page(0);
+    let page = root.clone();
+    let minus_page = root.clone();
+    let count_consecutive = 23;
+
+    let mut render = Render::new(&pdf, page, grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+    render.tick(1, count_consecutive);
+
+    for y in 1..=(render.grid.h - 1.) as usize {
+        render.line(0., y as f32, render.grid.w, y as f32);
+    }
+
+    for i in 2..=count_consecutive {
+        let page = pdf.add_page(None);
+        let mut render = Render::new(&pdf, page, grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+        render.tick(i, count_consecutive);
+
+        for y in 1..=(render.grid.h - 1.) as usize {
+            render.line(0., y as f32, render.grid.w, y as f32);
+        }
+    }
+
+    // + page
+    let page = pdf.add_page(None);
+    let plus_page = page.clone();
+    let mut render = Render::new(&pdf, page, grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    let mut min_y = grid.h;
+    let mut max_y = 0.;
+    for i in 0..=6 {
+        let y = grid.h - 1. - (i as f32) * 2.;
+        if y > max_y {
+            max_y = y
+        }
+        if y < min_y {
+            min_y = y
+        }
+        render.line(0., y, render.grid.w, y);
+    }
+    for i in 1..=5 {
+        let x = (i as f32) * 2.;
+        render.line(x, min_y, x, max_y);
+    }
+
+    // + nested pages generation
+    let mut pages_24: Vec<Page<Option<String>>> = vec![];
+    for yy in 0..6 {
+        for xx in 0..6 {
+            let number = xx + yy * 6 + 1;
+            let subheader = number.to_string();
+
+            let page = pdf.add_page(Some(subheader.clone()));
+            pages_24.push(page.clone());
+            let first_item_page = page.clone();
+
+            // hours 24 squares mostly
+            let mut render = Render::new(&pdf, page.clone(), grid.clone());
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+
+            render_simple_plus_page(render.clone());
+
+            // link from grid into the entry
+            let mut render = Render::new(&pdf, plus_page.clone(), grid.clone());
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+
+            let size = 2.;
+            let x = xx as f32;
+            let y = yy as f32;
+            let door = Area::xywh(x * size, 13. - y * size, size, size);
+            render.link(&first_item_page, door.clone());
+            let area = door;
+
+            render.corner_text(&first_item_page.data.clone().unwrap(), area.x2, area.y1);
+        }
+    }
+
+    // (scratchpad) maze pages part
+
+    let page = pdf.add_page(None);
+    let maze_page = page.clone();
+
+    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    let mut places: Vec<(f32, f32)> = vec![];
+
+    for xx in 1..=10 {
+        for yy in 1..=13 {
+            let x = xx as f32 + 0.5;
+            let y = yy as f32 + 0.5;
+            places.push((x, y));
+            let side = 0.5;
+
+            render.circle_omg(x, y, side);
+        }
+    }
+
+    let mut pages: Vec<Page<Option<String>>> = vec![];
+
+    for (xx, yy) in &places {
+        let page = pdf.add_page(None);
+        pages.push(page.clone());
+    }
+
+    let mut render = Render::new(&pdf, maze_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    use rand::rngs::OsRng;
+    use rand::seq::SliceRandom;
+    places.shuffle(&mut OsRng);
+    // maze is not for multi-page nonsense
+
+    for i in 0..places.len() {
+        let place = places[i];
+        let page = pages[i].clone();
+
+        let size = 1.;
+        let x = place.0 - size / 2.;
+        let y = place.1 - size / 2.;
+        let door = Area::xywh(x * size, y * size, size, size);
+        render.link(&page, door.clone());
+    }
+
+    let triangle_page = pdf.add_page(None);
+
+    let mut render = Render::new(&pdf, triangle_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    // top x, y for triangle plot
+    let ax = 6.;
+    let ay = 16. - 4.;
+    let step = 1.; // step distance for each shift in coordinate value
+    let count = 10; // sum of values in ternary plot is how many steps each triangle side contains
+    render_ternary_plot(ax, ay, step, count, render.clone());
+
+    let another_triangle_page = pdf.add_page(None);
+
+    let mut render = Render::new(&pdf, another_triangle_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    // top x, y for triangle plot
+    let ax = 6.;
+    let ay = 14.;
+    let step = 1.; // step distance for each shift in coordinate value
+    let count = 8; // sum of values in ternary plot is how many steps each triangle side contains
+    render_ternary_plot(ax, ay, step, count, render.clone());
+
+    let ax = 6.;
+    let ay = 6.;
+    let step = 1.; // step distance for each shift in coordinate value
+    let count = 6; // sum of values in ternary plot is how many steps each triangle side contains
+    render_ternary_plot(ax, ay, step, count, render.clone());
+
+
+    // yet another
+    let another_triangle_page = pdf.add_page(None);
+
+    let mut render = Render::new(&pdf, another_triangle_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    // top x, y for triangle plot
+    let ax = 6.;
+    let ay = 14.;
+    let step = 1.; // step distance for each shift in coordinate value
+    let count = 4; // sum of values in ternary plot is how many steps each triangle side contains
+    render_ternary_plot(ax, ay, step, count, render.clone());
+
+    let ax = 6.;
+    let ay = 8.;
+    let step = 1.; // step distance for each shift in coordinate value
+    let count = 2; // sum of values in ternary plot is how many steps each triangle side contains
+    render_ternary_plot(ax, ay, step, count, render.clone());
+
+    let ax = 6.;
+    let ay = 4.;
+    let step = 1.; // step distance for each shift in coordinate value
+    let count = 0; // sum of values in ternary plot is how many steps each triangle side contains
+    render_ternary_plot(ax, ay, step, count, render.clone());
+
+
+
+    // after all pages are there,
+    // render header and navigation for all pages
+    //
+    for page in pdf.pages.iter() {
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+        let data = page.data.clone();
+        let title = if let Some(subheader) = data {
+            if input.title == "" {
+                format!("{}", subheader)
+            } else {
+                format!("{} - {}", &input.title, subheader)
+            }
+        } else {
+            input.title.clone()
+        };
+        render.header(&title);
+
+        render.header_link(
+            &maze_page,
+            // "#",
+            "",
+            Area::xywh(12. - 1.5*3., 16., -1.5, -1. + 0.02),
+        );
+        render.thickness(1.5);
+        render.line_color_hex(&input.font_color);
+        render.circle_omg(
+          8.25 - 1.5, 15.5, 0.15
+        );
+        render.header_link(
+            &minus_page,
+            "-",
+            Area::xywh(12. - 1.5 * 2., 16., -1.5, -1. + 0.02),
+        );
+        render.header_link(&plus_page, "+", Area::xywh(12. - 1.5, 16., -1.5, -1. + 0.02));
+
+        let x = 8.25 + 3.;
+        let y = 15.5 - 0.025;
+
+        let side = 0.33;
+        let height = (3.0_f32).sqrt() * side / 2.0;
+        let radius = height * (2.0 / 3.0);
+        let a = (x, y + radius);
+        let b = (x - side / 2.0, y - radius / 2.0);
+        let c = (x + side / 2.0, y - radius / 2.0);
+        render.closed_poly(
+            vec![
+                a, b, c, a
+            ]
+        );
+        render.header_link(
+            &triangle_page,
+            "",
+            Area::xywh(12., 16., -1.5, -1. + 0.02),
+        );
+    }
+
+    let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
+    let m = Message { payload: bytes };
+    serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+fn render_ternary_plot(ax: f32, ay: f32, step: f32, count: usize, render: Render<Option<String>>) {
+    //
+    //  a
+    // b c
+    //
+
+    let a_base_angle = 0.;
+    let a_angle_right = a_base_angle - PI / 3.;
+    let a_angle_left = a_base_angle - 2. * PI / 3.;
+
+    let bx = ax + a_angle_left.cos() * count as f32;
+    let by = ay + a_angle_left.sin() * count as f32;
+    let b_base_angle = 0.;
+    let b_angle_right = b_base_angle;
+    let b_angle_left = b_base_angle + PI / 3.;
+
+    let cx = ax + a_angle_right.cos() * count as f32;
+    let cy = ay + a_angle_right.sin() * count as f32;
+    let c_base_angle = 2. * PI / 3.;
+    let c_angle_right = c_base_angle;
+    let c_angle_left = c_base_angle + PI / 3.;
+
+    // lines from a corner
+    for aa in 0..=count {
+        let x = ax;
+        let y = ay;
+        let angle_right = a_angle_right;
+        let angle_left = a_angle_left;
+        let x1 = x + angle_left.cos() * aa as f32;
+        let y1 = y + angle_left.sin() * aa as f32;
+        let x2 = x + angle_right.cos() * aa as f32;
+        let y2 = y + angle_right.sin() * aa as f32;
+        render.line(x1, y1, x2, y2);
+
+        let xx = (x1 + x2) / 2.;
+        let yy = (y1 + y2) / 2.;
+        let text = format!("{}", count - aa);
+        render.sm_center_text(&text, xx, yy);
+    }
+    for bb in 0..=count {
+        let x = bx;
+        let y = by;
+        let angle_right = b_angle_right;
+        let angle_left = b_angle_left;
+        let x1 = x + angle_left.cos() * bb as f32;
+        let y1 = y + angle_left.sin() * bb as f32;
+        let x2 = x + angle_right.cos() * bb as f32;
+        let y2 = y + angle_right.sin() * bb as f32;
+        render.line(x1, y1, x2, y2);
+
+        let xx = (x1 + x2) / 2.;
+        let yy = (y1 + y2) / 2.;
+        let text = format!("{}", count - bb);
+        render.sm_center_text(&text, xx, yy);
+    }
+    for cc in 0..=count {
+        let x = cx;
+        let y = cy;
+        let angle_right = c_angle_right;
+        let angle_left = c_angle_left;
+        let x1 = x + angle_left.cos() * cc as f32;
+        let y1 = y + angle_left.sin() * cc as f32;
+        let x2 = x + angle_right.cos() * cc as f32;
+        let y2 = y + angle_right.sin() * cc as f32;
+        render.line(x1, y1, x2, y2);
+
+        let xx = (x1 + x2) / 2.;
+        let yy = (y1 + y2) / 2.;
+        let text = format!("{}", count - cc);
+        render.sm_center_text(&text, xx, yy);
+    }
+
+    // let angle = base_angle + PI / 3. * i as f32;
+    // let x = p.0 + angle.cos() * step;
+    // let y = p.1 + angle.sin() * step;
+
+}
+
 // connectivity between days loops, after the day to the next
 fn render_plain_triangle_page(render: Render<Option<String>>) {
     let y_items = 1..=30; // simplicity may work, or can add more for symmetry of numbers later
@@ -3839,6 +4201,19 @@ fn render_triangle_page(render: Render<Option<String>>, value: usize, count: usi
     located.iter().for_each(|(p, value)|{
         render.sm_center_text(&format!("{}", value), p.0, p.1);
     });
+}
+fn render_simple_plus_page(render: Render<Option<String>>) {
+    for y in 1..=15 {
+        render.line(0., y as f32, 12., y as f32);
+        // render.line(0., y as f32 - 0.5, 12., y as f32 - 0.5);
+    }
+
+    for x in 1..=11 {
+        render.line(x as f32, 0., x as f32, 15.);
+        // render.line(x as f32 - 0.5, 0., x as f32 - 0.5, 14.);
+    }
+    // let x = 12;
+    // render.line(x as f32 - 0.5, 0., x as f32 - 0.5, 14.);
 }
 fn render_24(render: Render<Option<String>>) {
     render.line(2., 1., 2., 15.);

@@ -194,3 +194,22 @@ window.makeRolls = (event) => {
 
 	downloadBlob(got, name, 'application/octet-stream');
 }
+
+window.makeRue = (event) => {
+	event.preventDefault()
+	event.stopPropagation()
+
+	let data = Object.fromEntries(new FormData(event.target).entries())
+  let submitter = event.submitter
+  let type = ''
+  if (submitter && submitter.name) {
+    data[submitter.name] = submitter.value
+    if (submitter.value) type = '-' + submitter.value
+  }
+	let got = wasm.make_rue(data).payload
+
+  let name = 'RUE.pdf'
+  if (data.title) name = `${data.title}${type}.pdf`
+
+	downloadBlob(got, name, 'application/octet-stream');
+}
