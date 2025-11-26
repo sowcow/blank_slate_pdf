@@ -4013,7 +4013,7 @@ pub fn make_rue(given: JsValue) -> JsValue {
             if input.title == "" {
                 format!("{}", subheader)
             } else {
-                format!("{} - {}", &input.title, subheader)
+                format!("{} {}", &input.title, subheader)
             }
         } else {
             input.title.clone()
