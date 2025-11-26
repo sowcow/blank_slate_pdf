@@ -3987,16 +3987,40 @@ pub fn make_rue(given: JsValue) -> JsValue {
     render_ternary_plot(ax, ay, step, count, render.clone());
 
     let ax = 6.;
-    let ay = 8.;
+    let ay = 9.;
+    let step = 1.; // step distance for each shift in coordinate value
+    let count = 3; // sum of values in ternary plot is how many steps each triangle side contains
+    render_ternary_plot(ax, ay, step, count, render.clone());
+
+    let ax = 6.;
+    let ay = 5.;
     let step = 1.; // step distance for each shift in coordinate value
     let count = 2; // sum of values in ternary plot is how many steps each triangle side contains
     render_ternary_plot(ax, ay, step, count, render.clone());
 
     let ax = 6.;
-    let ay = 4.;
+    let ay = 2.;
+    let step = 1.; // step distance for each shift in coordinate value
+    let count = 1; // sum of values in ternary plot is how many steps each triangle side contains
+    render_ternary_plot(ax, ay, step, count, render.clone());
+
+    let ax = 6.;
+    let ay = 0.;
     let step = 1.; // step distance for each shift in coordinate value
     let count = 0; // sum of values in ternary plot is how many steps each triangle side contains
     render_ternary_plot(ax, ay, step, count, render.clone());
+
+    // let ax = 6.;
+    // let ay = 8.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 2; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
+    //
+    // let ax = 6.;
+    // let ay = 4.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 0; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
 
 
 

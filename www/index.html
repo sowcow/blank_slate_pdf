@@ -30,18 +30,20 @@
       <br />
       <br />
       <pre>
-      Abstract PDF idea with a ternary plot to test.
-      There is one* ternary plot page per PDF.
-      The idea is one can group todo items of the day into three categories, for example recovery, utilization, and expansion, and then having categories plotted for summary at the end of the month.
+      Abstract PDF idea with a ternary plot.
+      The idea is one can group done items of the day into three categories, for example Recovery, Utilization, and Expansion (of any capacity/asset), and then having categories plotted for summary at the end of the month.
       Use ternary plot page by writing days as numbers at right coordinates, producing summary for later review.
-      Circle pages can be used as a short-term scratchpad.
+      Circle pages can be used as a short-term scratchpad, use it by opening the main circles page and then opening any random circle, also those pages are shuffled so going next/previous page will kind of open random scratchpad page.
       "-" sequence of pages can be more long-term content or catchall for later use.
-      "+" pages are for days of month, implied is that they will have todo items in three groups, so count of done items will go into the summary plot by using numbers as coordinates.
-      Actually there should be multiple ternary plot pages because sum of coordinate values is a fixed number and every ternary plot supports only one such number.
+      "+" pages are for days of month one page per day, implied is that they will have todo/done items in three groups, so count of done items will go into the summary plot by using numbers as coordinates.
+      One consequence of using ternary plots is that there should be multiple ternary plots because sum of coordinate values is a fixed number and every ternary plot supports only one such number.
       Therefore there are multiple plots, some days will go into different depending on the overall count of items done.
-      I have only plots for even numbers from 10 and below - overall on three pages.
+      I have only some plots to make the most use of space within three consecutive pages I allocated for them.
+      In case when number of items done is above 10 then it's possible to draw them instead of points as areas contained by lines of coordinates, this needs testing for usability, for example 3*9 = 27 items would be earea covering almost whole triangle, just except corners since it will go by lines marked with 9 there.
+      In case number of items is odd when available plots are only even then one should creatively resolve this somehow.
+      Actually because there is a sequence of plots overall it seem to record 4 dimensions, even though they are not independent from each other dimensions.
+      So RUE.pdf is actually 4D.
 
-      <!-- The plot in it's current form must have a limit for number of items it can handle -->
       </pre>
 
 			<label style='display: block'>
