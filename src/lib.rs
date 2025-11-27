@@ -3895,25 +3895,62 @@ pub fn make_rue(given: JsValue) -> JsValue {
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
 
-    let mut places: Vec<(f32, f32)> = vec![];
+    let center_whole = (6., 8.);
+    let radius_whole = 5.;
+    // let part_size = 1.;
+    let part_size = 0.5;
 
-    for xx in 1..=10 {
-        for yy in 1..=13 {
-            let x = xx as f32 + 0.5;
-            let y = yy as f32 + 0.5;
-            places.push((x, y));
-            let side = 0.5;
+    render.circle_omg(
+      center_whole.0, center_whole.1, radius_whole
+    );
 
-            render.circle_omg(x, y, side);
-        }
+    let mut places: Vec<((f32, f32), (f32, f32))> = vec![];
+
+    let center = center_whole;
+    let x_from = center.0 - radius_whole - part_size;
+    let x_to = center.0 + radius_whole + part_size;
+    let y_from = center.1 - radius_whole - part_size;
+    let y_to = center.1 + radius_whole + part_size;
+
+    fn distance(x1: f32, y1: f32, x2: f32, y2: f32) -> f32 {
+        ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt()
     }
+
+    let mut xx = x_from;
+    while xx <= x_to {
+        let mut yy = y_from;
+        while yy <= y_to {
+            // a b
+            // c d
+            // (pdf's inverse y axis does not matter here)
+            let a = (xx, yy);
+            let b = (xx + part_size, yy);
+            let c = (xx, yy + part_size);
+            let d = (xx + part_size, yy + part_size);
+
+            // any inside is good, being allowing
+            if distance(a.0, a.1, center_whole.0, center_whole.1) <= radius_whole ||
+               distance(b.0, b.1, center_whole.0, center_whole.1) <= radius_whole ||
+               distance(c.0, c.1, center_whole.0, center_whole.1) <= radius_whole ||
+               distance(d.0, d.1, center_whole.0, center_whole.1) <= radius_whole {
+                places.push((a, d));
+            }
+            yy += part_size;
+        }
+
+        xx += part_size;
+    }
+
+    // adding individual scratchpad pages
 
     let mut pages: Vec<Page<Option<String>>> = vec![];
 
-    for (xx, yy) in &places {
+    for (a, d) in &places {
         let page = pdf.add_page(None);
         pages.push(page.clone());
     }
+
+    // nesting linked pages back at the maze/circle page
 
     let mut render = Render::new(&pdf, maze_page.clone(), grid.clone());
     render.line_color_hex(&input.grid_color);
@@ -3926,15 +3963,14 @@ pub fn make_rue(given: JsValue) -> JsValue {
     // maze is not for multi-page nonsense
 
     for i in 0..places.len() {
-        let place = places[i];
+        let ((ax, ay), (bx, by)) = places[i];
         let page = pages[i].clone();
 
-        let size = 1.;
-        let x = place.0 - size / 2.;
-        let y = place.1 - size / 2.;
-        let door = Area::xywh(x * size, y * size, size, size);
+        let door = Area::xywh(ax, ay, bx - ax, by - ay);
         render.link(&page, door.clone());
     }
+
+    // triangle page(s)
 
     let triangle_page = pdf.add_page(None);
 
@@ -4009,20 +4045,6 @@ pub fn make_rue(given: JsValue) -> JsValue {
     let step = 1.; // step distance for each shift in coordinate value
     let count = 0; // sum of values in ternary plot is how many steps each triangle side contains
     render_ternary_plot(ax, ay, step, count, render.clone());
-
-    // let ax = 6.;
-    // let ay = 8.;
-    // let step = 1.; // step distance for each shift in coordinate value
-    // let count = 2; // sum of values in ternary plot is how many steps each triangle side contains
-    // render_ternary_plot(ax, ay, step, count, render.clone());
-    //
-    // let ax = 6.;
-    // let ay = 4.;
-    // let step = 1.; // step distance for each shift in coordinate value
-    // let count = 0; // sum of values in ternary plot is how many steps each triangle side contains
-    // render_ternary_plot(ax, ay, step, count, render.clone());
-
-
 
     // after all pages are there,
     // render header and navigation for all pages
