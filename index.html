@@ -11,16 +11,6 @@
 
     <pre>
       There is permanenent revolution of different work in progress or random pdf ideas laying around.
-
-      First goes the most recent After Hours inspired todo list - Teeth.pdf,
-      next goes abstract pdf I was experimenting the most with - Battery.pdf.
-
-      For the unhinged abstract and questionable todo list just press the "Make Teeth" button below, usage info is near the button.
-
-      The more bland abstract pdf is under Battery.pdf header.
-      It's produced by clicking "Make Battery" button with optionally setting "Header" text field first.
-      More monthly calendar-like version would be produced by unchecking "Empty pages",
-      selecting any one of other options and then pressing "Make".
     </pre>
 
 		<h2>RUE.pdf</h2>
@@ -32,7 +22,8 @@
       <pre>
       TODO: ordering + clearing, also exact coordinates use example(s)
 
-      Abstract PDF idea with a ternary plot.
+      PDF idea with ternary plot that supports done/todo-lists of ~10 items where every item falls into one of three categories.
+
       The idea is one can group done items of the day into three categories, for example Recovery, Utilization, and Expansion (of any capacity/asset), and then having categories plotted for summary at the end of the month.
       Use ternary plot page by writing days as numbers at right coordinates, producing summary for later review.
 
@@ -59,6 +50,33 @@
           placeholder="Header of every page"
           type="text"
         />
+			</label>
+			<label style='display: block'>
+        Left column (on the day view)
+				<input
+						name='left_column'
+						value=""
+						placeholder="comma separated things to have at the left on each day page"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+        Middle column (on the day view)
+				<input
+						name='middle_column'
+						value=""
+						placeholder="comma separated things to have at the middle on each day page"
+						type="text"
+						/>
+			</label>
+			<label style='display: block'>
+        Right column (on the day view)
+				<input
+						name='right_column'
+						value="8,9,10,11,12,1,2,3,4"
+						placeholder="comma separated things to have at the right on each day page"
+						type="text"
+						/>
 			</label>
 			<label style='display: block'>
 				Line thickness
@@ -88,6 +106,8 @@
 						/>
 			</label>
     </form>
+
+    <hr />
 
 		<h2>Rolls.pdf</h2>
 
