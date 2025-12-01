@@ -169,6 +169,40 @@ impl<'a, T: Clone> Render<'a, T> {
         current_layer.use_text(text, size, x, y, &font);
     }
 
+    pub fn bottom_left_text(&self, text: &str, grid_x: f32, grid_y: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+
+        let font = doc.add_builtin_font(BuiltinFont::CourierOblique).unwrap();
+
+        let size = 16.;
+        let pad = 2.;
+        let dx = 0.; //text.chars().count() as f32 * 32.;
+        let x = self.mm(self.x(grid_x) - dx); // - pad);
+        let y = self.mm(self.y(grid_y) + pad);
+
+        let color = self.font_color.clone();
+        current_layer.set_fill_color(color);
+        current_layer.use_text(text, size, x, y, &font);
+    }
+
+    pub fn bottom_mid_text(&self, text: &str, grid_x: f32, grid_y: f32) {
+        let doc = &self.pdf.doc;
+        let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);
+
+        let font = doc.add_builtin_font(BuiltinFont::CourierOblique).unwrap();
+
+        let size = 16.;
+        let pad = 2.;
+        let dx = text.chars().count() as f32 * 32. / 2.;
+        let x = self.mm(self.x(grid_x) - dx); // - pad);
+        let y = self.mm(self.y(grid_y) + pad);
+
+        let color = self.font_color.clone();
+        current_layer.set_fill_color(color);
+        current_layer.use_text(text, size, x, y, &font);
+    }
+
     pub fn header(&self, text: &str) {
         let doc = &self.pdf.doc;
         let current_layer = doc.get_page(self.page.page).get_layer(self.page.layer);

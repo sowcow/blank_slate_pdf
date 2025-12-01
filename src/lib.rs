@@ -76,6 +76,18 @@ struct Input123 {
 }
 
 #[derive(Deserialize, Serialize)]
+struct InputRue {
+    action: String,
+    title: String,
+    left_column: String,
+    middle_column: String,
+    right_column: String,
+    line_thickness: String,
+    grid_color: String,
+    font_color: String,
+}
+
+#[derive(Deserialize, Serialize)]
 struct InputTeeth {
     teeth_pages: Option<String>,
     hal_pages: Option<String>,
@@ -3789,7 +3801,7 @@ pub fn make_rue(given: JsValue) -> JsValue {
     let title = "RUE";
 
     use serde_wasm_bindgen::from_value;
-    let input: Input123 = from_value(given).unwrap();
+    let input: InputRue = from_value(given).unwrap();
 
     let data: PageData = None;
     let mut pdf = PDF::new(&title, Setup::rm_pro(), data);
@@ -3867,6 +3879,16 @@ pub fn make_rue(given: JsValue) -> JsValue {
             render.thickness(parse_thickness(&input.line_thickness));
 
             render_simple_plus_page(render.clone());
+
+            for (index, text) in input.left_column.split(',').enumerate() {
+                render.bottom_left_text(text, 0., 14. - index as f32);
+            }
+            for (index, text) in input.middle_column.split(',').enumerate() {
+                render.bottom_mid_text(text, 6., 14. - index as f32);
+            }
+            for (index, text) in input.right_column.split(',').enumerate() {
+                render.corner_text(text, 12., 14. - index as f32);
+            }
 
             // link from grid into the entry
             let mut render = Render::new(&pdf, plus_page.clone(), grid.clone());
