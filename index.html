@@ -20,26 +20,11 @@
       <br />
       <br />
       <pre>
-      TODO: ordering + clearing, also exact coordinates use example(s)
-
-      PDF idea with ternary plot that supports done/todo-lists of ~10 items where every item falls into one of three categories.
-
-      The idea is one can group done items of the day into three categories, for example Recovery, Utilization, and Expansion (of any capacity/asset), and then having categories plotted for summary at the end of the month.
-      Use ternary plot page by writing days as numbers at right coordinates, producing summary for later review.
-
-      Circle page is a short-term scratchpad, use it by opening the main circle page, it has invisible links inside the circle, then enter random link at any point within the circle, going next/previous from within scratchpad page is similar to to going back and entering another random point because links positions within the circle have no relation to pages order.
-      "-" sequence of pages can be used for title page, any more high-level content on the whole scope of the month, or catchall for later use.
-      "+" pages are for days of month one page per day, implied is that they will have todo/done items of three categories, so count of done items will go into the summary plot by using numbers as coordinates.
-
-      One consequence of using ternary plots is that there should be multiple ternary plots because sum of coordinate values is a fixed number and every ternary plot supports only one such number.
-      Therefore there are multiple plots, some days will go into different depending on the overall count of items done.
-      I have only some plots to make the most use of space within three consecutive pages I allocated for them.
-      In case when number of items done is above 10 then it's possible to draw them instead of points as areas contained by lines of coordinates, this needs testing for usability, for example 3*9 = 27 items would be earea covering almost whole triangle, just except corners since it will go by lines marked with 9 there.
-      In case number of items is odd when available plots are only even then one should creatively resolve this somehow.
-
-      Actually because there is a sequence of plots overall, one could say it records 4 dimensions, even though they are not independent from each other.
-      So RUE.pdf must be the first 4D PDF.
-
+      Latest minimalistic and abstract PDF with these kind of pages:
+      - circle: scratchpad pages - for all temporary content to not return to, use by entering random invisible link inside the circle
+      - "-": title page, squence of pages for content to return to
+      - "+": decomposition into 36 pages, to be used for daily done/todo lists most likely, inside is a square grid with 15 lines, can have own predefined lines for every page (the default configuration goes with numbers at the right)
+      - summary page of a kind with triangle/3D plot idea to try, can be used for three categories of done items or other things to track per day
       </pre>
 
 			<label style='display: block'>
