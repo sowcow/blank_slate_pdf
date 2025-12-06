@@ -82,6 +82,7 @@ struct InputRue {
     left_column: String,
     middle_column: String,
     right_column: String,
+    renamings: String,
     line_thickness: String,
     grid_color: String,
     font_color: String,
@@ -3867,6 +3868,7 @@ pub fn make_rue(given: JsValue) -> JsValue {
         for xx in 0..6 {
             let number = xx + yy * 6 + 1;
             let subheader = number.to_string();
+            let subheader = renamings(&subheader, &input.renamings).to_string();
 
             let page = pdf.add_page(Some(subheader.clone()));
             pages_24.push(page.clone());
