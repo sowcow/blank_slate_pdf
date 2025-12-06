@@ -4001,72 +4001,79 @@ pub fn make_rue(given: JsValue) -> JsValue {
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
 
-    // top x, y for triangle plot
+    // center
     let ax = 6.;
-    let ay = 16. - 4.;
-    let step = 1.; // step distance for each shift in coordinate value
-    let count = 10; // sum of values in ternary plot is how many steps each triangle side contains
-    render_ternary_plot(ax, ay, step, count, render.clone());
+    let ay = 8.;
+    let step = 0.6;
+    let count = 10;
+    render_3d_plot(ax, ay, step, count, render.clone());
 
-    let another_triangle_page = pdf.add_page(None);
-
-    let mut render = Render::new(&pdf, another_triangle_page.clone(), grid.clone());
-    render.line_color_hex(&input.grid_color);
-    render.font_color_hex(&input.font_color);
-    render.thickness(parse_thickness(&input.line_thickness));
-
-    // top x, y for triangle plot
-    let ax = 6.;
-    let ay = 14.;
-    let step = 1.; // step distance for each shift in coordinate value
-    let count = 8; // sum of values in ternary plot is how many steps each triangle side contains
-    render_ternary_plot(ax, ay, step, count, render.clone());
-
-    let ax = 6.;
-    let ay = 6.;
-    let step = 1.; // step distance for each shift in coordinate value
-    let count = 6; // sum of values in ternary plot is how many steps each triangle side contains
-    render_ternary_plot(ax, ay, step, count, render.clone());
-
-
-    // yet another
-    let another_triangle_page = pdf.add_page(None);
-
-    let mut render = Render::new(&pdf, another_triangle_page.clone(), grid.clone());
-    render.line_color_hex(&input.grid_color);
-    render.font_color_hex(&input.font_color);
-    render.thickness(parse_thickness(&input.line_thickness));
-
-    // top x, y for triangle plot
-    let ax = 6.;
-    let ay = 14.;
-    let step = 1.; // step distance for each shift in coordinate value
-    let count = 4; // sum of values in ternary plot is how many steps each triangle side contains
-    render_ternary_plot(ax, ay, step, count, render.clone());
-
-    let ax = 6.;
-    let ay = 9.;
-    let step = 1.; // step distance for each shift in coordinate value
-    let count = 3; // sum of values in ternary plot is how many steps each triangle side contains
-    render_ternary_plot(ax, ay, step, count, render.clone());
-
-    let ax = 6.;
-    let ay = 5.;
-    let step = 1.; // step distance for each shift in coordinate value
-    let count = 2; // sum of values in ternary plot is how many steps each triangle side contains
-    render_ternary_plot(ax, ay, step, count, render.clone());
-
-    let ax = 6.;
-    let ay = 2.;
-    let step = 1.; // step distance for each shift in coordinate value
-    let count = 1; // sum of values in ternary plot is how many steps each triangle side contains
-    render_ternary_plot(ax, ay, step, count, render.clone());
-
-    let ax = 6.;
-    let ay = 0.;
-    let step = 1.; // step distance for each shift in coordinate value
-    let count = 0; // sum of values in ternary plot is how many steps each triangle side contains
-    render_ternary_plot(ax, ay, step, count, render.clone());
+    // // top x, y for triangle plot
+    // let ax = 6.;
+    // let ay = 16. - 4.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 10; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
+    //
+    // let another_triangle_page = pdf.add_page(None);
+    //
+    // let mut render = Render::new(&pdf, another_triangle_page.clone(), grid.clone());
+    // render.line_color_hex(&input.grid_color);
+    // render.font_color_hex(&input.font_color);
+    // render.thickness(parse_thickness(&input.line_thickness));
+    //
+    // // top x, y for triangle plot
+    // let ax = 6.;
+    // let ay = 14.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 8; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
+    //
+    // let ax = 6.;
+    // let ay = 6.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 6; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
+    //
+    //
+    // // yet another
+    // let another_triangle_page = pdf.add_page(None);
+    //
+    // let mut render = Render::new(&pdf, another_triangle_page.clone(), grid.clone());
+    // render.line_color_hex(&input.grid_color);
+    // render.font_color_hex(&input.font_color);
+    // render.thickness(parse_thickness(&input.line_thickness));
+    //
+    // // top x, y for triangle plot
+    // let ax = 6.;
+    // let ay = 14.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 4; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
+    //
+    // let ax = 6.;
+    // let ay = 9.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 3; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
+    //
+    // let ax = 6.;
+    // let ay = 5.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 2; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
+    //
+    // let ax = 6.;
+    // let ay = 2.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 1; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
+    //
+    // let ax = 6.;
+    // let ay = 0.;
+    // let step = 1.; // step distance for each shift in coordinate value
+    // let count = 0; // sum of values in ternary plot is how many steps each triangle side contains
+    // render_ternary_plot(ax, ay, step, count, render.clone());
 
     // after all pages are there,
     // render header and navigation for all pages
@@ -4130,6 +4137,47 @@ pub fn make_rue(given: JsValue) -> JsValue {
     let bytes: Vec<u8> = pdf.doc.save_to_bytes().unwrap();
     let m = Message { payload: bytes };
     serde_wasm_bindgen::to_value(&m).unwrap()
+}
+
+// 3D-ish
+fn render_3d_plot(ax: f32, ay: f32, step: f32, count: usize, render: Render<Option<String>>) {
+    use std::f32::consts::PI;
+    let North = PI / 2.;
+    let r1 = 0.;
+    let r2 = count as f32 * step;
+    // let angle: f32 = North;
+    let third = 2. * PI / 3.;
+    for angle in vec![North, North + third, North + 2.*third] {
+
+        let x1 = ax + angle.cos() * r1 as f32;
+        let y1 = ay + angle.sin() * r1 as f32;
+        let x2 = ax + angle.cos() * r2 as f32;
+        let y2 = ay + angle.sin() * r2 as f32;
+        render.line(x1, y1, x2, y2);
+
+        for i in 1..=count {
+            let r = i as f32 * step;
+            let x = ax + angle.cos() * r as f32;
+            let y = ay + angle.sin() * r as f32;
+            // let orthogonal_angle = angle + PI / 2.;
+            // let orthogonal_r = 0.1;
+            // let x1 = x + orthogonal_angle.cos() * orthogonal_r;
+            // let y1 = y + orthogonal_angle.sin() * orthogonal_r;
+            // let x2 = x - orthogonal_angle.cos() * orthogonal_r;
+            // let y2 = y - orthogonal_angle.sin() * orthogonal_r;
+            // render.line(x1, y1, x2, y2);
+            // render.circle_omg(x, y, 0.02);
+            let text = format!("{}", i);
+            render.sm_center_text(&text, x, y);
+
+            for orthogonal_angle in vec![angle + third, angle - third] {
+                let orthogonal_r = step * count as f32;
+                let x1 = x + orthogonal_angle.cos() * orthogonal_r;
+                let y1 = y + orthogonal_angle.sin() * orthogonal_r;
+                render.line(x, y, x1, y1);
+            }
+        }
+    }
 }
 
 fn render_ternary_plot(ax: f32, ay: f32, step: f32, count: usize, render: Render<Option<String>>) {
