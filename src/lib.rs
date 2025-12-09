@@ -82,6 +82,7 @@ struct InputRue {
     left_column: String,
     middle_column: String,
     right_column: String,
+    saw_right: Option<String>,
     renamings: String,
     line_thickness: String,
     grid_color: String,
@@ -3837,7 +3838,7 @@ pub fn make_rue(given: JsValue) -> JsValue {
         }
     }
 
-    // + page
+    // + main grid page
     let page = pdf.add_page(None);
     let plus_page = page.clone();
     let mut render = Render::new(&pdf, page, grid.clone());
@@ -3880,7 +3881,7 @@ pub fn make_rue(given: JsValue) -> JsValue {
             render.font_color_hex(&input.font_color);
             render.thickness(parse_thickness(&input.line_thickness));
 
-            render_simple_plus_page(render.clone());
+            render_simple_plus_page(render.clone(), input.saw_right.is_some());
 
             for (index, text) in input.left_column.split(',').enumerate() {
                 render.bottom_left_text(text, 0., 14. - index as f32);
@@ -3888,8 +3889,45 @@ pub fn make_rue(given: JsValue) -> JsValue {
             for (index, text) in input.middle_column.split(',').enumerate() {
                 render.bottom_mid_text(text, 6., 14. - index as f32);
             }
-            for (index, text) in input.right_column.split(',').enumerate() {
-                render.corner_text(text, 12., 14. - index as f32);
+
+            if !input.saw_right.is_some() {
+                for (index, text) in input.right_column.split(',').enumerate() {
+                    render.corner_text(text, 12., 14. - index as f32);
+                }
+            }
+
+            if input.saw_right.is_some() {
+                let dx = 2.; // shift to make traingles
+                let dy = 1.;
+                let mut vec: Vec<(f32, f32)> = vec![];
+
+                vec.push((12. - dx, 0.));
+                for i in 0..11 {
+                    vec.push((12. - dx, (i * 2) as f32 * dy));
+                    vec.push((12., (i * 2 + 1) as f32 * dy));
+                }
+                vec.push((10., 17.));
+                vec.push((10., 15.));
+
+                for (i, text) in input.right_column.split(',').enumerate() {
+                    let mut shift = 0.25;
+                    if i % 2 == 0 {
+                        shift = -shift;
+                    }
+                    let x = 11. + shift;
+                    let y = 15. - 0.125 - i as f32;
+                    render.center_text(text, x, y);
+                }
+
+                // vec.push((12., 0.));
+                // for i in 0..11 {
+                //     vec.push((12. - dx, (i * 2 + 1) as f32 * dy));
+                //     vec.push((12., (i * 2 + 2) as f32 * dy));
+                // }
+                // vec.push((10., 17.));
+                // vec.push((10., 15.));
+
+                render.poly(vec);
             }
 
             // link from grid into the entry
@@ -4320,14 +4358,20 @@ fn render_triangle_page(render: Render<Option<String>>, value: usize, count: usi
         render.sm_center_text(&format!("{}", value), p.0, p.1);
     });
 }
-fn render_simple_plus_page(render: Render<Option<String>>) {
-    for y in 1..=15 {
-        render.line(0., y as f32, 12., y as f32);
+fn render_simple_plus_page(render: Render<Option<String>>, cut: bool) {
+    let mut max_y = 15;
+    let mut max_x = 12;
+    if cut {
+        max_x = 10;
+    }
+
+    for y in 1..=max_y {
+        render.line(0., y as f32, max_x as f32, y as f32);
         // render.line(0., y as f32 - 0.5, 12., y as f32 - 0.5);
     }
 
-    for x in 1..=11 {
-        render.line(x as f32, 0., x as f32, 15.);
+    for x in 1..=max_x.min(11) {
+        render.line(x as f32, 0., x as f32, max_y as f32);
         // render.line(x as f32 - 0.5, 0., x as f32 - 0.5, 14.);
     }
     // let x = 12;
