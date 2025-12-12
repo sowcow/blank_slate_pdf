@@ -219,12 +219,13 @@ impl<'a, T: Clone> Render<'a, T> {
         current_layer.use_text(text, size, x, y, &font);
     }
 
-    // quickie
     pub fn rect(&self, x1: f32, y1: f32, x2: f32, y2: f32) {
-        self.line(x1, y1, x1, y2);
-        self.line(x1, y2, x2, y2);
-        self.line(x2, y2, x2, y1);
-        self.line(x2, y1, x1, y1);
+        self.closed_poly(vec![
+            (x1, y1),
+            (x1, y2),
+            (x2, y2),
+            (x2, y1),
+        ]);
     }
 
     pub fn draw_gate(&self, cx: f32, cy: f32, spanx: f32, spany: f32) {

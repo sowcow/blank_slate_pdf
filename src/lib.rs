@@ -84,6 +84,7 @@ struct InputRue {
     right_column: String,
     saw_right: Option<String>,
     renamings: String,
+    square_items: String,
     line_thickness: String,
     grid_color: String,
     font_color: String,
@@ -3797,10 +3798,11 @@ pub fn make_rolls(given: JsValue) -> JsValue {
     serde_wasm_bindgen::to_value(&m).unwrap()
 }
 
+// RUE is old the name before square got added
 #[wasm_bindgen]
 pub fn make_rue(given: JsValue) -> JsValue {
     let data: PageData = None;
-    let title = "RUE";
+    let title = "[BS]";
 
     use serde_wasm_bindgen::from_value;
     let input: InputRue = from_value(given).unwrap();
@@ -4115,6 +4117,98 @@ pub fn make_rue(given: JsValue) -> JsValue {
     // let count = 0; // sum of values in ternary plot is how many steps each triangle side contains
     // render_ternary_plot(ax, ay, step, count, render.clone());
 
+    // square page(s)
+
+    let square_page = pdf.add_page(None);
+
+    let mut render = Render::new(&pdf, square_page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    let mut square_xs: Vec<Page<Option<String>>> = vec![];
+    square_xs.push(square_page.clone());
+
+    // four nested squares
+    let points: Vec<(f32, f32)> = vec![
+        (0., 14.), (6., 14.),
+        (0., 7.), (6., 7.),
+    ];
+
+    let square_items: Vec<&str> = input.square_items.lines().collect();
+    for (i, group) in square_items.chunks(4).enumerate() {
+        if i > 0 {
+            let square_page = pdf.add_page(None);
+            square_xs.push(square_page.clone());
+
+            render = Render::new(&pdf, square_page.clone(), grid.clone());
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+        }
+
+        for (j, item) in group.into_iter().enumerate() {
+            render.line_start_text(&group[j], points[j].0 + 0.25, points[j].1 + 0.25);
+            let x0 = points[j].0;
+            let y0 = points[j].1;
+            let w = 6.;
+            let h = 6.;
+            render.rect(x0, y0, x0 + w, y0 - h);
+            for yy in 0..6 {
+                for xx in 0..6 {
+                    let number = xx + yy * 6 + 1;
+                    let subheader = number.to_string();
+                    let subheader = renamings(&subheader, &input.renamings).to_string();
+                    let x = points[j].0 + xx as f32;
+                    let y = points[j].1 - yy as f32;
+                    render.sm_center_text(&subheader, x + 0.5, y - 0.125 - 0.5);
+                }
+            }
+        }
+    }
+
+    // let count_detail_pages = 12 - 1;
+    let count_detail_pages = 12 * 2 - 1;
+    // diving from square(s) to details
+    //
+    for (i, item) in square_items.iter().enumerate() {
+        // details of item page (plan/detail/log/report)
+        let page = pdf.add_page(Some(item.to_string()));
+
+        let square_page_index = i / 4;
+        let which_of_four = i % 4;
+        let nth_square_page = square_xs[square_page_index].clone();
+        
+        let mut render = Render::new(&pdf, nth_square_page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+
+        let x = points[which_of_four].0;
+        let y = points[which_of_four].1;
+        let dx = 6.;
+        let dy = 1.;
+        let door = Area::xywh(x, y, dx, dy);
+        render.link(&page, door.clone());
+
+        let mut render = Render::new(&pdf, page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+        render.tick(1, count_detail_pages);
+        render_small_grid(render);
+
+        for i in 2..=count_detail_pages {
+            let page = pdf.add_page(Some(item.to_string()));
+            let mut render = Render::new(&pdf, page.clone(), grid.clone());
+            render.line_color_hex(&input.grid_color);
+            render.font_color_hex(&input.font_color);
+            render.thickness(parse_thickness(&input.line_thickness));
+            render.tick(i, count_detail_pages);
+            render_small_grid(render);
+        }
+    }
+
     // after all pages are there,
     // render header and navigation for all pages
     //
@@ -4135,26 +4229,40 @@ pub fn make_rue(given: JsValue) -> JsValue {
         };
         render.header(&title);
 
+        // menu links
+        //
+        let link_count = 5.;
+        let link_size = 1.;
+        let mut link_pos = 12. - link_count * link_size;
+
         render.header_link(
             &maze_page,
-            // "#",
             "",
-            Area::xywh(12. - 1.5*3., 16., -1.5, -1. + 0.02),
+            Area::xywh(link_pos, 16., link_size, -1. + 0.02),
         );
         render.thickness(1.5);
         render.line_color_hex(&input.font_color);
         render.circle_omg(
-          8.25 - 1.5, 15.5, 0.15
+          link_pos + link_size / 2., 15.5,
+          // 0.15
+          0.05
         );
+
+        link_pos += link_size;
         render.header_link(
             &minus_page,
             "-",
-            Area::xywh(12. - 1.5 * 2., 16., -1.5, -1. + 0.02),
+            Area::xywh(link_pos, 16., link_size, -1. + 0.02),
         );
-        render.header_link(&plus_page, "+", Area::xywh(12. - 1.5, 16., -1.5, -1. + 0.02));
 
-        let x = 8.25 + 3.;
-        let y = 15.5 - 0.025;
+        link_pos += link_size;
+        render.header_link(&plus_page, "+",
+            Area::xywh(link_pos, 16., link_size, -1. + 0.02));
+
+        link_pos += link_size;
+        let x = link_pos + link_size / 2.;
+        let y = 15.5 - 0.055;
+        // let y = 15.5 - 0.025;
 
         let side = 0.33;
         let height = (3.0_f32).sqrt() * side / 2.0;
@@ -4170,7 +4278,23 @@ pub fn make_rue(given: JsValue) -> JsValue {
         render.header_link(
             &triangle_page,
             "",
-            Area::xywh(12., 16., -1.5, -1. + 0.02),
+            Area::xywh(link_pos, 16., link_size, -1. + 0.02),
+        );
+
+        link_pos += link_size;
+        render.header_link(
+            &square_page,
+            "",
+            Area::xywh(link_pos, 16., link_size, -1. + 0.02),
+        );
+        let x = link_pos + link_size / 2.;
+        let y = 15.5;
+        let r = 0.15;
+        render.rect(
+            x - r,
+            y - r,
+            x + r,
+            y + r,
         );
     }
 
@@ -4357,6 +4481,22 @@ fn render_triangle_page(render: Render<Option<String>>, value: usize, count: usi
     located.iter().for_each(|(p, value)|{
         render.sm_center_text(&format!("{}", value), p.0, p.1);
     });
+}
+fn render_small_grid(render: Render<Option<String>>) {
+    let mut max_y = 15;
+    let mut max_x = 13;
+
+    for y in 1..=max_y {
+        render.line(0., y as f32, max_x as f32, y as f32);
+        render.line(0., y as f32 - 0.5, max_x as f32, y as f32 - 0.5);
+    }
+
+    for x in 1..=max_x {
+        render.line(x as f32, 0., x as f32, max_y as f32);
+        render.line(x as f32 - 0.5, 0., x as f32 - 0.5, max_y as f32);
+    }
+    // let x = 12;
+    // render.line(x as f32 - 0.5, 0., x as f32 - 0.5, 14.);
 }
 fn render_simple_plus_page(render: Render<Option<String>>, cut: bool) {
     let mut max_y = 15;
