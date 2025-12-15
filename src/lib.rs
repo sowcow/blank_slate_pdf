@@ -79,6 +79,7 @@ struct Input123 {
 struct InputRue {
     action: String,
     title: String,
+    footer: String,
     left_column: String,
     middle_column: String,
     right_column: String,
@@ -4217,6 +4218,12 @@ pub fn make_rue(given: JsValue) -> JsValue {
         render.line_color_hex(&input.grid_color);
         render.font_color_hex(&input.font_color);
         render.thickness(parse_thickness(&input.line_thickness));
+
+        let footer = &input.footer;
+        if footer != "" {
+            render.center_text(footer, 6., 0.5 - 0.125);
+        }
+
         let data = page.data.clone();
         let title = if let Some(subheader) = data {
             if input.title == "" {
