@@ -208,7 +208,7 @@ window.makeRue = (event) => {
   }
 	let got = wasm.make_rue(data).payload
 
-  let name = 'SquareBS.pdf'
+  let name = 'E.pdf'
   if (data.title) name = `${data.title}${type}.pdf`
 
 	downloadBlob(got, name, 'application/octet-stream');

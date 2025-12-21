@@ -29,6 +29,8 @@ use render::*;
 use setup::*;
 
 use std::f32::consts::PI;
+use std::iter::successors;
+
 
 //unused:
 //- bezier
@@ -3803,7 +3805,7 @@ pub fn make_rolls(given: JsValue) -> JsValue {
 #[wasm_bindgen]
 pub fn make_rue(given: JsValue) -> JsValue {
     let data: PageData = None;
-    let title = "[BS]";
+    let title = "E";
 
     use serde_wasm_bindgen::from_value;
     let input: InputRue = from_value(given).unwrap();
@@ -4044,12 +4046,80 @@ pub fn make_rue(given: JsValue) -> JsValue {
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
 
-    // center
-    let ax = 6.;
-    let ay = 8.;
-    let step = 0.6;
-    let count = 10;
-    render_3d_plot(ax, ay, step, count, render.clone());
+    let mut items: Vec<(f32, f32, usize, usize, String)> = vec![];
+
+    for row in 0..14 {
+        let time = 7 + row;
+        let y = 14. - row as f32;
+        for col in 0..6 {
+            let period = 5 + col * 5;
+            let x = col as f32 * 2.;
+            let text = format!("{time}h+{period}m");
+            items.push((x, y, time, period, text.clone()));
+            render.line_start_text(&text, x, y);
+        }
+    }
+    let mut max_x = 12;
+    let mut max_y = 15;
+    for y in 1..=15 {
+        render.line(0., y as f32, max_x as f32, y as f32);
+    }
+    // could be uncomfortable as perspective yet it's nice on borders
+    for x in 1..=11 {
+        render.line(2. * x as f32, 0., x as f32, max_y as f32);
+    }
+    // let triangle_render = render.clone();
+
+    for (x, y, time, period, text) in items {
+        let time_page = pdf.add_page(Some(text));
+
+        let door = Area::xywh(x, y, 2., 1.);
+        let mut render = Render::new(&pdf, triangle_page.clone(), grid.clone());
+        render.link(&time_page, door.clone());
+
+        let mut render = Render::new(&pdf, time_page.clone(), grid.clone());
+        render.line_color_hex(&input.grid_color);
+        render.font_color_hex(&input.font_color);
+        render.thickness(parse_thickness(&input.line_thickness));
+
+        let hour_mark = time;
+        let period_minutes = period;
+        let mut time_iter = successors(Some(0), move |&minutes_offset| {
+            Some(minutes_offset + period_minutes)
+        })
+        .map(move |minutes_offset| {
+            let total_minutes = hour_mark * 60 + minutes_offset;
+            let hour = total_minutes / 60 % 24;
+            let minutes = total_minutes % 60;
+            format!("{:02}:{:02}", hour, minutes)
+        });
+        
+        for y in 1..=15 {
+            render.line(0., y as f32, max_x as f32, y as f32);
+            render.line(0., y as f32 - 0.5, max_x as f32, y as f32 - 0.5);
+
+            let line_time = time_iter.next().unwrap();
+            render.line_start_text(&line_time, 0., 15 as f32 - y as f32 + 0.5);
+            let line_time = time_iter.next().unwrap();
+            render.line_start_text(&line_time, 0., 15 as f32 - y as f32);
+        }
+        let y = 15.; 
+        for x in 1..=40 {
+            render.line(x as f32, y, x as f32 - y, y - y);
+        }
+    }
+
+
+
+    // let x = 12;
+    // render.line(x as f32 - 0.5, 0., x as f32 - 0.5, 14.);
+
+    // // center
+    // let ax = 6.;
+    // let ay = 8.;
+    // let step = 0.6;
+    // let count = 10;
+    // render_3d_plot(ax, ay, step, count, render.clone());
 
     // // top x, y for triangle plot
     // let ax = 6.;
@@ -4309,6 +4379,7 @@ pub fn make_rue(given: JsValue) -> JsValue {
     let m = Message { payload: bytes };
     serde_wasm_bindgen::to_value(&m).unwrap()
 }
+
 
 // 3D-ish
 fn render_3d_plot(ax: f32, ay: f32, step: f32, count: usize, render: Render<Option<String>>) {
