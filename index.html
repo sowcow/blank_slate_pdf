@@ -13,21 +13,29 @@
       There is permanenent revolution of different work in progress or random pdf ideas laying around.
     </pre>
 
-		<h2>E.pdf</h2>
+		<h2>E.pdf (/ɛ/)</h2>
 
     <form onsubmit="window.makeRue(event)">
+      <pre style='white-space: pre-wrap'>
+It's the latest minimalistic and abstract PDF.
+The general idea is that the PDF provides ways to store records in different modes of organization,
+while the exact scenarios for its use are unconstrained and are up to the user.
+For that reason all pages have common header for switching between different modes.
+
+- .: scratchpad pages, can be used for temporary content; use it by entering a random link inside the circle
+- -: can be a catchall for unorganized items; it is a sequence of multiple pages (more organized items may go into squares)
+- +: organization by days: 36 linked pages in a calendar-like format, configurable, predefined columns of text on every page (the default example configuration uses numbers at the right for time, and three categories at the left, this can be changed/removed in configuration text fields below the button "Make E")
+- ▲: organization by time period divided with checkpoints; use it by entering a link with the needed starting time and period
+- ■: organization by topic/event(s); it can be seen as separate habit calendars, each having a linkink to a sequence of content pages from its header
+- the circle is simply a circle
+
+Header of every page can be set to the month name.
+Also, the `+` grid is configurable so it may have experimental non-calendar uses.
+      </pre>
+
+      <br />
       <button type="submit" name="action">Make E</button>
       <br />
-      <br />
-      <pre>
-      Latest minimalistic and abstract PDF with these kind of pages:
-      - point/circle: scratchpad pages - for all temporary content to not return to, use by entering random invisible link inside the circle
-      - "-": title page, also squence of pages for content to return to like catchall, already organized items can go into groups of under square category instead
-      - "+": decomposition into 36 pages, to be used for daily done/todo lists most likely, can have own predefined columns of text for every page (the default configuration goes with numbers for time at the right, and three categories at the left as template for todo list categories, as an example)
-      - triangle page is for timed records, choose starting point and period on it to go to flat page
-      - square can be seen as separate habits or review points calendars with simple pages for plan/log/review available from headers of each calendar (#1 for example, can be changed into exact habit name in a text field below)
-      Text below can be deleted and checkbox undone for even more abstract pdf.
-      </pre>
 
 			<label style='display: block'>
 				Header
@@ -44,6 +52,15 @@
           name='footer'
           value=""
           placeholder="Footer of every page"
+          type="text"
+        />
+			</label>
+			<label style='display: block'>
+        "+" grid resolution (for 6 it makes grid of 36 cells)
+				<input
+          name='grid_resolution'
+          value="6"
+          placeholder="6 would make 36 cells grid"
           type="text"
         />
 			</label>
