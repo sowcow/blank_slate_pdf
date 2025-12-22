@@ -4,6 +4,8 @@ Permanent revolution of random pdf ideas (written with trashy non-ideomatic Rust
 
 # E.pdf (/ɛ/)
 
+[Latest link](https://sowcow.github.io/blank_slate_pdf/)
+
 It's the latest minimalistic and abstract PDF.
 The general idea is that the PDF provides ways to store records in different modes of organization,
 while the exact scenarios for its use are unconstrained and are up to the user.
@@ -19,7 +21,7 @@ For that reason all pages have common header for switching between different mod
 Header of every page can be set to the month name.
 Also, the `+` grid is configurable so it may have experimental non-calendar uses.
 
-# Random PDFs
+# Random older PDFs
 
 - [Hex.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Hex.pdf)
 - [Rubiks.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Rubiks.pdf)
