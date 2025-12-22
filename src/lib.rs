@@ -77,10 +77,12 @@ struct Input123 {
     font_color: String,
 }
 
+// Rue is one of first names of what now should be E
 #[derive(Deserialize, Serialize)]
 struct InputRue {
     action: String,
     title: String,
+    grid_resolution: String,
     footer: String,
     left_column: String,
     middle_column: String,
@@ -389,6 +391,11 @@ mod tests {
 
 fn parse_thickness(str: &str) -> f32 {
     let got: f32 = str.parse().unwrap_or(0.5); // line thickness
+    got
+}
+
+fn parse_grid_resolution(str: &str) -> usize {
+    let got: usize = str.parse().unwrap_or(6);
     got
 }
 
@@ -3805,7 +3812,7 @@ pub fn make_rolls(given: JsValue) -> JsValue {
 #[wasm_bindgen]
 pub fn make_rue(given: JsValue) -> JsValue {
     let data: PageData = None;
-    let title = "E";
+    let title = "E"; // not U,I,or anything arbitrary
 
     use serde_wasm_bindgen::from_value;
     let input: InputRue = from_value(given).unwrap();
@@ -3851,10 +3858,13 @@ pub fn make_rue(given: JsValue) -> JsValue {
     render.font_color_hex(&input.font_color);
     render.thickness(parse_thickness(&input.line_thickness));
 
+
     let mut min_y = grid.h;
     let mut max_y = 0.;
-    for i in 0..=6 {
-        let y = grid.h - 1. - (i as f32) * 2.;
+    let grid_resolution = parse_grid_resolution(&input.grid_resolution);
+    let grid_step = grid.w / grid_resolution as f32;
+    for i in 0..=grid_resolution {
+        let y = grid.h - 1. - (i as f32) * grid_step;
         if y > max_y {
             max_y = y
         }
@@ -3863,16 +3873,16 @@ pub fn make_rue(given: JsValue) -> JsValue {
         }
         render.line(0., y, render.grid.w, y);
     }
-    for i in 1..=5 {
-        let x = (i as f32) * 2.;
+    for i in 1..grid_resolution {
+        let x = (i as f32) * grid_step;
         render.line(x, min_y, x, max_y);
     }
 
     // + nested pages generation
     let mut pages_24: Vec<Page<Option<String>>> = vec![];
-    for yy in 0..6 {
-        for xx in 0..6 {
-            let number = xx + yy * 6 + 1;
+    for yy in 0..grid_resolution {
+        for xx in 0..grid_resolution {
+            let number = xx + yy * grid_resolution + 1;
             let subheader = number.to_string();
             let subheader = renamings(&subheader, &input.renamings).to_string();
 
@@ -3941,10 +3951,10 @@ pub fn make_rue(given: JsValue) -> JsValue {
             render.font_color_hex(&input.font_color);
             render.thickness(parse_thickness(&input.line_thickness));
 
-            let size = 2.;
+            let size = grid_step;
             let x = xx as f32;
             let y = yy as f32;
-            let door = Area::xywh(x * size, 13. - y * size, size, size);
+            let door = Area::xywh(x * size, 15. - (y + 1.) * size, size, size);
             render.link(&first_item_page, door.clone());
             let area = door;
 
@@ -3966,10 +3976,10 @@ pub fn make_rue(given: JsValue) -> JsValue {
     let radius_whole = 5.;
     // let part_size = 1.;
     let part_size = 0.5;
-
-    render.circle_omg(
-      center_whole.0, center_whole.1, radius_whole
-    );
+    //
+    // render.circle_omg(
+    //   center_whole.0, center_whole.1, radius_whole
+    // );
 
     let mut places: Vec<((f32, f32), (f32, f32))> = vec![];
 
@@ -4001,6 +4011,27 @@ pub fn make_rue(given: JsValue) -> JsValue {
                distance(c.0, c.1, center_whole.0, center_whole.1) <= radius_whole ||
                distance(d.0, d.1, center_whole.0, center_whole.1) <= radius_whole {
                 places.push((a, d));
+
+                let base_r = part_size / 2.;
+                let max_r = base_r / 2.;
+                let count_divisions = 5;
+                let mut r_options: Vec<f32> = vec![];
+                for i in 1..=count_divisions {
+                    r_options.push(max_r / i as f32);
+                }
+                r_options.push(0.); // inivisbe dots
+
+                use rand::seq::SliceRandom;
+                use rand::thread_rng;
+                use wasm_bindgen::prelude::*;
+
+                let mut rng = thread_rng();
+                let r = *r_options.choose(&mut rng).unwrap();
+                if r > 0. {
+                    render.circle_omg(
+                      xx + base_r, yy + base_r, r
+                    );
+                }
             }
             yy += part_size;
         }
@@ -4056,7 +4087,7 @@ pub fn make_rue(given: JsValue) -> JsValue {
             let x = col as f32 * 2.;
             let text = format!("{time}h+{period}m");
             items.push((x, y, time, period, text.clone()));
-            render.line_start_text(&text, x, y);
+            render.center_text(&text, x + 1., y + 0.5 - 0.125);
         }
     }
     let mut max_x = 12;
@@ -4206,6 +4237,9 @@ pub fn make_rue(given: JsValue) -> JsValue {
         (0., 7.), (6., 7.),
     ];
 
+    let grid_resolution = parse_grid_resolution(&input.grid_resolution);
+    let grid_step = grid.w / 2. / grid_resolution as f32;
+
     let square_items: Vec<&str> = input.square_items.lines().collect();
     for (i, group) in square_items.chunks(4).enumerate() {
         if i > 0 {
@@ -4225,14 +4259,14 @@ pub fn make_rue(given: JsValue) -> JsValue {
             let w = 6.;
             let h = 6.;
             render.rect(x0, y0, x0 + w, y0 - h);
-            for yy in 0..6 {
-                for xx in 0..6 {
-                    let number = xx + yy * 6 + 1;
+            for yy in 0..grid_resolution {
+                for xx in 0..grid_resolution {
+                    let number = xx + yy * grid_resolution + 1;
                     let subheader = number.to_string();
                     let subheader = renamings(&subheader, &input.renamings).to_string();
-                    let x = points[j].0 + xx as f32;
-                    let y = points[j].1 - yy as f32;
-                    render.sm_center_text(&subheader, x + 0.5, y - 0.125 - 0.5);
+                    let x = x0 + xx as f32 * grid_step;
+                    let y = y0 - yy as f32 * grid_step;
+                    render.sm_center_text(&subheader, x + grid_step * 0.5, y - 0.125 - grid_step * 0.5);
                 }
             }
         }
@@ -4280,6 +4314,20 @@ pub fn make_rue(given: JsValue) -> JsValue {
         }
     }
 
+    let page = pdf.add_page(None);
+    let circle_page = page.clone();
+
+    let mut render = Render::new(&pdf, page.clone(), grid.clone());
+    render.line_color_hex(&input.grid_color);
+    render.font_color_hex(&input.font_color);
+    render.thickness(parse_thickness(&input.line_thickness));
+
+    let center_whole = (6., 8.);
+    let radius_whole = 5.;
+    render.circle_omg(
+      center_whole.0, center_whole.1, radius_whole
+    );
+
     // after all pages are there,
     // render header and navigation for all pages
     //
@@ -4308,7 +4356,7 @@ pub fn make_rue(given: JsValue) -> JsValue {
 
         // menu links
         //
-        let link_count = 5.;
+        let link_count = 6.;
         let link_size = 1.;
         let mut link_pos = 12. - link_count * link_size;
 
@@ -4372,6 +4420,21 @@ pub fn make_rue(given: JsValue) -> JsValue {
             y - r,
             x + r,
             y + r,
+        );
+
+        link_pos += link_size;
+        render.header_link(
+            &circle_page,
+            "",
+            Area::xywh(link_pos, 16., link_size, -1. + 0.02),
+        );
+        let x = link_pos + link_size / 2.;
+        let y = 15.5;
+        let r = 0.15;
+        render.circle_omg(
+            x,
+            y,
+            r,
         );
     }
 
