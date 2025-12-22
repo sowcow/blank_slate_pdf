@@ -23,12 +23,7 @@ Also, the `+` grid is configurable so it may have experimental non-calendar uses
 
 # Random older PDFs
 
-- [Hex.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Hex.pdf)
-- [Rubiks.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/Rubiks.pdf)
-- [32.pdf](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/32.pdf)
-- [Q4 2024.pdf monday weeks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/2024_Q4_MON.pdf)
-- [Q4 2024.pdf sunday weeks](https://github.com/sowcow/blank_slate_pdf/releases/latest/download/2024_Q4_SUN.pdf)
-- [more](https://github.com/sowcow/blank_slate_pdf/releases/)
+- [Old PDFs link](https://github.com/sowcow/blank_slate_pdf/releases/)
 
 # Changelog
 
