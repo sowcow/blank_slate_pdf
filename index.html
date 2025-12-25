@@ -24,7 +24,7 @@ For that reason all pages have common header for switching between different mod
 
 - .: scratchpad pages, can be used for temporary content; use it by entering a random link inside the circle
 - -: can be a catchall for unorganized items; it is a sequence of multiple pages (more organized items may go into squares)
-- +: organization by days: 36 linked pages in a calendar-like format, configurable, predefined columns of text on every page (the default example configuration uses numbers at the right for time, and three categories at the left, this can be changed/removed in configuration text fields below the button "Make E")
+- +: organization by days: 36 linked pages in a calendar-like format, configurable, predefined columns of text on every page (the default example configuration makes division into four categories of items at the corners, this can be changed/removed in configuration text fields below the button "Make E")
 - ▲: organization by time period divided with checkpoints; use it by entering a link with the needed starting time and period
 - ■: organization by topic/event(s); it can be seen as separate habit calendars, each having a linkink to a sequence of content pages from its header
 - the circle is simply a circle
@@ -66,9 +66,15 @@ Also, the `+` grid is configurable so it may have experimental non-calendar uses
 			</label>
 			<label style='display: block'>
         Left column (on the day view)
+						<!-- value="I,,,,,II,,,,,III" -->
+            <!-- value="A,,,,,,,B" -->
+						<!-- value="DO,,,,,,,,,,,,,DELEGATE" -->
+						<!-- value="WILL,,,,,,,,,,,,,HAVE" -->
+<!-- will would be speech act, not really consistant with blank slate idea, but will see -->
+<!-- plan has pdca clue so it's interesting -->
 				<input
 						name='left_column'
-						value="I,,,,,II,,,,,III"
+						value="PLAN,,,,,,,,,,,,,GIVEN"
 						placeholder="comma separated things to have at the left on each day page"
 						type="text"
 						/>
@@ -84,9 +90,13 @@ Also, the `+` grid is configurable so it may have experimental non-calendar uses
 			</label>
 			<label style='display: block'>
         Right column (on the day view)
+						<!-- value="7,8,9,10,11,12,1,2,3,4,5,6,7,8,9" -->
+						<!-- value="DECIDE,,,,,,,,,,,,,DELETE" -->
+            <!-- I must have the wish category since it's Christmas -->
+            <!-- constraint is a smart word -->
 				<input
 						name='right_column'
-						value="7,8,9,10,11,12,1,2,3,4,5,6,7,8,9"
+						value="CONSTRAINT,,,,,,,,,,,,,WISH"
 						placeholder="comma separated things to have at the right on each day page"
 						type="text"
 						/>
@@ -112,18 +122,11 @@ Also, the `+` grid is configurable so it may have experimental non-calendar uses
 #2
 #3
 #4
-#5
-#6
-#7
-#8
-#9
-#10
-#11
-#12
-#13
-#14
-#15
-#16</textarea>
+*5
+*6
+*7
+*8
+</textarea>
 			</label>
 			<label style='display: block'>
 				Line thickness
