@@ -13,7 +13,7 @@ For that reason all pages have common header for switching between different mod
 
 - .: scratchpad pages, can be used for temporary content; use it by entering a random link inside the circle
 - -: can be a catchall for unorganized items; it is a sequence of multiple pages (more organized items may go into squares)
-- +: organization by days: 36 linked pages in a calendar-like format, configurable, predefined columns of text on every page (the default example configuration uses numbers at the right for time, and three categories at the left, this can be changed/removed in configuration text fields below the button "Make E")
+- +: organization by days: 36 linked pages in a calendar-like format, configurable, predefined columns of text on every page (the default example configuration makes division into four categories of items at the corners, this can be changed/removed in configuration text fields below the button "Make E")
 - ▲: organization by time period divided with checkpoints; use it by entering a link with the needed starting time and period
 - ■: organization by topic/event(s); it can be seen as separate habit calendars, each having a linkink to a sequence of content pages from its header
 - the circle is simply a circle
