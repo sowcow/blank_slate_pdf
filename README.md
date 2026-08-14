@@ -2,7 +2,7 @@
 
 Permanent revolution of random pdf ideas (written with trashy non-ideomatic Rust code).
 
-# E.pdf (/ɛ/)
+# E.pdf (/ɛ/ or better yet /jɛ/)
 
 [Latest link](https://sowcow.github.io/blank_slate_pdf/)
 
